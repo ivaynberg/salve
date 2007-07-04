@@ -80,6 +80,8 @@ Now our `User` object is very easy to test. In our test-case we can simply insta
 
 However, notice that we can no longer use the `new` operator to instantiate an object inside our application code. We have to delegate it to the IOC container so it can inject dependencies. This makes our code cumbersome. Also notice that now the `User` object keeps references to `Database` and `MailService` which means we can no longer put it into http session - because objects in http session are serialized for replication between cluster nodes. 
 
+Because of these limitations programmers usually resort to seprating logic and behavior. The `register()` method and other behavior would move out of the `User` object and into some stateless singleton managed by the IOC container. `User` will be left with data only. This is called the anemic-domain model anti-pattern. Read about it [http://www.martinfowler.com/bliki/AnemicDomainModel.html here] and some remarks [http://www.theserverside.com/patterns/thread.tss?thread_id=31010#172016 here].
+
 Enter Salve.
 
 With Salve the `User` class would look like the IOC version:
@@ -106,7 +108,7 @@ public class User implements Serializable {
 }
 }}}
 
-And at runtime the Salve agent will rewrite the bytecode to be like the initial version:
+And at runtime the Salve jvm agent will rewrite the bytecode to be like the initial version:
 
 {{{
 public class User implements Serializable {
@@ -128,7 +130,7 @@ public class User implements Serializable {
 }
 }}}
 
-What Salve has done:
+What Salve agent has done:
 * Generated static variables that contain key objects used to lookup dpeendencies from Salve's DependencyLibrary. In the example the keys only contain the class of dependency, but in reality the keys contain a lot more information.
 * Removed fields with @Dependency annotations (making
 * Replaced field-read operations to above fields with a local variable and a static lookup
