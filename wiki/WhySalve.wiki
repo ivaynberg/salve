@@ -91,7 +91,7 @@ public class User implements Serializable {
   @Dependency
   private EmailService emails;
 
-  // getter and setter for database/emails for ioc container to inject the dependencies
+  // getter and setter for database/emails for test code to set the dependencies
   
   public void register() {
     // save the user to database
