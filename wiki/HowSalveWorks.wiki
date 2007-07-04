@@ -130,7 +130,7 @@ public class User implements Serializable {
 
 What Salve has done:
 * Generated static variables that contain key objects used to lookup dpeendencies from Salve's DependencyLibrary. In the example the keys only contain the class of dependency, but in reality the keys contain a lot more information.
-* Removed fields with @Dependency annotations
+* Removed fields with @Dependency annotations (making
 * Replaced field-read operations to above fields with a local variable and a static lookup
 
 The modified `User` class can now be safely serialized and created using the `new` operator when the salve jvm agent is installed. However, the unmodified bytecode can be easily used inside test-cases where the salve agent is not installed.
