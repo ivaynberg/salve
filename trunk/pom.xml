@@ -40,7 +40,6 @@
 		<module>salve</module>
 		<module>salve-agent</module>
                 <module>salve-spring</module>
-                <module>salve-blog</module>
         </modules>
 
 
