@@ -47,6 +47,16 @@ public class Key implements Serializable {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T extends Annotation> T getAnnotationOfType(Class<T> clazz) {
+		for (Annotation annot : injectedFieldAnnots) {
+			if (clazz.isAssignableFrom(annot.annotationType())) {
+				return (T) annot;
+			}
+		}
+		return null;
+	}
+
 	public Class getDependencyClass() {
 		return dependencyClass;
 	}
@@ -76,18 +86,7 @@ public class Key implements Serializable {
 				dependencyClass);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends Annotation> T getAnnotationOfType(Class<T> clazz) {
-		for (Annotation annot : injectedFieldAnnots) {
-			if (clazz.isAssignableFrom(annot.annotationType())) {
-				return (T) annot;
-			}
-		}
-		return null;
-	}
-
 	private Object writeReplace() throws ObjectStreamException {
-		System.out.println("write replaced called on key: " + this);
 		return new SerializedKey(injectedClass, injectedFieldName);
 	}
 
@@ -102,16 +101,12 @@ public class Key implements Serializable {
 		}
 
 		private Object readResolve() throws ObjectStreamException {
-			System.out.println("readresolve called on serialized key");
 			try {
 				Class injectedClass = Class.forName(injectedClassName);
 				Field field = injectedClass.getField(SalveConstants
 						.keyFieldName(injectedFieldName));
 
 				final Key key = (Key) field.get(null);
-
-				System.out.println("Serialized key resolved to " + key);
-
 				return key;
 			} catch (Exception e) {
 				throw new ObjectStreamException(getClass().getName()) {
