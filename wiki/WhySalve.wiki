@@ -42,7 +42,7 @@ public void register() {
 }
 }}}
 
-For our usage example the code above is ideal. We can instantiate the `User` object using the standard `new` operator at any point of whatever lifecycle the application has. We can also safely put it into `HttpSession` object, because 
+For our usage example the code above is ideal. We can instantiate the `User` object using the standard `new` operator at any point of whatever lifecycle the application has. We can also safely put it into `HttpSession` object, because it can be safely serialized - it doesnt hold any direct references to what might be non-serializable services.
 
 
 However, there are a few problems with this implementation. For one, it tightly couples the `User` class to the two locators we use to retrieve the database and email services. This makes it difficult to test this object because it is difficult to set up and discover the dependencies for a test-case run. To solve this problem and make `User` easily testable we can use an inversion of control container to inject the dependencies into `User`. Lets say we use property-injection. That will transform User code to look like this:
