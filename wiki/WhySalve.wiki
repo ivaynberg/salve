@@ -121,10 +121,10 @@ public class User implements Serializable {
     __local$database.saveUser(this);
 
     // send user an activation email
-    EmailService __local$emailService=salve.DependencyLibrary.locate(__key$emailService)
     String email="Congragulations, your account has been created";
     String from=email.getSystemAddress();
     String to=username+"@"+email.getUserDomain();
+    EmailService __local$emailService=salve.DependencyLibrary.locate(__key$emailService)
     __local$emailService.send(from, to, email);
   }
 }
