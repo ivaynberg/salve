@@ -1,0 +1,136 @@
+Lets take a simple example `User` object. We want the user object to contain data, and to be able to act on that data. The API might look something like this:
+
+{{{
+public class User implements Serializable {
+  /** Gets username property **/
+  public String getUsername() {...};
+
+  /** Sets username property **/
+  public void setUsername(String username) {...}
+
+  /** Registers a new username within the system */
+  public void register() {
+    // save the user to database
+    // send user an activation email
+   }
+}
+}}}
+
+And desired usage like so:
+
+{{{
+User user=new User();
+user.setUsername(form.getUsername());
+user.register();
+httpSession.put("blog.loggedinUser", user);
+}}}
+
+A simple implementation of the `register()` method might look like something below:
+
+{{{
+public void register() {
+  // save the user to database
+  Database database=DatabaseLocator.getInstance();
+  database.saveUser(this);
+
+  // send user an activation email
+  EmailService emails=EmailServiceLocator.getInstance();
+  String email="Congragulations, your account has been created";
+  String from=email.getSystemAddress();
+  String to=username+"@"+email.getUserDomain();
+  emails.send(from, to, email);
+}
+}}}
+
+For our usage example the code above is ideal. We can instantiate the `User` object using the standard `new` operator at any point of whatever lifecycle the application has. We can also safely put it into `HttpSession` object, because 
+
+
+However, there are a few problems with this implementation. For one, it tightly couples the `User` class to the two locators we use to retrieve the database and email services. This makes it difficult to test this object because it is difficult to set up and discover the dependencies for a test-case run. To solve this problem and make `User` easily testable we can use an inversion of control container to inject the dependencies into `User`. Lets say we use property-injection. That will transform User code to look like this:
+
+{{{
+public class User implements Serializable {
+  private Database database;
+  private EmailService emails;
+
+  // getter and setter for database/emails for ioc container to inject the dependencies
+  
+  public void register() {
+    // save the user to database
+    database.saveUser(this);
+
+    // send user an activation email
+    String email="Congragulations, your account has been created";
+    String from=email.getSystemAddress();
+    String to=username+"@"+email.getUserDomain();
+    emails.send(from, to, email);
+  }
+}
+}}}
+
+And our usage will be like so:
+
+{{{
+User user=IOCContainer.makeNew(User.class);
+user.setUsername(form.getUsername());
+user.register();
+httpSession.put("blog.loggedinUser", user);
+}}}
+
+Now our `User` object is very easy to test. In our test-case we can simply instantiate the `User` object and call the appropriate setters to pass in mock objects we can use to facilitate the test.
+
+However, notice that we can no longer use the `new` operator to instantiate an object inside our application code. We have to delegate it to the IOC container so it can inject dependencies. This makes our code cumbersome. Also notice that now the `User` object keeps references to `Database` and `MailService` which means we can no longer put it into http session - because objects in http session are serialized for replication between cluster nodes. 
+
+Enter Salve.
+
+With Salve the `User` class would look like the IOC version:
+
+{{{
+public class User implements Serializable {
+  @Dependency
+  private Database database;
+  @Dependency
+  private EmailService emails;
+
+  // getter and setter for database/emails for ioc container to inject the dependencies
+  
+  public void register() {
+    // save the user to database
+    database.saveUser(this);
+
+    // send user an activation email
+    String email="Congragulations, your account has been created";
+    String from=email.getSystemAddress();
+    String to=username+"@"+email.getUserDomain();
+    emails.send(from, to, email);
+  }
+}
+}}}
+
+And at runtime the Salve agent will rewrite the bytecode to be like the initial version:
+
+{{{
+public class User implements Serializable {
+  public static final salve.Key __key$database=new salve.Key(Database.class);
+  public static final salve.Key __key$emailService=new salve.Key(EmailService.class);
+
+  public void register() {
+    // save the user to database
+    Database __local$database=salve.DepedencyLibrary.locate(__key$database);
+    __local$database.saveUser(this);
+
+    // send user an activation email
+    EmailService __local$emailService=salve.DependencyLibrary.locate(__key$emailService)
+    String email="Congragulations, your account has been created";
+    String from=email.getSystemAddress();
+    String to=username+"@"+email.getUserDomain();
+    __local$emailService.send(from, to, email);
+  }
+}
+}}}
+
+What Salve has done:
+* Generated static variables that contain key objects used to lookup dpeendencies from Salve's DependencyLibrary. In the example the keys only contain the class of dependency, but in reality the keys contain a lot more information.
+* Removed fields with @Dependency annotations
+* Replaced field-read operations to above fields with a local variable and a static lookup
+
+The modified `User` class can now be safely serialized and created using the `new` operator when the salve jvm agent is installed. However, the unmodified bytecode can be easily used inside test-cases where the salve agent is not installed.
