@@ -1,117 +1,138 @@
-Today's applications are complex. They require modularization,
-which in turn requires some sort of dependency management between
-objects in different modules. There are two competing ways
-to achieve dependency management: tightly couple the objects in different modules via static
-lookups, or write decoupled code but introduce an external
-dependency management system such as an inversion of control container.
+Lets take a simple example `User` object. We want the user object to contain data, and to be able to act on that data. The API might look something like this:
 
-Salve brings a third way, a way that combines the pros of the two afore
-mentioned methods, yet avoids all the cons. Salve achieves this by
-postprocessing bytecode, either at runtime as a jvm agent or a classloader,
-or at compile time as an ant task task or a maven plugin.
+{{{
+public class User implements Serializable {
+  /** Gets username property **/
+  public String getUsername() {...};
 
-|| Static lookup || Inversion of Control || Salve || Salve Instrumented ||
-|| {{{
-@Entity
-class User implements Serializable {
-  @GeneratedValue @Id
-  private Long id;
-  
-  private String username;
+  /** Sets username property **/
+  public void setUsername(String username) {...}
+
+  /** Registers a new username within the system */
+  public void register() {
+    // save the user to database
+    // send user an activation email
+   }
+}
+}}}
+
+And desired usage like so:
+
+{{{
+User user=new User();
+user.setUsername(form.getUsername());
+user.register();
+httpSession.put("blog.loggedinUser", user);
+}}}
+
+A simple implementation of the `register()` method might look like something below:
+
+{{{
+public void register() {
+  // save the user to database
+  Database database=DatabaseLocator.getInstance();
+  database.saveUser(this);
+
+  // send user an activation email
+  EmailService emails=EmailServiceLocator.getInstance();
+  String email="Congragulations, your account has been created";
+  String from=email.getSystemAddress();
+  String to=username+"@"+email.getUserDomain();
+  emails.send(from, to, email);
+}
+}}}
+
+For our usage example the code above is ideal. We can instantiate the `User` object using the standard `new` operator at any point of whatever lifecycle the application has. We can also safely put it into `HttpSession` object, because it can be safely serialized - it doesnt hold any direct references to what might be non-serializable services.
+
+
+However, there are a few problems with this implementation. For one, it tightly couples the `User` class to the two locators we use to retrieve the database and email services. This makes it difficult to test this object because it is difficult to set up and discover the dependencies for a test-case run. To solve this problem and make `User` easily testable we can use an inversion of control container to inject the dependencies into `User`. Lets say we use property-injection. That will transform User code to look like this:
+
+{{{
+public class User implements Serializable {
+  private Database database;
+  private EmailService emails;
+
+  // getter and setter for database/emails for ioc container to inject the dependencies
   
   public void register() {
-    SessionFactory factory=
-      SessionFactoryLocator.locate();
-    factory.persist(this);
-    
-    EmailService email=
-      EmailServiceLocator.locate();
-    email.send(email.getSystemAddr(),
-      username+"@"+email.getUserDomain(),
-      "Welcome");
+    // save the user to database
+    database.saveUser(this);
+
+    // send user an activation email
+    String email="Congragulations, your account has been created";
+    String from=email.getSystemAddress();
+    String to=username+"@"+email.getUserDomain();
+    emails.send(from, to, email);
   }
 }
-}}} || {{{
-@Entity
-class User {
-  @GeneratedValue @Id
-  private Long id;
-  
-  private String username;
+}}}
 
-  private SessionFactory factory;
-  
-  private EmailService email;
-  
-  public void setSessionFactory(...) {...}
+And our usage will be like so:
 
-  public void setEmailService(...) {...}
-    
-  public void register() {
-    factory.persist(this);
-    
-    email.send(email.getSystemAddr(),
-      username+"@"+email.getUserDomain(),
-      "Welcome");
-  }
-}
+{{{
+User user=IOCContainer.makeNew(User.class);
+user.setUsername(form.getUsername());
+user.register();
+httpSession.put("blog.loggedinUser", user);
+}}}
 
-}}} || {{{
+Now our `User` object is very easy to test. In our test-case we can simply instantiate the `User` object and call the appropriate setters to pass in mock objects we can use to facilitate the test.
 
-@Entity
-class User implements Serializable {
-  @GeneratedValue @Id
-  private Long id;
-  
-  private String username;
+However, notice that we can no longer use the `new` operator to instantiate an object inside our application code. We have to delegate it to the IOC container so it can inject dependencies. This makes our code cumbersome. Also notice that now the `User` object keeps references to `Database` and `MailService` which means we can no longer put it into http session - because objects in http session are serialized for replication between cluster nodes. 
 
+Because of these limitations programmers usually resort to seprating logic and behavior. The `register()` method and other behavior would move out of the `User` object and into some stateless singleton managed by the IOC container. `User` will be left with data only. This is called the anemic-domain model anti-pattern. Read about it [http://www.martinfowler.com/bliki/AnemicDomainModel.html here] and some remarks [http://www.theserverside.com/patterns/thread.tss?thread_id=31010#172016 here].
+
+Enter Salve.
+
+With Salve the `User` class would look like the IOC version:
+
+{{{
+public class User implements Serializable {
   @Dependency
-  private SessionFactory factory;
-  
+  private Database database;
   @Dependency
-  private EmailService email;
-  
-  // setters are not required but good for testing
-  public void setSessionFactory(...) {...}
+  private EmailService emails;
 
-  public void setEmailService(...) {...}
-    
-  public void register() {
-    factory.persist(this);
-    
-    email.send(email.getSystemAddr(),
-      username+"@"+email.getUserDomain(),
-      "Welcome");
-  }
-}
-
-}}} || {{{
-
-@Entity
-class User implements Serializable {
-  public static final salve.Key __key$factory=
-    new salve.Key(...);
-
-  public static final salve.Key __key$email=
-    new salve.Key(...);
-    
-
-  @GeneratedValue @Id
-  private Long id;
-  
-  private String username;
+  // getter and setter for database/emails for test code to set the dependencies
   
   public void register() {
-    SessionFactory __local$factory=
-      salve.DependencyLibrary.locate(__key$factory);
-    __local$factory.persist(this);
-    
-    EmailService __local$email=
-      salve.DependencyLibrary.locate(__key$email);
-    __local$email.send(__local$email.getSystemAddr(),
-      username+"@"+__local$email.getUserDomain(),
-      "Welcome");
+    // save the user to database
+    database.saveUser(this);
+
+    // send user an activation email
+    String email="Congragulations, your account has been created";
+    String from=email.getSystemAddress();
+    String to=username+"@"+email.getUserDomain();
+    emails.send(from, to, email);
   }
 }
-}}} ||
+}}}
 
+And at runtime the Salve jvm agent will rewrite the bytecode to be like the initial version:
+
+{{{
+public class User implements Serializable {
+  public static final salve.Key __key$database=new salve.Key(Database.class);
+  public static final salve.Key __key$emailService=new salve.Key(EmailService.class);
+
+  public void register() {
+    // save the user to database
+    Database __local$database=salve.DepedencyLibrary.locate(__key$database);
+    __local$database.saveUser(this);
+
+    // send user an activation email
+    String email="Congragulations, your account has been created";
+    String from=email.getSystemAddress();
+    String to=username+"@"+email.getUserDomain();
+    EmailService __local$emailService=salve.DependencyLibrary.locate(__key$emailService)
+    __local$emailService.send(from, to, email);
+  }
+}
+}}}
+
+What Salve agent has done:
+* Generated static variables that contain key objects used to lookup dpeendencies from Salve's DependencyLibrary. In the example the keys only contain the class of dependency, but in reality the keys contain a lot more information.
+* Removed fields with @Dependency annotations (making
+* Replaced field-read operations to above fields with a local variable and a static lookup
+
+The modified `User` class can now be safely serialized and created using the `new` operator when the salve jvm agent is installed. However, the unmodified bytecode can be easily used inside test-cases where the salve agent is not installed.
