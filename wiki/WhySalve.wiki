@@ -76,4 +76,6 @@ Lets take a look at the changes Salve made to the code:
   * Writes to the `email` field are replaced with a noop and a WARN message in the logs. This can be configured to throw an exception instead
   * Reads of the `email` field are replaced with a static lookup into a method-local variable. For instructions on configuring Salve's ConfiguringDependencyLibrary lookups see [ConfiguringDependencyLibrary] page.
 
+Account object is fully testable when its bytecode is not instrumented by Salve, but lightweight, serializable, and injectable when it is.
+
 For instructions on how to configure Salve code instrumentation see the [ConfiguringInstrumentation] page.
