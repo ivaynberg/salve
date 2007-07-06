@@ -72,8 +72,8 @@ public class SalveMojo extends AbstractMojo {
 		});
 
 		getLog().info(
-				String.format("Scanned: %d, Instrumented: %d", scanned,
-						instrumented));
+				String.format("Salve: classes scanned: %d, instrumented: %d",
+						scanned, instrumented));
 
 	}
 
