@@ -1,0 +1,7 @@
+#summary Instructions on building Salve from source code
+#labels Phase-Deploy
+
+  # install maven 2
+  # svn checkout http://salve.googlecode.com/svn/trunk/ salve
+  # cd salve
+  # mvn install
