@@ -17,7 +17,7 @@ public class SpringBeanLocator implements Locator {
 
 	@SuppressWarnings("unchecked")
 	public Object locate(Key key) {
-		SpringId id = key.getAnnotationOfType(SpringId.class);
+		SpringBeanId id = key.getAnnotationOfType(SpringBeanId.class);
 		if (id != null) {
 			return context.getBean(id.value(), key.getDependencyClass());
 		}
