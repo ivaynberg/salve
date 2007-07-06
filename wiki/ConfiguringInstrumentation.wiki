@@ -5,7 +5,7 @@
 Make sure you have salve jars.
 See [BuildingSalve] page for instructions on how to build Salve from source.
 
-== Java5+ JVM Agent ==
+== JVM Agent ==
 === When ===
 Best option for development as no special code post-compilation step is needed, making launching the application directly from an IDE easy. Can also be used at deployment time if access to java command line is available.
 
