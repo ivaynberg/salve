@@ -45,7 +45,7 @@ public class PojoInstrumentor {
 		if (annotatedFields.isEmpty()) {
 			return pojo;
 		} else {
-			System.out.println("INSTRUMENTING: " + pojo.getName());
+			// System.out.println("INSTRUMENTING: " + pojo.getName());
 		}
 
 		// instrument base functionality into class
