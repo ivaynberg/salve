@@ -38,6 +38,9 @@ Make sure salve-guice.jar is in the classpath, and add the following line after 
 DependencyLibrary.addLocator(new GuiceBeanLocator(injector));
 }}}
 
+=== Notes ===
+Because Guice uses implicit-bindings to instantiate object without explcit bindings it makes GuiceBeanLocator hard to chain, therefore it is recommended to be installed as the last locator in the chain
+
 == Custom Integration ==
 Coming soon, for now here is the code to `SpringBeanLocator` which should give a good idea:
 
