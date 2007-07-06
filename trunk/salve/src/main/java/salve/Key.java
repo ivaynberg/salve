@@ -83,9 +83,9 @@ public class Key implements Serializable {
 	@Override
 	public String toString() {
 		return String.format(
-				"[%s injectedType=%s injectedFieldName=%s dependencyType=%s",
-				Key.class.getName(), injectedClass, injectedFieldName,
-				dependencyClass);
+				"[%s dependencyType=%s injectedType=%s injectedFieldName=%s ",
+				Key.class.getName(), dependencyClass, injectedClass,
+				injectedFieldName);
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
