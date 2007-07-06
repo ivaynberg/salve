@@ -1,0 +1,85 @@
+#summary Instructions for configuring Salve's dependency lookups
+#labels Phase-Design,Phase-Deploy,Phase-Implementation
+
+== Overview ==
+Salve uses a simple locator mechanism to lookup dependencies. The locator interface is shown below:
+
+{{{
+public interface salve.Locator {
+  Object locate(salve.Key key);
+}
+}}}
+
+Salve's `DependencyLibrary` object allows registration of multiple locators which are used in order of registration to lookup dependencies. The `Key` object provides meta information about the needed dependency such as its type, name of the field carrying the @Dependency annotation, as well as any additional annotations on that field.
+
+== Spring Integration ==
+
+Configuring Salve to use Spring for dependency lookups is trivial. Simply make sure salve-spring.jar is available on the classpath and add the following line into Spring's application context xml file:
+
+{{{
+<bean class="salve.spring.SalveConfigurator" />
+}}}
+
+Lookups will be performed in the following fashion:
+  # If @SpringBeanId annotation is present on the field the specified bean id is used to lookup the bean from the application context
+  # A lookup of beans by annotated field's type is performed
+    # If no beans are found an error is thrown
+    # If only a single bean of the requested type is found it is used
+    # If more then one bean is found a match is tried on the bean-id and field-name
+    # If no bean-id/field-name match is found an error is thrown
+
+=== Notes ===
+Any dependency lookup performed before the initialization of Spring's application context will not use Salve's spring locator and thus will most likely fail.
+
+== Guice Integration ==
+Coming soon
+
+== Custom Integration ==
+Coming soon, for now here is the code to `SpringBeanLocator` which should give a good idea:
+
+{{{
+
+public class SpringBeanLocator implements Locator {
+	private final ApplicationContext context;
+
+	public SpringBeanLocator(final ApplicationContext context) {
+		super();
+		this.context = context;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Object locate(Key key) {
+		SpringBeanId id = key.getAnnotationOfType(SpringBeanId.class);
+		if (id != null) {
+			return context.getBean(id.value(), key.getDependencyClass());
+		}
+
+		Map<String, Object> beans = context.getBeansOfType(key
+				.getDependencyClass());
+		if (beans.size() == 1) {
+			return beans.values().iterator().next();
+		} else if (beans.size() > 1) {
+			Object bean = beans.get(key.getInjectedFieldName());
+			return bean != null ? bean : null;
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public String toString() {
+		return String.format("[%s context=%s]", getClass().getName(), context
+				.getDisplayName());
+	}
+
+}
+}}}
+
+Installation:
+
+{{{
+DependencyLibrary.addLocator(new SpringBeanLocator(applicationContext));
+}}}
+
+=== Tips ===
+It is a good idea to override `toString()` method of the locator implementation so Salve can provide better error messages.
