@@ -1,4 +1,4 @@
-package salve.agent;
+package salve.bytecode;
 
 import javassist.ClassClassPath;
 import javassist.ClassPool;
@@ -12,9 +12,9 @@ import org.junit.Test;
 import salve.DependencyLibrary;
 import salve.Key;
 import salve.Locator;
-import salve.agent.model.EmailSender;
-import salve.agent.model.User;
-import salve.agent.model.UserStore;
+import salve.bytecode.model.EmailSender;
+import salve.bytecode.model.User;
+import salve.bytecode.model.UserStore;
 
 // TODO align "mailsender" and "emailsender" names in code
 public class PojoInstrumentorTest {
@@ -29,23 +29,6 @@ public class PojoInstrumentorTest {
 		initDependencyLibrary();
 		initPool();
 		initUserClass();
-	}
-
-	private void initUserClass() throws Exception {
-		CtClass user1 = pool.get("salve.agent.model.User");
-		CtClass user2 = new PojoInstrumentor(user1).instrument();
-		userClass = user2.toClass();
-	}
-
-	private void initDependencyLibrary() {
-		locator = EasyMock.createMock(Locator.class);
-		DependencyLibrary.clear();
-		DependencyLibrary.addLocator(locator);
-	}
-
-	private void initPool() {
-		pool = new ClassPool(ClassPool.getDefault());
-		pool.appendClassPath(new ClassClassPath(PojoInstrumentorTest.class));
 	}
 
 	@Test
@@ -118,6 +101,23 @@ public class PojoInstrumentorTest {
 			e.printStackTrace();
 			throw e;
 		}
+	}
+
+	private void initDependencyLibrary() {
+		locator = EasyMock.createMock(Locator.class);
+		DependencyLibrary.clear();
+		DependencyLibrary.addLocator(locator);
+	}
+
+	private void initPool() {
+		pool = new ClassPool(ClassPool.getDefault());
+		pool.appendClassPath(new ClassClassPath(PojoInstrumentorTest.class));
+	}
+
+	private void initUserClass() throws Exception {
+		CtClass user1 = pool.get("salve.bytecode.model.User");
+		CtClass user2 = new PojoInstrumentor(user1).instrument();
+		userClass = user2.toClass();
 	}
 
 }

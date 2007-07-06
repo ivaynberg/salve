@@ -1,4 +1,4 @@
-package salve;
+package salve.bytecode;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -12,24 +12,14 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import salve.Dependency;
+import salve.DependencyLibrary;
+import salve.Key;
+import salve.Locator;
+
 public class ProxyBuilderTest {
 	private static ClassPool pool;
 	private static Class personProxy;
-
-	@BeforeClass
-	public static void init() throws Exception {
-		initPool();
-		initProxy();
-	}
-
-	private static void initProxy() throws Exception {
-		personProxy = new ProxyBuilder(pool, Person.class).build().toClass();
-	}
-
-	private static void initPool() {
-		pool = new ClassPool(ClassPool.getDefault());
-		pool.appendClassPath(new ClassClassPath(ProxyBuilderTest.class));
-	}
 
 	@Test
 	public void testProxyBuilderOnClass() throws Exception {
@@ -135,6 +125,25 @@ public class ProxyBuilderTest {
 
 	}
 
+	@BeforeClass
+	public static void init() throws Exception {
+		initPool();
+		initProxy();
+	}
+
+	private static void initPool() {
+		pool = new ClassPool(ClassPool.getDefault());
+		pool.appendClassPath(new ClassClassPath(ProxyBuilderTest.class));
+	}
+
+	private static void initProxy() throws Exception {
+		personProxy = new ProxyBuilder(pool, Person.class).build().toClass();
+	}
+
+	public interface EmailSender {
+		void send(String from, String to, String msg);
+	}
+
 	public static class Holder {
 		@Dependency
 		public static final Key __key$person = new Key(Person.class,
@@ -163,10 +172,6 @@ public class ProxyBuilderTest {
 			this.name = name;
 		}
 
-	}
-
-	public interface EmailSender {
-		void send(String from, String to, String msg);
 	}
 
 	private class EmailSenderImpl implements EmailSender {

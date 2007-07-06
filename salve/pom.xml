@@ -27,15 +27,22 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+	<artifactId>salve</artifactId>
+	<name>Salve</name>
+
 	<dependencies>
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.4.ga</version>
 		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>2.2</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
-	<artifactId>salve</artifactId>
-	<name>Salve</name>
 </project>
 

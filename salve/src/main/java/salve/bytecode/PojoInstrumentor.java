@@ -1,4 +1,4 @@
-package salve.agent;
+package salve.bytecode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,6 +11,7 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
+import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.annotation.Annotation;
@@ -20,7 +21,6 @@ import salve.Dependency;
 import salve.DependencyLibrary;
 import salve.InjectionStrategy;
 import salve.Key;
-import salve.SalveConstants;
 
 public class PojoInstrumentor {
 	private static final String LOCATOR_METHOD_PREFIX = "__locate";
@@ -44,6 +44,8 @@ public class PojoInstrumentor {
 
 		if (annotatedFields.isEmpty()) {
 			return pojo;
+		} else {
+			System.out.println("INSTRUMENTING: " + pojo.getName());
 		}
 
 		// instrument base functionality into class
@@ -131,15 +133,17 @@ public class PojoInstrumentor {
 		 * be instrumented as well?
 		 */
 		for (CtField field : pojo.getDeclaredFields()) {
-			if (findDependencyAnnot(field) != null) {
-				annotatedFields.add(field);
+			if (!Modifier.isStatic(field.getModifiers())) {
+				if (findDependencyAnnot(field) != null) {
+					annotatedFields.add(field);
+				}
 			}
 		}
 	}
 
 	private Dependency findDependencyAnnot(CtField field)
 			throws ClassNotFoundException {
-		Object[] annots = field.getAnnotations();
+		Object[] annots = field.getAvailableAnnotations();
 		for (Object annot : annots) {
 			if (annot instanceof Dependency) {
 				return (Dependency) annot;
