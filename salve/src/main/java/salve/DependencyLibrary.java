@@ -14,7 +14,8 @@ public class DependencyLibrary {
 		locators.clear();
 	}
 
-	public static final Object locate(Key key) {
+	public static final Object locate(Key key)
+			throws DependencyNotFoundException {
 		for (Locator locator : locators) {
 			Object dependency = locator.locate(key);
 			if (dependency != null) {
@@ -22,8 +23,7 @@ public class DependencyLibrary {
 				return dependency;
 			}
 		}
-		throw new RuntimeException("Could not locate dependency for key: "
-				+ key);
+		throw new DependencyNotFoundException(key);
 	}
 
 	private static void checkType(Object dependency, Key key, Locator locator) {
