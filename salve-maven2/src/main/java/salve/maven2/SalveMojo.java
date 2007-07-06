@@ -1,5 +1,3 @@
-package salve.maven2;
-
 /*
  * Copyright 2001-2005 The Apache Software Foundation.
  *
@@ -15,16 +13,14 @@ package salve.maven2;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package salve.maven2;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileOutputStream;
 
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.NotFoundException;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -32,80 +28,83 @@ import org.apache.maven.project.MavenProject;
 import salve.bytecode.PojoInstrumentor;
 
 /**
- * Goal which touches a timestamp file.
+ * Salve maven2 plugin. This plugin instruments class files before the project
+ * is packaged.
  * 
  * @goal instrument
- * 
+ * @requiresDependencyResolution
  */
 public class SalveMojo extends AbstractMojo {
-	private static final FileFilter CLASS_FILTER = new ExtensionFileFilter(
-			".class");
+
+	private int scanned = 0;
+	private int instrumented = 0;
 
 	/**
+	 * Maven project we are building
+	 * 
 	 * @parameter expression="${project}"
 	 * @required
 	 */
 	private MavenProject project;
 
+	/**
+	 * @see org.apache.maven.plugin.AbstractMojo#execute()
+	 */
 	public void execute() throws MojoExecutionException {
 		final File classes = new File(project.getBuild().getOutputDirectory());
 
+		// make sure target/classes has been created
 		if (!classes.exists()) {
 			throw new IllegalStateException(
 					"target/classes directory does not exist");
 		}
 
-		final ClassPool pool = new ClassPool(ClassPool.getDefault());
-		try {
-			for (Object path : project.getCompileClasspathElements()) {
-				pool.appendClassPath((String) path);
-			}
-			pool.appendClassPath(classes.getAbsolutePath());
-		} catch (NotFoundException e) {
-			// TODO better exception
-			throw new RuntimeException("Could not setup javassist classpath", e);
-		} catch (DependencyResolutionRequiredException e) {
-			// TODO better exception
-			throw new RuntimeException("Could not setup javassist classpath", e);
-		}
+		final ClassPool pool = new ProjectClassPool(project);
 
-		try {
-			CtClass clazz = pool.get("javax.persistence.GeneratedValue");
-			int a = 2;
-			int b = a + 2;
-		} catch (NotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
+		// visit class files and instrument them
 		Directory dir = new Directory(classes);
-		dir.visitFiles(new FilteredFileVisitor(CLASS_FILTER) {
+		dir.visitFiles(new ClassFileVisitor(dir) {
 
 			@Override
-			protected void onAcceptedFile(File file) {
-				String classname = file.getAbsolutePath();
-				classname = classname.substring(classes.getAbsolutePath()
-						.length() + 1, classname.length() - 6);
-				classname = classname.replace(File.separatorChar, '.');
-
-				System.out.println("INSTRUMENTING: " + classname);
-
-				try {
-					CtClass clazz = pool.get(classname);
-					PojoInstrumentor inst = new PojoInstrumentor(clazz);
-					byte[] bytecode = inst.instrument().toBytecode();
-					FileOutputStream fos = new FileOutputStream(file);
-					fos.write(bytecode);
-					fos.flush();
-					fos.close();
-				} catch (Exception e) {
-					// TODO better exception
-					throw new RuntimeException("Could not instrument "
-							+ classname, e);
-				}
+			protected void onClassFile(File file, String className) {
+				instrumentClassFile(pool, file, className);
 			}
-
 		});
 
+		getLog().info(
+				String.format("Scanned: %d, Instrumented: %d", scanned,
+						instrumented));
+
 	}
+
+	/**
+	 * Instruments the specified class file
+	 * 
+	 * @param pool
+	 * @param file
+	 * @param className
+	 */
+	private void instrumentClassFile(final ClassPool pool, File file,
+			String className) {
+
+		getLog().debug("Scanning " + className);
+		scanned++;
+
+		try {
+			CtClass clazz = pool.get(className);
+			PojoInstrumentor inst = new PojoInstrumentor(clazz);
+			boolean instrument = inst.instrument();
+			if (instrument) {
+				getLog().debug("Instrumenting " + className);
+				byte[] bytecode = inst.getInstrumented().toBytecode();
+				FileOutputStream fos = new FileOutputStream(file);
+				fos.write(bytecode);
+				fos.close();
+				instrumented++;
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Could not instrument " + className, e);
+		}
+	}
+
 }

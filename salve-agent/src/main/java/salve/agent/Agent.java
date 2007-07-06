@@ -48,9 +48,13 @@ public class Agent {
 
 				CtClass clazz = pool.get(name);
 				PojoInstrumentor inst = new PojoInstrumentor(clazz);
-				byte[] bytecode = inst.instrument().toBytecode();
-				clazz.detach();
-				return bytecode;
+				if (inst.instrument()) {
+					byte[] bytecode = inst.getInstrumented().toBytecode();
+					clazz.detach();
+					return bytecode;
+				} else {
+					return classfileBuffer;
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException(e);

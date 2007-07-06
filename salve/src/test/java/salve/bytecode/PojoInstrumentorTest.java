@@ -116,7 +116,9 @@ public class PojoInstrumentorTest {
 
 	private void initUserClass() throws Exception {
 		CtClass user1 = pool.get("salve.bytecode.model.User");
-		CtClass user2 = new PojoInstrumentor(user1).instrument();
+		PojoInstrumentor inst = new PojoInstrumentor(user1);
+		inst.instrument();
+		CtClass user2 = inst.getInstrumented();
 		userClass = user2.toClass();
 	}
 

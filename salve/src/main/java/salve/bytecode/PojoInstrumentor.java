@@ -38,14 +38,16 @@ public class PojoInstrumentor {
 		this.pojo = pojo;
 	}
 
-	public CtClass instrument() throws ClassNotFoundException,
+	public CtClass getInstrumented() {
+		return pojo;
+	}
+
+	public boolean instrument() throws ClassNotFoundException,
 			CannotCompileException, NotFoundException {
 		collectAnnotatedFields();
 
 		if (annotatedFields.isEmpty()) {
-			return pojo;
-		} else {
-			// System.out.println("INSTRUMENTING: " + pojo.getName());
+			return false;
 		}
 
 		// instrument base functionality into class
@@ -67,7 +69,7 @@ public class PojoInstrumentor {
 			}
 		}
 
-		return pojo;
+		return true;
 	}
 
 	private void addDependencyKeys() throws CannotCompileException,
