@@ -23,10 +23,10 @@ Configuring Salve to use Spring for dependency lookups is trivial. Simply make s
 Lookups will be performed in the following fashion:
   # If @SpringBeanId annotation is present on the field the specified bean id is used to lookup the bean from the application context
   # A lookup of beans by annotated field's type is performed
-    # If no beans are found an error is thrown
+    # If no beans are found lookup is passed to the next locator in chain
     # If only a single bean of the requested type is found it is used
     # If more than one bean is found a match is tried on the bean-id and field-name
-    # If no bean-id/field-name match is found an error is thrown
+    # If no bean-id/field-name match is found lookup is passed to the next locator in chain 
 
 === Notes ===
 Any dependency lookup performed before the initialization of Spring's application context will not use Salve's spring locator and thus will most likely fail.
