@@ -1,8 +1,11 @@
-package salve;
+package salve.bytecode;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+
+import salve.DependencyLibrary;
+import salve.Key;
 
 import javassist.CannotCompileException;
 import javassist.ClassPool;

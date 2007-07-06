@@ -8,15 +8,13 @@ import java.security.ProtectionDomain;
 import javassist.ByteArrayClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
+import salve.bytecode.PojoInstrumentor;
 
 public class Agent {
 	private static Instrumentation INSTRUMENTATION;
 
 	private static final String[] EXCLUSIONS = { "java/", "sun/", "com/sun",
-			"org/apache/", "org/springframework/", "org/hibernate/", "javax/",
-			"javassist/", "org/mortbay/", "org/slf4j/", "org/xml/", "org/w3c/",
-			"org/aopalliance/", "org/dom4j/", "org/hsqldb/", "net/sf/cglib/",
-			"org/objectweb/", "org/jboss/" };
+			"javax/" };
 
 	public static void premain(String agentArgs, Instrumentation inst) {
 		// ignore double agents
@@ -41,8 +39,8 @@ public class Agent {
 			}
 
 			try {
-				System.out.println(">>> Instrumenting class [" + className
-						+ "]");
+				// System.out.println(">>> Instrumenting class [" + className
+				// + "]");
 				final String name = className.replace("/", ".");
 				ClassPool pool = ClassPool.getDefault();
 				pool.insertClassPath(new ByteArrayClassPath(name,

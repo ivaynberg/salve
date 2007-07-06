@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
+import salve.bytecode.SalveConstants;
+
 public class Key implements Serializable {
 	private final Class<?> dependencyClass;
 

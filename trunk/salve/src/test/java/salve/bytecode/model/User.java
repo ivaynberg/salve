@@ -1,7 +1,7 @@
 /**
  * 
  */
-package salve.agent.model;
+package salve.bytecode.model;
 
 import salve.Dependency;
 import salve.InjectionStrategy;

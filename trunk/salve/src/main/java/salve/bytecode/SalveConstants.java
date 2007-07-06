@@ -1,4 +1,4 @@
-package salve;
+package salve.bytecode;
 
 public class SalveConstants {
 	private SalveConstants() {
