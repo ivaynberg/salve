@@ -1,5 +1,5 @@
 #summary Instructions for configuring Salve's dependency lookups
-#labels Phase-Design,Phase-Deploy,Phase-Implementation
+#labels Phase-Design,Phase-Deploy,Phase-Implementation,Featured
 
 == Overview ==
 Salve uses a simple locator mechanism to lookup dependencies. The locator interface is shown below:
@@ -25,7 +25,7 @@ Lookups will be performed in the following fashion:
   # A lookup of beans by annotated field's type is performed
     # If no beans are found an error is thrown
     # If only a single bean of the requested type is found it is used
-    # If more then one bean is found a match is tried on the bean-id and field-name
+    # If more than one bean is found a match is tried on the bean-id and field-name
     # If no bean-id/field-name match is found an error is thrown
 
 === Notes ===
