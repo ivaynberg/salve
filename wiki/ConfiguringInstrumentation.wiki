@@ -1,5 +1,5 @@
 #summary Instructions on configuring Salve's bytecode postprocessing
-#labels Phase-Deploy
+#labels Phase-Deploy,Featured
 
 == Prerequisites ==
 Make sure you have salve jars.
