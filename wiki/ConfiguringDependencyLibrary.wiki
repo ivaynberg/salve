@@ -32,7 +32,11 @@ Lookups will be performed in the following fashion:
 Any dependency lookup performed before the initialization of Spring's application context will not use Salve's spring locator and thus will most likely fail.
 
 == Guice Integration ==
-Coming soon
+Make sure salve-guice.jar is in the classpath, and add the following line after you have constructed the Guice Injector:
+
+{{{
+DependencyLibrary.addLocator(new GuiceBeanLocator(injector));
+}}}
 
 == Custom Integration ==
 Coming soon, for now here is the code to `SpringBeanLocator` which should give a good idea:
