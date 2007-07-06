@@ -3,7 +3,8 @@
 
 == Java5+ JVM Agent ==
 === When ===
-Best option for development as no special code post-compilation step is needed, making launching the application directly from an IDE easy.
+Best option for development as no special code post-compilation step is needed, making launching the application directly from an IDE easy. Can also be used at deployment time if access to java command line is available.
+
 === How ===
 To enable the agent add the following JVM option to the startup command:
 {{{
