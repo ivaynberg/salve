@@ -1,5 +1,5 @@
 package salve.spring;
 
-public @interface SpringId {
+public @interface SpringBeanId {
 	String value();
 }
