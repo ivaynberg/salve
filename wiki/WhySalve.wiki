@@ -1,138 +1,77 @@
-Lets take a simple example `User` object. We want the user object to contain data, and to be able to act on that data. The API might look something like this:
+#labels Featured,Phase-Requirements,Phase-Design
+Salve aims to fix the anemic domain model anti-pattern present in most modern java web-applications. 
+
+With technologies like ORM we are able to model domain layer objects that contain application data, but we are unable to enrich them with behavior to act upon that data. The behavior is factored out into stateless singleton objects called services. This is done for the following reasons:
+* Dependency Management: Objects modeled by the domain layer depend on services provided by other parts of the application, such as jms/email/orm/database. It is much easier to provide these dependencies to an object whose lifecycle is managed by an IOC container rather then to one whose lifecycle is handled by the ORM framework or by the user using the `new` operator.
+* Testability: The two concerns above can be addressed by allowing objects to lookup their dependencies inside methods (rather then keeping them as fields) via some sort of a static lookup. However this makes it more difficult to test the object because its dependencies are harder to discover and mocks are harder to pass in - compared to objects that use setter methods to set their dependencies.
+* Instance weight: Domain layer objects need to be lightweight because they are often passed around between application layers/cluster nodes, and sometimes stored by the user for later reference. This often entails having the ability to be serializable which means these objects cannot carry references to heavy objects that would significantly increase their serialized-size, or carry references to objects that are not themselves serializable or should not be serialized - such as singletons.
+
+== How Salve Fixes the Problem ==
+The ideal solution would allow domain layer objects to be lightweight, contain business logic, and have dependency injection that works under any lifecycle. One way to achieve this would be to allow the developer to specify dependencies as fields, and then rewrite the bytecode removing those fields from the class and replacing access to them via a static lookup into whatever IOC container/dependency management system the application is using when the application is deployed. Such a scheme would allow setter methods on those objects to set dependencies when the objects are under test and yet remove the weight of those fields when objects are deployed. This is how Salve works. Lets take a look at a quick example:
 
 {{{
-public class User implements Serializable {
-  /** Gets username property **/
-  public String getUsername() {...};
+// This is a JPA entity
+@javax.persistence.Entity public class Acount {
 
-  /** Sets username property **/
-  public void setUsername(String username) {...}
+  // this is a dependency we wish Salve to instrument
+  @javax.persistence.Transient @salve.Dependency
+  private EmailService email;
 
-  /** Registers a new username within the system */
-  public void register() {
-    // save the user to database
-    // send user an activation email
-   }
-}
-}}}
+  // this is database id of this account
+  @javax.persistence.Id
+  private Long id;
 
-And desired usage like so:
+  // this is a JPA field
+  private float balance;
 
-{{{
-User user=new User();
-user.setUsername(form.getUsername());
-user.register();
-httpSession.put("blog.loggedinUser", user);
-}}}
+  // setters and getters for email and balance, and id fields
 
-A simple implementation of the `register()` method might look like something below:
-
-{{{
-public void register() {
-  // save the user to database
-  Database database=DatabaseLocator.getInstance();
-  database.saveUser(this);
-
-  // send user an activation email
-  EmailService emails=EmailServiceLocator.getInstance();
-  String email="Congragulations, your account has been created";
-  String from=email.getSystemAddress();
-  String to=username+"@"+email.getUserDomain();
-  emails.send(from, to, email);
-}
-}}}
-
-For our usage example the code above is ideal. We can instantiate the `User` object using the standard `new` operator at any point of whatever lifecycle the application has. We can also safely put it into `HttpSession` object, because it can be safely serialized - it doesnt hold any direct references to what might be non-serializable services.
-
-
-However, there are a few problems with this implementation. For one, it tightly couples the `User` class to the two locators we use to retrieve the database and email services. This makes it difficult to test this object because it is difficult to set up and discover the dependencies for a test-case run. To solve this problem and make `User` easily testable we can use an inversion of control container to inject the dependencies into `User`. Lets say we use property-injection. That will transform User code to look like this:
-
-{{{
-public class User implements Serializable {
-  private Database database;
-  private EmailService emails;
-
-  // getter and setter for database/emails for ioc container to inject the dependencies
-  
-  public void register() {
-    // save the user to database
-    database.saveUser(this);
-
-    // send user an activation email
-    String email="Congragulations, your account has been created";
-    String from=email.getSystemAddress();
-    String to=username+"@"+email.getUserDomain();
-    emails.send(from, to, email);
+  public void withdraw(float amount) {
+    if (amount>balance) {
+      email.sendOverdrawMessage(this);
+    }
+    balance-=amount;
   }
 }
 }}}
 
-And our usage will be like so:
+Without Salve such an object is not practical: there is no good way to set the `EmailService` dependency, and there is no good way to have `Account` be serializable.
 
+When the bytecode of Account class is processed by Salve, it will look like this:
 {{{
-User user=IOCContainer.makeNew(User.class);
-user.setUsername(form.getUsername());
-user.register();
-httpSession.put("blog.loggedinUser", user);
-}}}
+@javax.persistence.Entity public class Acount {
 
-Now our `User` object is very easy to test. In our test-case we can simply instantiate the `User` object and call the appropriate setters to pass in mock objects we can use to facilitate the test.
+  // added by salve to facilitate lookup of email service dependency
+  public static final salve.Key __key$email=new salve.Key(...);
 
-However, notice that we can no longer use the `new` operator to instantiate an object inside our application code. We have to delegate it to the IOC container so it can inject dependencies. This makes our code cumbersome. Also notice that now the `User` object keeps references to `Database` and `MailService` which means we can no longer put it into http session - because objects in http session are serialized for replication between cluster nodes. 
+  // email field is removed
 
-Because of these limitations programmers usually resort to seprating logic and behavior. The `register()` method and other behavior would move out of the `User` object and into some stateless singleton managed by the IOC container. `User` will be left with data only. This is called the anemic-domain model anti-pattern. Read about it [http://www.martinfowler.com/bliki/AnemicDomainModel.html here] and some remarks [http://www.theserverside.com/patterns/thread.tss?thread_id=31010#172016 here].
+  @javax.persistence.Id
+  private Long id;
 
-Enter Salve.
+  private float balance;
 
-With Salve the `User` class would look like the IOC version:
+  // setters and getters for email and balance, and id fields
 
-{{{
-public class User implements Serializable {
-  @Dependency
-  private Database database;
-  @Dependency
-  private EmailService emails;
+  // salve will rewrite field write in setter with a 
+  // noop and a WARN log message
 
-  // getter and setter for database/emails for test code to set the dependencies
-  
-  public void register() {
-    // save the user to database
-    database.saveUser(this);
+  public void withdraw(float amount) {
+    // dependencies are looked up only when referenced in the method
+    // dependencies are looked up lazily
+    EmailService __local$email=salve.DependencyLibrary.lookup(__key$email);
 
-    // send user an activation email
-    String email="Congragulations, your account has been created";
-    String from=email.getSystemAddress();
-    String to=username+"@"+email.getUserDomain();
-    emails.send(from, to, email);
+    if (amount>balance) {
+      __local$email.sendOverdrawMessage(this);
+    }
+    balance-=amount;
   }
 }
 }}}
 
-And at runtime the Salve jvm agent will rewrite the bytecode to be like the initial version:
+Lets take a look at the changes Salve made to the code:
+* EmailService email field is removed - removing a reference to a heavy service object and making Account lightweight
+* Writes to the email field are replaced with a noop and a WARN message in the logs. This can be configured to throw an exception instead
+* Reads of the email field are replaced with a static lookup into a method-local variable. For instructions on configuring Salve's DependencyLibrary lookups see [ConfiguringDependencyLibrary] page.
 
-{{{
-public class User implements Serializable {
-  public static final salve.Key __key$database=new salve.Key(Database.class);
-  public static final salve.Key __key$emailService=new salve.Key(EmailService.class);
-
-  public void register() {
-    // save the user to database
-    Database __local$database=salve.DepedencyLibrary.locate(__key$database);
-    __local$database.saveUser(this);
-
-    // send user an activation email
-    String email="Congragulations, your account has been created";
-    String from=email.getSystemAddress();
-    String to=username+"@"+email.getUserDomain();
-    EmailService __local$emailService=salve.DependencyLibrary.locate(__key$emailService)
-    __local$emailService.send(from, to, email);
-  }
-}
-}}}
-
-What Salve agent has done:
-* Generated static variables that contain key objects used to lookup dpeendencies from Salve's DependencyLibrary. In the example the keys only contain the class of dependency, but in reality the keys contain a lot more information.
-* Removed fields with @Dependency annotations (making
-* Replaced field-read operations to above fields with a local variable and a static lookup
-
-The modified `User` class can now be safely serialized and created using the `new` operator when the salve jvm agent is installed. However, the unmodified bytecode can be easily used inside test-cases where the salve agent is not installed.
+For instructions on how to configure Salve code instrumentation see the [ConfiguringInstrumentation] page.
