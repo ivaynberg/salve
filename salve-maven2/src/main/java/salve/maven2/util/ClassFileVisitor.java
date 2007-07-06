@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package salve.maven2;
+package salve.maven2.util;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -43,7 +43,7 @@ public abstract class ClassFileVisitor extends FilteredFileVisitor {
 	}
 
 	/**
-	 * @see salve.maven2.FilteredFileVisitor#onAcceptedFile(java.io.File)
+	 * @see salve.maven2.util.FilteredFileVisitor#onAcceptedFile(java.io.File)
 	 */
 	@Override
 	protected final void onAcceptedFile(File file) {

@@ -13,38 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package salve.maven2;
+package salve.maven2.util;
 
 import java.io.File;
-import java.io.FileFilter;
 
 /**
- * File filter that filters based on file extension
+ * File visitor
  * 
  * @author ivaynberg
  * 
  */
-public class ExtensionFileFilter implements FileFilter {
-	private final String extension;
-
+public interface FileVisitor {
 	/**
-	 * Constructor
+	 * Called when a file is visited
 	 * 
-	 * @param extension
-	 *            extension to filter on
+	 * @param file
+	 *            visited file
 	 */
-	public ExtensionFileFilter(String extension) {
-		super();
-		this.extension = extension;
-		if (!extension.startsWith(".")) {
-			extension = "." + extension;
-		}
-	}
-
-	/**
-	 * @see java.io.FileFilter#accept(java.io.File)
-	 */
-	public boolean accept(File pathname) {
-		return pathname.getName().endsWith(extension);
-	}
+	void onFile(File file);
 }
