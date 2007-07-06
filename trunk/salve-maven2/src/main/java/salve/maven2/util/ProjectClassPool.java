@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package salve.maven2;
+package salve.maven2.util;
 
 import javassist.ClassPool;
 

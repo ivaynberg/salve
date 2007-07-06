@@ -26,6 +26,9 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
 import salve.bytecode.PojoInstrumentor;
+import salve.maven2.util.ClassFileVisitor;
+import salve.maven2.util.Directory;
+import salve.maven2.util.ProjectClassPool;
 
 /**
  * Salve maven2 plugin. This plugin instruments class files before the project
