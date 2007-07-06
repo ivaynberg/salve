@@ -70,8 +70,8 @@ When the bytecode of Account class is processed by Salve, it will look like this
 }}}
 
 Lets take a look at the changes Salve made to the code:
-  * EmailService email field is removed - removing a reference to a heavy service object and making Account lightweight
-  * Writes to the email field are replaced with a noop and a WARN message in the logs. This can be configured to throw an exception instead
-  * Reads of the email field are replaced with a static lookup into a method-local variable. For instructions on configuring Salve's DependencyLibrary lookups see [ConfiguringDependencyLibrary] page.
+  * `EmailService email` field is removed - removing a reference to a heavy service object and making `Account` lightweight
+  * Writes to the `email` field are replaced with a noop and a WARN message in the logs. This can be configured to throw an exception instead
+  * Reads of the `email` field are replaced with a static lookup into a method-local variable. For instructions on configuring Salve's DependencyLibrary lookups see [ConfiguringDependencyLibrary] page.
 
 For instructions on how to configure Salve code instrumentation see the [ConfiguringInstrumentation] page.
