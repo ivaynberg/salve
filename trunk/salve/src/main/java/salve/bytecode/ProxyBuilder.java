@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 
-import salve.DependencyLibrary;
-import salve.Key;
-
 import javassist.CannotCompileException;
+import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -16,17 +14,14 @@ import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import salve.DependencyLibrary;
+import salve.Key;
 
 public class ProxyBuilder {
-	private final ClassPool pool;
-
-	private final CtClass target;
-
-	private CtClass proxy;
-
 	private static final String PROXY_CLASS_SUFFIX = "$InjectorProxy";
 
 	private static final String DELEGATE_FIELD = "__$delegate";
+
 	private static final String KEY_FIELD = "__$key";
 
 	private static final String[] PARAMS_CACHE = { "", "$1", "$1,$2",
@@ -34,10 +29,16 @@ public class ProxyBuilder {
 			"$1,$2,$3,$4,$5,$6,$7", "$1,$2,$3,$4,$5,$6,$7,$8",
 			"$1,$2,$3,$4,$5,$6,$7,$8,$9", "$1,$2,$3,$4,$5,$6,$7,$8,$9,$10" };
 
-	public ProxyBuilder(final ClassPool pool, CtClass target) {
+	private final ClassPool pool;
+	private final CtClass target;
+
+	private CtClass proxy;
+
+	public ProxyBuilder(Class target) throws NotFoundException {
 		super();
-		this.pool = pool;
-		this.target = target;
+		pool = ClassPool.getDefault();
+		pool.appendClassPath(new ClassClassPath(target));
+		this.target = pool.get(target.getName());
 	}
 
 	public ProxyBuilder(final ClassPool pool, Class target)
@@ -45,6 +46,12 @@ public class ProxyBuilder {
 		super();
 		this.pool = pool;
 		this.target = pool.get(target.getName());
+	}
+
+	public ProxyBuilder(final ClassPool pool, CtClass target) {
+		super();
+		this.pool = pool;
+		this.target = target;
 	}
 
 	public CtClass build() throws CannotCompileException, NotFoundException {
@@ -65,35 +72,27 @@ public class ProxyBuilder {
 		return proxy;
 	}
 
-	private void addSerializationSupport() throws NotFoundException,
-			CannotCompileException {
-		proxy.addInterface(pool.get(Serializable.class.getName()));
-
-		StringBuilder body = new StringBuilder();
-		body.append("{").append("$1.defaultReadObject();").append(
-				DELEGATE_FIELD).append("=(").append(target.getName()).append(
-				")").append(DependencyLibrary.class.getName()).append(
-				".locate(").append(KEY_FIELD).append(");}");
-		CtMethod method = CtNewMethod.make(Modifier.PRIVATE, CtClass.voidType,
-				"readObject", new CtClass[] { pool.get(ObjectInputStream.class
-						.getName()) }, new CtClass[] {
-						pool.get(IOException.class.getName()),
-						pool.get(ClassNotFoundException.class.getName()) },
-				body.toString(), proxy);
-		proxy.addMethod(method);
-
-		// private void readObject(java.io.ObjectInputStream in) throws
-		// IOException, ClassNotFoundException;
-
-	}
-
-	private void addDelegatorMethods() throws CannotCompileException,
-			NotFoundException {
-		for (CtMethod method : target.getMethods()) {
-			if (acceptMethod(method)) {
-				addDelegatorMethod(method);
-			}
+	private boolean acceptMethod(CtMethod method) {
+		final int modifiers = method.getModifiers();
+		if (Modifier.isStatic(modifiers)) {
+			return false;
 		}
+		if (!Modifier.isPublic(modifiers)) {
+			return false;
+		}
+		if (Object.class.getName().equals(method.getDeclaringClass().getName())) {
+			if ("hashCode".equals(method.getName())) {
+				return true;
+			}
+			if ("equals".equals(method.getName())) {
+				return true;
+			}
+			if ("toString".equals(method.getName())) {
+				return true;
+			}
+			return false;
+		}
+		return true;
 	}
 
 	private void addConstructor() throws CannotCompileException,
@@ -109,19 +108,6 @@ public class ProxyBuilder {
 		code.append("}");
 		init.setBody(code.toString());
 		proxy.addConstructor(init);
-	}
-
-	private void addFields() throws CannotCompileException, NotFoundException {
-		CtField delegate = new CtField(target, DELEGATE_FIELD, proxy);
-		delegate.setModifiers(Modifier.PRIVATE | Modifier.FINAL
-				| Modifier.TRANSIENT);
-
-		proxy.addField(delegate);
-
-		CtField key = new CtField(pool.get(Key.class.getName()), KEY_FIELD,
-				proxy);
-		key.setModifiers(Modifier.PRIVATE | Modifier.FINAL);
-		proxy.addField(key);
 	}
 
 	private void addDelegatorMethod(CtMethod method)
@@ -150,6 +136,50 @@ public class ProxyBuilder {
 		proxy.addMethod(delegator);
 	}
 
+	private void addDelegatorMethods() throws CannotCompileException,
+			NotFoundException {
+		for (CtMethod method : target.getMethods()) {
+			if (acceptMethod(method)) {
+				addDelegatorMethod(method);
+			}
+		}
+	}
+
+	private void addFields() throws CannotCompileException, NotFoundException {
+		CtField delegate = new CtField(target, DELEGATE_FIELD, proxy);
+		delegate.setModifiers(Modifier.PRIVATE | Modifier.FINAL
+				| Modifier.TRANSIENT);
+
+		proxy.addField(delegate);
+
+		CtField key = new CtField(pool.get(Key.class.getName()), KEY_FIELD,
+				proxy);
+		key.setModifiers(Modifier.PRIVATE | Modifier.FINAL);
+		proxy.addField(key);
+	}
+
+	private void addSerializationSupport() throws NotFoundException,
+			CannotCompileException {
+		proxy.addInterface(pool.get(Serializable.class.getName()));
+
+		StringBuilder body = new StringBuilder();
+		body.append("{").append("$1.defaultReadObject();").append(
+				DELEGATE_FIELD).append("=(").append(target.getName()).append(
+				")").append(DependencyLibrary.class.getName()).append(
+				".locate(").append(KEY_FIELD).append(");}");
+		CtMethod method = CtNewMethod.make(Modifier.PRIVATE, CtClass.voidType,
+				"readObject", new CtClass[] { pool.get(ObjectInputStream.class
+						.getName()) }, new CtClass[] {
+						pool.get(IOException.class.getName()),
+						pool.get(ClassNotFoundException.class.getName()) },
+				body.toString(), proxy);
+		proxy.addMethod(method);
+
+		// private void readObject(java.io.ObjectInputStream in) throws
+		// IOException, ClassNotFoundException;
+
+	}
+
 	private void codegenParamsList(CtMethod method, StringBuilder code)
 			throws NotFoundException {
 		final int params = method.getParameterTypes().length;
@@ -161,28 +191,5 @@ public class ProxyBuilder {
 				code.append(",$").append(i + 1);
 			}
 		}
-	}
-
-	private boolean acceptMethod(CtMethod method) {
-		final int modifiers = method.getModifiers();
-		if (Modifier.isStatic(modifiers)) {
-			return false;
-		}
-		if (!Modifier.isPublic(modifiers)) {
-			return false;
-		}
-		if (Object.class.getName().equals(method.getDeclaringClass().getName())) {
-			if ("hashCode".equals(method.getName())) {
-				return true;
-			}
-			if ("equals".equals(method.getName())) {
-				return true;
-			}
-			if ("toString".equals(method.getName())) {
-				return true;
-			}
-			return false;
-		}
-		return true;
 	}
 }

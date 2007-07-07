@@ -72,6 +72,8 @@ public class PojoInstrumentorTest {
 
 			EasyMock.verify(locator, es, us);
 
+			UserStore ust = user.getStore();
+
 			// make sure we replaced field write with a noop for an injected
 			// field
 			user.setStore(new UserStore() {
@@ -79,7 +81,7 @@ public class PojoInstrumentorTest {
 				public void save(User person) {
 				}
 			});
-			Assert.assertTrue(user.getStore() == us);
+			Assert.assertTrue(ust == user.getStore());
 
 			// make sure we replaced field write with a noop for a removed field
 			user.setMailSender(new EmailSender() {
