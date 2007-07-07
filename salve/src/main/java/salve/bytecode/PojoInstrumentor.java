@@ -107,17 +107,37 @@ public class PojoInstrumentor {
 			if (dep.strategy() != InjectionStrategy.REMOVE_FIELD) {
 
 				final String type = field.getType().getName();
+				final String typeclass = type + ".class";
 				final String name = locatorMethodName(field);
 				final String lib = DependencyLibrary.class.getName();
 				final String fn = field.getName();
 
-				final String src = "private " + type + " " + name + "() { if ("
-						+ fn + "==null) { " + fn + "= (" + type + ")"
-						+ LOCATOR_CALL + "("
-						+ SalveConstants.keyFieldName(field.getName())
-						+ ");} return " + fn + ";}";
+				final StringBuilder code = new StringBuilder();
+				code.append("private ").append(type).append(" ").append(name)
+						.append("() {");
 
-				CtMethod locator = CtNewMethod.make(src, pojo);
+				code.append("if (").append(fn).append("==null) {");
+
+				// Class proxy=new
+				// salve.bytecode.ProxyBuilder(typeclass).build().toClass();
+				code
+						.append(
+								"java.lang.Class proxy=new salve.bytecode.ProxyBuilder(")
+						.append(typeclass).append(").build().toClass();");
+
+				// fn=(type) proxy.getConstructor(new Class[] { salve.Key.class
+				// }).newInstance(new Object[] { key });
+
+				code
+						.append(fn)
+						.append("=(")
+						.append(type)
+						.append(
+								") proxy.getConstructor(new Class[] { salve.Key.class }).newInstance(new Object[] { ")
+						.append(SalveConstants.keyFieldName(field.getName()))
+						.append("});");
+				code.append("} return ").append(fn).append(";}");
+				CtMethod locator = CtNewMethod.make(code.toString(), pojo);
 				pojo.addMethod(locator);
 			}
 		}
