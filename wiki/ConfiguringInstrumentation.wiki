@@ -5,6 +5,18 @@
 Make sure you have salve jars.
 See [BuildingSalve] page for instructions on how to build Salve from source.
 
+You need a small configuration file telling salve which instrumentors to run. This file is kept in META-INF/salve.xml, and usually looks like this:
+
+{{{
+<config>
+	<package name="<base.package>">
+		<instrumentor class="salve.dependency.DependencyInstrumentor"/>
+	</package>
+</config>
+}}}
+
+Replace <base.package> with the base package name of your application. For example: `com.mycomp.myapp`
+
 == JVM Agent ==
 === When ===
 Best option for development as no special code post-compilation step is needed, making launching the application directly from an IDE easy. Can also be used at deployment time if access to java command line is available.
