@@ -1,7 +1,7 @@
-package salve.bytecode;
+package salve.dependency.impl;
 
-public class SalveConstants {
-	private SalveConstants() {
+public class DependencyConstants {
+	private DependencyConstants() {
 
 	}
 

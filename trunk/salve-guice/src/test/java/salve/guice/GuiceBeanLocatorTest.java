@@ -8,12 +8,12 @@ import junit.framework.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.DependencyLibrary;
-import salve.Locator;
-import salve.bytecode.PojoInstrumentor;
+import salve.dependency.DependencyLibrary;
+import salve.dependency.Locator;
+import salve.dependency.impl.PojoInstrumentor;
 import salve.guice.model.Blue;
 import salve.guice.model.Injected;
-import salve.guice.model.TestService;
+import salve.guice.model.MockService;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -29,14 +29,14 @@ public class GuiceBeanLocatorTest {
 
 	@Test
 	public void testLookupByType() {
-		TestService ts = ((Injected) injected).getTestService();
+		MockService ts = ((Injected) injected).getTestService();
 		Assert.assertNotNull(ts);
 		Assert.assertEquals(ts.getName(), ts.getClass().getName());
 	}
 
 	@Test
 	public void testLookupByTypeAndAnnot() {
-		TestService ts = ((Injected) injected).getBlueTestService();
+		MockService ts = ((Injected) injected).getBlueTestService();
 		Assert.assertNotNull(ts);
 		Assert.assertEquals(ts.getName(), "BlueTestService");
 	}
@@ -52,11 +52,11 @@ public class GuiceBeanLocatorTest {
 
 			@Override
 			protected void configure() {
-				bind(TestService.class).in(Scopes.SINGLETON);
+				bind(MockService.class).in(Scopes.SINGLETON);
 
-				Key<TestService> blueKey = Key.get(TestService.class,
+				Key<MockService> blueKey = Key.get(MockService.class,
 						Blue.class);
-				bind(blueKey).toInstance(new TestService("BlueTestService"));
+				bind(blueKey).toInstance(new MockService("BlueTestService"));
 
 			}
 

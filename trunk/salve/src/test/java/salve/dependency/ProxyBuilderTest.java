@@ -1,4 +1,4 @@
-package salve.bytecode;
+package salve.dependency;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -12,10 +12,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.Dependency;
-import salve.DependencyLibrary;
-import salve.Key;
-import salve.Locator;
+import salve.dependency.Dependency;
+import salve.dependency.DependencyLibrary;
+import salve.dependency.Key;
+import salve.dependency.Locator;
+import salve.dependency.impl.ProxyBuilder;
 
 public class ProxyBuilderTest {
 	private static ClassPool pool;

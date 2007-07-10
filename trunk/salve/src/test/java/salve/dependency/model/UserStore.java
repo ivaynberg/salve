@@ -1,7 +1,7 @@
 /**
  * 
  */
-package salve.bytecode.model;
+package salve.dependency.model;
 
 public interface UserStore {
 	void save(User person);

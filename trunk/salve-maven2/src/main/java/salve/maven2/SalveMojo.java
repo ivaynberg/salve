@@ -16,6 +16,8 @@
 package salve.maven2;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 import javassist.ClassPool;
@@ -25,9 +27,14 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
-import salve.bytecode.PojoInstrumentor;
+import salve.Instrumentor;
+import salve.config.Config;
+import salve.config.ConfigException;
+import salve.config.PackageConfig;
+import salve.config.XmlConfigReader;
 import salve.maven2.util.ClassFileVisitor;
 import salve.maven2.util.Directory;
+import salve.maven2.util.ProjectClassLoader;
 import salve.maven2.util.ProjectClassPool;
 
 /**
@@ -41,6 +48,9 @@ public class SalveMojo extends AbstractMojo {
 
 	private int scanned = 0;
 	private int instrumented = 0;
+	private final Config config = new Config();
+	private ClassPool pool;
+	private ClassLoader loader;
 
 	/**
 	 * Maven project we are building
@@ -54,6 +64,9 @@ public class SalveMojo extends AbstractMojo {
 	 * @see org.apache.maven.plugin.AbstractMojo#execute()
 	 */
 	public void execute() throws MojoExecutionException {
+		pool = new ProjectClassPool(project);
+		loader = new ProjectClassLoader(project);
+
 		final File classes = new File(project.getBuild().getOutputDirectory());
 
 		// make sure target/classes has been created
@@ -62,7 +75,7 @@ public class SalveMojo extends AbstractMojo {
 					"target/classes directory does not exist");
 		}
 
-		final ClassPool pool = new ProjectClassPool(project);
+		loadConfig(classes);
 
 		// visit class files and instrument them
 		Directory dir = new Directory(classes);
@@ -70,7 +83,7 @@ public class SalveMojo extends AbstractMojo {
 
 			@Override
 			protected void onClassFile(File file, String className) {
-				instrumentClassFile(pool, file, className);
+				instrumentClassFile(className, file);
 			}
 		});
 
@@ -83,30 +96,56 @@ public class SalveMojo extends AbstractMojo {
 	/**
 	 * Instruments the specified class file
 	 * 
-	 * @param pool
-	 * @param file
 	 * @param className
+	 * @param file
 	 */
-	private void instrumentClassFile(final ClassPool pool, File file,
-			String className) {
+	private void instrumentClassFile(String className, File file) {
 
 		getLog().debug("Scanning " + className);
 		scanned++;
 
 		try {
-			CtClass clazz = pool.get(className);
-			PojoInstrumentor inst = new PojoInstrumentor(clazz);
-			boolean instrument = inst.instrument();
-			if (instrument) {
-				getLog().debug("Instrumenting " + className);
-				byte[] bytecode = inst.getInstrumented().toBytecode();
-				FileOutputStream fos = new FileOutputStream(file);
-				fos.write(bytecode);
-				fos.close();
-				instrumented++;
+			PackageConfig conf = config.getPackageConfig(className);
+			if (conf != null) {
+				for (Instrumentor inst : conf.getInstrumentors()) {
+					getLog().debug("Instrumenting " + className);
+					CtClass clazz = pool.get(className);
+					byte[] bytecode = inst.instrument(loader, className, clazz
+							.toBytecode());
+					FileOutputStream fos = new FileOutputStream(file);
+					fos.write(bytecode);
+					fos.close();
+					instrumented++;
+				}
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Could not instrument " + className, e);
+		}
+	}
+
+	/**
+	 * @param classes
+	 * @throws MojoExecutionException
+	 */
+	private void loadConfig(final File classes) throws MojoExecutionException {
+
+		final File salvexml = new File(classes, "META-INF" + File.separator
+				+ "salve.xml");
+		if (!salvexml.exists()) {
+			throw new MojoExecutionException(
+					"Could not locate salve config file: " + salvexml);
+		}
+
+		XmlConfigReader reader = new XmlConfigReader(new ProjectClassLoader(
+				project));
+		try {
+			reader.read(new FileInputStream(salvexml), config);
+		} catch (FileNotFoundException e) {
+			throw new MojoExecutionException("Could not open " + salvexml
+					+ " for reading");
+		} catch (ConfigException e) {
+			throw new MojoExecutionException(
+					"Could not configure salve instrumentation", e);
 		}
 	}
 
