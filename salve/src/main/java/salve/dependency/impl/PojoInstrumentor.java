@@ -1,9 +1,14 @@
-package salve.bytecode;
+package salve.dependency.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import salve.dependency.Dependency;
+import salve.dependency.DependencyLibrary;
+import salve.dependency.InjectionStrategy;
+import salve.dependency.Key;
 
 import javassist.CannotCompileException;
 import javassist.CtBehavior;
@@ -17,10 +22,6 @@ import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.annotation.Annotation;
 import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
-import salve.Dependency;
-import salve.DependencyLibrary;
-import salve.InjectionStrategy;
-import salve.Key;
 
 public class PojoInstrumentor {
 	private static final String LOCATOR_METHOD_PREFIX = "__locate";
@@ -77,7 +78,8 @@ public class PojoInstrumentor {
 		// TODO inner non-static classes cannot have static fields :|
 		for (CtField field : annotatedFields) {
 			final String type = Key.class.getName();
-			final String name = SalveConstants.keyFieldName(field.getName());
+			final String name = DependencyConstants.keyFieldName(field
+					.getName());
 
 			// key field is public instead of private to avoid pain of using
 			// reflection when retrieving annots
@@ -120,21 +122,19 @@ public class PojoInstrumentor {
 
 				// Class proxy=new
 				// salve.bytecode.ProxyBuilder(typeclass).build().toClass();
-				code
-						.append(
-								"java.lang.Class proxy=new salve.bytecode.ProxyBuilder(")
-						.append(typeclass).append(").build().toClass();");
+				code.append("java.lang.Class proxy=new ").append(
+						ProxyBuilder.class.getName()).append("(")
+
+				.append(typeclass).append(").build().toClass();");
 
 				// fn=(type) proxy.getConstructor(new Class[] { salve.Key.class
 				// }).newInstance(new Object[] { key });
 
-				code
-						.append(fn)
-						.append("=(")
-						.append(type)
-						.append(
-								") proxy.getConstructor(new Class[] { salve.Key.class }).newInstance(new Object[] { ")
-						.append(SalveConstants.keyFieldName(field.getName()))
+				code.append(fn).append("=(").append(type).append(
+						") proxy.getConstructor(new Class[] { ").append(
+						Key.class.getName()).append(
+						".class }).newInstance(new Object[] { ").append(
+						DependencyConstants.keyFieldName(field.getName()))
 						.append("});");
 				code.append("} return ").append(fn).append(";}");
 				CtMethod locator = CtNewMethod.make(code.toString(), pojo);
@@ -238,11 +238,16 @@ public class PojoInstrumentor {
 					f.where().addLocalVariable(localName,
 							f.getField().getType());
 
-					String src = localName + "=("
-							+ f.getField().getType().getName() + ")"
-							+ LOCATOR_CALL + "(" + pojo.getName() + "."
-							+ SalveConstants.keyFieldName(f.getFieldName())
-							+ ");";
+					String src = localName
+							+ "=("
+							+ f.getField().getType().getName()
+							+ ")"
+							+ LOCATOR_CALL
+							+ "("
+							+ pojo.getName()
+							+ "."
+							+ DependencyConstants
+									.keyFieldName(f.getFieldName()) + ");";
 
 					src += "$_=" + localName + ";";
 

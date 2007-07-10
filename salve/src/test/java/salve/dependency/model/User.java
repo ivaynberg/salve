@@ -1,10 +1,10 @@
 /**
  * 
  */
-package salve.bytecode.model;
+package salve.dependency.model;
 
-import salve.Dependency;
-import salve.InjectionStrategy;
+import salve.dependency.Dependency;
+import salve.dependency.InjectionStrategy;
 
 public class User {
 	public static final String SYSTEM_EMAIL = "system@sytem.com";

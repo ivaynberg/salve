@@ -1,11 +1,12 @@
-package salve;
+package salve.dependency;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
-import salve.bytecode.SalveConstants;
+import salve.dependency.impl.DependencyConstants;
+
 
 public class Key implements Serializable {
 	private final Class<?> dependencyClass;
@@ -26,7 +27,7 @@ public class Key implements Serializable {
 		this.dependencyClass = dependencyClass;
 		Field field;
 		try {
-			field = injectedClass.getField(SalveConstants
+			field = injectedClass.getField(DependencyConstants
 					.keyFieldName(injectedFieldName));
 			injectedFieldAnnots = field.getAnnotations();
 		} catch (Exception e) {
@@ -105,7 +106,7 @@ public class Key implements Serializable {
 		private Object readResolve() throws ObjectStreamException {
 			try {
 				Class injectedClass = Class.forName(injectedClassName);
-				Field field = injectedClass.getField(SalveConstants
+				Field field = injectedClass.getField(DependencyConstants
 						.keyFieldName(injectedFieldName));
 
 				final Key key = (Key) field.get(null);

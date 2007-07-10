@@ -10,10 +10,10 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import salve.DependencyLibrary;
-import salve.DependencyNotFoundException;
-import salve.Locator;
-import salve.bytecode.PojoInstrumentor;
+import salve.dependency.DependencyLibrary;
+import salve.dependency.DependencyNotFoundException;
+import salve.dependency.Locator;
+import salve.dependency.impl.PojoInstrumentor;
 import salve.spring.model.A;
 import salve.spring.model.B;
 import salve.spring.model.C;

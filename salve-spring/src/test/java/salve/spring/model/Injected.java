@@ -1,6 +1,6 @@
 package salve.spring.model;
 
-import salve.Dependency;
+import salve.dependency.Dependency;
 import salve.spring.SpringBeanId;
 
 public class Injected {

@@ -3,18 +3,19 @@ package salve.agent;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
+import java.net.URL;
 import java.security.ProtectionDomain;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
-import javassist.ByteArrayClassPath;
-import javassist.ClassPool;
-import javassist.CtClass;
-import salve.bytecode.PojoInstrumentor;
+import salve.Instrumentor;
+import salve.config.Config;
+import salve.config.PackageConfig;
+import salve.config.XmlConfigReader;
 
 public class Agent {
 	private static Instrumentation INSTRUMENTATION;
-
-	private static final String[] EXCLUSIONS = { "java/", "sun/", "com/sun",
-			"javax/" };
 
 	public static void premain(String agentArgs, Instrumentation inst) {
 		// ignore double agents
@@ -25,41 +26,52 @@ public class Agent {
 	}
 
 	private static class Transformer implements ClassFileTransformer {
+		private final Set<ClassLoader> seenLoaders = new HashSet<ClassLoader>();
+		private final Set<URL> seenUrls = new HashSet<URL>();
+		private final Config config = new Config();
 
 		public byte[] transform(ClassLoader loader, String className,
 				Class<?> classBeingRedefined,
 				ProtectionDomain protectionDomain, byte[] classfileBuffer)
 				throws IllegalClassFormatException {
 
-			// skip some common classes
-			for (String exclusion : EXCLUSIONS) {
-				if (className.startsWith(exclusion)) {
-					return classfileBuffer;
+			if (!seenLoaders.contains(loader)) {
+				XmlConfigReader reader = new XmlConfigReader(loader);
+				try {
+					Enumeration<URL> urls = loader
+							.getResources("META-INF/salve.xml");
+
+					while (urls.hasMoreElements()) {
+						URL url = urls.nextElement();
+						if (!seenUrls.contains(url)) {
+							reader.read(url.openStream(), config);
+							seenUrls.add(url);
+						}
+					}
+				} catch (Exception e) {
+					throw new RuntimeException(
+							"Could not process salve configuration files", e);
 				}
+
+				seenLoaders.add(loader);
 			}
 
 			try {
-				// System.out.println(">>> Instrumenting class [" + className
-				// + "]");
 				final String name = className.replace("/", ".");
-				ClassPool pool = ClassPool.getDefault();
-				pool.insertClassPath(new ByteArrayClassPath(name,
-						classfileBuffer));
-
-				CtClass clazz = pool.get(name);
-				PojoInstrumentor inst = new PojoInstrumentor(clazz);
-				if (inst.instrument()) {
-					byte[] bytecode = inst.getInstrumented().toBytecode();
-					clazz.detach();
+				PackageConfig conf = config.getPackageConfig(name);
+				if (conf != null) {
+					byte[] bytecode = classfileBuffer;
+					for (Instrumentor inst : conf.getInstrumentors()) {
+						bytecode = inst.instrument(loader, className, bytecode);
+					}
 					return bytecode;
-				} else {
-					return classfileBuffer;
 				}
 			} catch (Exception e) {
+				// TODO debug below
 				e.printStackTrace();
 				throw new RuntimeException(e);
 			}
-
+			return classfileBuffer;
 		}
 	}
 

@@ -1,4 +1,4 @@
-package salve.bytecode;
+package salve.dependency;
 
 import javassist.ClassClassPath;
 import javassist.ClassPool;
@@ -9,15 +9,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import salve.DependencyLibrary;
-import salve.Key;
-import salve.Locator;
-import salve.bytecode.model.EmailSender;
-import salve.bytecode.model.User;
-import salve.bytecode.model.UserStore;
+import salve.dependency.impl.PojoInstrumentor;
+import salve.dependency.model.EmailSender;
+import salve.dependency.model.User;
+import salve.dependency.model.UserStore;
 
 // TODO align "mailsender" and "emailsender" names in code
 public class PojoInstrumentorTest {
+	private static final String USER_CLASS_NAME = "salve.dependency.model.User";
+
 	private ClassPool pool;
 
 	private Locator locator;
@@ -117,7 +117,7 @@ public class PojoInstrumentorTest {
 	}
 
 	private void initUserClass() throws Exception {
-		CtClass user1 = pool.get("salve.bytecode.model.User");
+		CtClass user1 = pool.get(USER_CLASS_NAME);
 		PojoInstrumentor inst = new PojoInstrumentor(user1);
 		inst.instrument();
 		CtClass user2 = inst.getInstrumented();

@@ -1,22 +1,22 @@
 package salve.guice.model;
 
-import salve.Dependency;
+import salve.dependency.Dependency;
 
 public class Injected {
 	// tests lookup by type
 	@Dependency
-	private TestService testService;
+	private MockService testService;
 
 	// tests lookup by type and annot
 	@Dependency
 	@Blue
-	private TestService blueTestService;
+	private MockService blueTestService;
 
-	public TestService getBlueTestService() {
+	public MockService getBlueTestService() {
 		return blueTestService;
 	}
 
-	public TestService getTestService() {
+	public MockService getTestService() {
 		return testService;
 	}
 

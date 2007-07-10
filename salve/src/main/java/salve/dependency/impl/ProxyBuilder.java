@@ -1,8 +1,11 @@
-package salve.bytecode;
+package salve.dependency.impl;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+
+import salve.dependency.DependencyLibrary;
+import salve.dependency.Key;
 
 import javassist.CannotCompileException;
 import javassist.ClassClassPath;
@@ -14,8 +17,6 @@ import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
-import salve.DependencyLibrary;
-import salve.Key;
 
 public class ProxyBuilder {
 	private static final String PROXY_CLASS_SUFFIX = "$InjectorProxy";
@@ -103,8 +104,8 @@ public class ProxyBuilder {
 		code.append("{");
 		code.append(KEY_FIELD).append("=$1;");
 		code.append(DELEGATE_FIELD).append("=(").append(target.getName())
-				.append(")salve.DependencyLibrary.locate(").append(KEY_FIELD)
-				.append(");");
+				.append(")").append(DependencyLibrary.class.getName()).append(
+						".locate(").append(KEY_FIELD).append(");");
 		code.append("}");
 		init.setBody(code.toString());
 		proxy.addConstructor(init);

@@ -1,13 +1,13 @@
 package salve.guice.model;
 
-public class TestService {
+public class MockService {
 	private final String name;
 
-	public TestService() {
-		this(TestService.class.getName());
+	public MockService() {
+		this(MockService.class.getName());
 	}
 
-	public TestService(String name) {
+	public MockService(String name) {
 		super();
 		this.name = name;
 	}

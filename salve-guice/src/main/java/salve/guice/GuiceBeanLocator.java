@@ -2,8 +2,8 @@ package salve.guice;
 
 import java.lang.annotation.Annotation;
 
-import salve.Key;
-import salve.Locator;
+import salve.dependency.Key;
+import salve.dependency.Locator;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Injector;
@@ -28,7 +28,7 @@ public class GuiceBeanLocator implements Locator {
 	}
 
 	/**
-	 * @see salve.Locator#locate(salve.Key)
+	 * @see salve.dependency.Locator#locate(salve.dependency.Key)
 	 */
 	@SuppressWarnings("unchecked")
 	public Object locate(Key key) {
