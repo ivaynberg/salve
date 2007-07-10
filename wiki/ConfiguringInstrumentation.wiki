@@ -15,7 +15,7 @@ You need a small configuration file telling salve which instrumentors to run. Th
 </config>
 }}}
 
-Replace <base.package> with the base package name of your application. For example: `com.mycomp.myapp`
+Replace <base.package> with the base package name of your application. For example: `com.mycomp.myapp`. The `<config>` element can contain multiple `<package>` elements.
 
 == JVM Agent ==
 === When ===
