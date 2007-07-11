@@ -28,7 +28,7 @@ public class DependencyLibrary {
 
 	private static void checkType(Object dependency, Key key, Locator locator) {
 		final Class locatedType = dependency.getClass();
-		final Class requiredType = key.getDependencyClass();
+		final Class requiredType = key.getType();
 		if (!requiredType.isAssignableFrom(locatedType)) {
 			throw new IllegalStateException(String.format(
 					"Locator returned dependency of invalid type. "
