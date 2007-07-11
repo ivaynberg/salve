@@ -46,15 +46,14 @@ public class PojoInstrumentorTest {
 			// expect two lookups of email sender, one for each invocation of
 			// user#register()
 			EasyMock.expect(
-					locator.locate(new Key(EmailSender.class, User.class,
+					locator.locate(new KeyImpl(EmailSender.class, User.class,
 							"mailSender"))).andReturn(es).times(2);
 
 			// expect a single lookup of store as it should be cached in the
 			// field
 			EasyMock.expect(
-					locator
-							.locate(new Key(UserStore.class, User.class,
-									"store"))).andReturn(us).times(1);
+					locator.locate(new KeyImpl(UserStore.class, User.class,
+							"store"))).andReturn(us).times(1);
 
 			// setup expectations from sideffects of user#register()
 			es.send(User.SYSTEM_EMAIL, user.getEmail(), User.REG_EMAIL);
@@ -93,7 +92,7 @@ public class PojoInstrumentorTest {
 
 			EasyMock.reset(locator);
 			EasyMock.expect(
-					locator.locate(new Key(EmailSender.class, User.class,
+					locator.locate(new KeyImpl(EmailSender.class, User.class,
 							"mailSender"))).andReturn(es);
 			EasyMock.replay(locator);
 			Assert.assertTrue(user.getMailSender() == es);

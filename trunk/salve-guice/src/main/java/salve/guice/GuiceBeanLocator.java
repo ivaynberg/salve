@@ -34,7 +34,7 @@ public class GuiceBeanLocator implements Locator {
 	public Object locate(Key key) {
 		Annotation bindingAnnot = null;
 
-		Annotation[] annots = key.getInjectedFieldAnnots();
+		Annotation[] annots = key.getAnnotations();
 		for (Annotation annot : annots) {
 			if (annot.annotationType().getAnnotation(BindingAnnotation.class) != null) {
 				bindingAnnot = annot;
@@ -43,10 +43,10 @@ public class GuiceBeanLocator implements Locator {
 		}
 
 		if (bindingAnnot == null) {
-			return injector.getInstance(key.getDependencyClass());
+			return injector.getInstance(key.getType());
 		} else {
-			return injector.getInstance(com.google.inject.Key.get(key
-					.getDependencyClass(), bindingAnnot));
+			return injector.getInstance(com.google.inject.Key.get(
+					key.getType(), bindingAnnot));
 		}
 
 		// XXX investigate properly returning null, see javadoc note

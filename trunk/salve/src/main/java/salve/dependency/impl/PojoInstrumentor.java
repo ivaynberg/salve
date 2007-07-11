@@ -5,11 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import salve.dependency.Dependency;
-import salve.dependency.DependencyLibrary;
-import salve.dependency.InjectionStrategy;
-import salve.dependency.Key;
-
 import javassist.CannotCompileException;
 import javassist.CtBehavior;
 import javassist.CtClass;
@@ -22,6 +17,11 @@ import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.annotation.Annotation;
 import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
+import salve.dependency.Dependency;
+import salve.dependency.DependencyLibrary;
+import salve.dependency.InjectionStrategy;
+import salve.dependency.Key;
+import salve.dependency.KeyImpl;
 
 public class PojoInstrumentor {
 	private static final String LOCATOR_METHOD_PREFIX = "__locate";
@@ -78,13 +78,14 @@ public class PojoInstrumentor {
 		// TODO inner non-static classes cannot have static fields :|
 		for (CtField field : annotatedFields) {
 			final String type = Key.class.getName();
+			final String keyimpl = KeyImpl.class.getName();
 			final String name = DependencyConstants.keyFieldName(field
 					.getName());
 
 			// key field is public instead of private to avoid pain of using
 			// reflection when retrieving annots
 			final String src = "public static final " + type + " " + name
-					+ "=new " + type + "(" + field.getType().getName()
+					+ "=new " + keyimpl + "(" + field.getType().getName()
 					+ ".class," + pojo.getName() + ".class, \""
 					+ field.getName() + "\");";
 			CtField keyHolder = CtField.make(src, pojo);

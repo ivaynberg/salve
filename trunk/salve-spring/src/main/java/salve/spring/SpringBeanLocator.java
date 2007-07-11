@@ -1,5 +1,6 @@
 package salve.spring;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
@@ -17,18 +18,22 @@ public class SpringBeanLocator implements Locator {
 
 	@SuppressWarnings("unchecked")
 	public Object locate(Key key) {
-		SpringBeanId id = key.getAnnotationOfType(SpringBeanId.class);
-		if (id != null) {
-			return context.getBean(id.value(), key.getDependencyClass());
+
+		SpringBeanId id = null;
+		// XXX refactor the loop into KeyUtils
+		for (Annotation annot : key.getAnnotations()) {
+			if (SpringBeanId.class.equals(annot.annotationType())) {
+				id = (SpringBeanId) annot;
+			}
 		}
 
-		Map<String, Object> beans = context.getBeansOfType(key
-				.getDependencyClass());
+		if (id != null) {
+			return context.getBean(id.value(), key.getType());
+		}
+
+		Map<String, Object> beans = context.getBeansOfType(key.getType());
 		if (beans.size() == 1) {
 			return beans.values().iterator().next();
-		} else if (beans.size() > 1) {
-			Object bean = beans.get(key.getInjectedFieldName());
-			return bean != null ? bean : null;
 		} else {
 			return null;
 		}

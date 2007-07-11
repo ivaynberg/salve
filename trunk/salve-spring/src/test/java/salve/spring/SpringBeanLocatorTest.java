@@ -15,7 +15,6 @@ import salve.dependency.DependencyNotFoundException;
 import salve.dependency.Locator;
 import salve.dependency.impl.PojoInstrumentor;
 import salve.spring.model.A;
-import salve.spring.model.B;
 import salve.spring.model.C;
 import salve.spring.model.Injected;
 
@@ -28,13 +27,6 @@ public class SpringBeanLocatorTest {
 		Injected i = (Injected) injected;
 		Assert.assertNotNull(i.getC());
 		Assert.assertEquals(i.getC().getClass(), C.class);
-	}
-
-	@Test
-	public void testDefaultToFieldName() {
-		Injected i = (Injected) injected;
-		Assert.assertNotNull(i.getB());
-		Assert.assertEquals(i.getB().getClass(), B.class);
 	}
 
 	@Test

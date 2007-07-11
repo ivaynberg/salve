@@ -12,10 +12,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.dependency.Dependency;
-import salve.dependency.DependencyLibrary;
-import salve.dependency.Key;
-import salve.dependency.Locator;
 import salve.dependency.impl.ProxyBuilder;
 
 public class ProxyBuilderTest {
@@ -30,9 +26,7 @@ public class ProxyBuilderTest {
 		DependencyLibrary.addLocator(new Locator() {
 
 			public Object locate(Key key) {
-				Assert
-						.assertTrue(key.getDependencyClass().equals(
-								Person.class));
+				Assert.assertTrue(key.getType().equals(Person.class));
 				return person;
 			}
 
@@ -57,8 +51,7 @@ public class ProxyBuilderTest {
 		DependencyLibrary.addLocator(new Locator() {
 
 			public Object locate(Key key) {
-				Assert.assertTrue(key.getDependencyClass().equals(
-						EmailSender.class));
+				Assert.assertTrue(key.getType().equals(EmailSender.class));
 				return sender;
 			}
 
@@ -91,9 +84,7 @@ public class ProxyBuilderTest {
 
 			public Object locate(Key key) {
 				Assert.assertNotNull(key);
-				Assert
-						.assertTrue(key.getDependencyClass().equals(
-								Person.class));
+				Assert.assertTrue(key.getType().equals(Person.class));
 				return person;
 			}
 
@@ -147,11 +138,11 @@ public class ProxyBuilderTest {
 
 	public static class Holder {
 		@Dependency
-		public static final Key __key$person = new Key(Person.class,
+		public static final Key __key$person = new KeyImpl(Person.class,
 				Holder.class, "person");
 
 		@Dependency
-		public static final Key __key$sender = new Key(EmailSender.class,
+		public static final Key __key$sender = new KeyImpl(EmailSender.class,
 				Holder.class, "sender");
 
 		@Dependency
