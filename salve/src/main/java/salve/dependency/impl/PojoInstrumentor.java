@@ -82,8 +82,6 @@ public class PojoInstrumentor {
 			final String name = DependencyConstants.keyFieldName(field
 					.getName());
 
-			// key field is public instead of private to avoid pain of using
-			// reflection when retrieving annots
 			final String src = "public static final " + type + " " + name
 					+ "=new " + keyimpl + "(" + field.getType().getName()
 					+ ".class," + pojo.getName() + ".class, \""

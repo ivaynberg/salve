@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 
-import salve.dependency.DependencyLibrary;
-import salve.dependency.Key;
-
 import javassist.CannotCompileException;
 import javassist.ClassClassPath;
 import javassist.ClassPool;
@@ -17,6 +14,8 @@ import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import salve.dependency.DependencyLibrary;
+import salve.dependency.Key;
 
 public class ProxyBuilder {
 	private static final String PROXY_CLASS_SUFFIX = "$InjectorProxy";
@@ -24,11 +23,6 @@ public class ProxyBuilder {
 	private static final String DELEGATE_FIELD = "__$delegate";
 
 	private static final String KEY_FIELD = "__$key";
-
-	private static final String[] PARAMS_CACHE = { "", "$1", "$1,$2",
-			"$1,$2,$3", "$1,$2,$3,$4", "$1,$2,$3,$4,$5", "$1,$2,$3,$4,$5,$6",
-			"$1,$2,$3,$4,$5,$6,$7", "$1,$2,$3,$4,$5,$6,$7,$8",
-			"$1,$2,$3,$4,$5,$6,$7,$8,$9", "$1,$2,$3,$4,$5,$6,$7,$8,$9,$10" };
 
 	private final ClassPool pool;
 	private final CtClass target;
@@ -130,7 +124,7 @@ public class ProxyBuilder {
 
 		code.append(DELEGATE_FIELD).append(".").append(delegator.getName())
 				.append("(");
-		codegenParamsList(delegator, code);
+		DependencyConstants.insertParamsList(delegator, code);
 		code.append(");");
 
 		delegator.setBody(code.toString());
@@ -181,16 +175,4 @@ public class ProxyBuilder {
 
 	}
 
-	private void codegenParamsList(CtMethod method, StringBuilder code)
-			throws NotFoundException {
-		final int params = method.getParameterTypes().length;
-		if (params < PARAMS_CACHE.length) {
-			code.append(PARAMS_CACHE[params]);
-		} else {
-			code.append(PARAMS_CACHE[PARAMS_CACHE.length - 1]);
-			for (int i = PARAMS_CACHE.length; i < params; i++) {
-				code.append(",$").append(i + 1);
-			}
-		}
-	}
 }
