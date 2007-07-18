@@ -4,12 +4,12 @@ import javassist.CtMethod;
 import javassist.NotFoundException;
 
 public class DependencyConstants {
+	public static final String KEY_FIELD_PREFIX = "_salvedepkey$";
+
 	private static final String[] PARAMS_CACHE = { "", "$1", "$1,$2",
 			"$1,$2,$3", "$1,$2,$3,$4", "$1,$2,$3,$4,$5", "$1,$2,$3,$4,$5,$6",
 			"$1,$2,$3,$4,$5,$6,$7", "$1,$2,$3,$4,$5,$6,$7,$8",
 			"$1,$2,$3,$4,$5,$6,$7,$8,$9", "$1,$2,$3,$4,$5,$6,$7,$8,$9,$10" };
-
-	private static final String KEY_FIELD_PREFIX = "__key$";
 
 	private static final String PROXY_CLASS_SUFFIX = "$SalveProxy";
 

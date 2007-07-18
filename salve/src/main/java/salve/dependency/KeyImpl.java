@@ -4,8 +4,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import salve.dependency.impl.DependencyConstants;
-
 public class KeyImpl implements Key {
 	private static final long serialVersionUID = 1L;
 
@@ -13,16 +11,12 @@ public class KeyImpl implements Key {
 
 	private final Annotation[] annots;
 
-	public KeyImpl(Class<?> dependencyClass, Class<?> injectedClass,
-			String injectedFieldName) {
-		// we have to pass in dependency class because the field can be removed
-		// so reflection is not always available
+	public KeyImpl(Class<?> dependencyType, Class<?> keyOwner, String keyFieldName) {
 
-		this.type = dependencyClass;
+		this.type = dependencyType;
 		Field field;
 		try {
-			field = injectedClass.getField(DependencyConstants
-					.keyFieldName(injectedFieldName));
+			field = keyOwner.getField(keyFieldName);
 			annots = field.getAnnotations();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
