@@ -1,12 +1,15 @@
-/**
- * 
- */
 package salve.asm;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Type;
 
@@ -16,62 +19,108 @@ import salve.asm.util.FieldVisitorAdapter;
 import salve.dependency.Dependency;
 import salve.dependency.InjectionStrategy;
 
-class DependencyAnalyzer extends ClassVisitorAdapter {
+public class DependencyAnalyzer {
 	private static final Type DEPENDENCY_TYPE = Type.getType(Dependency.class);
-	private List<DependencyField> dependencies;
-	private String className;
+	private final BytecodeLoader loader;
+	private final Set<String> owners = new HashSet<String>();
+	private final Map<String, DependencyField> fields = new HashMap<String, DependencyField>();
 
-	public List<DependencyField> getDependencies() {
-		return dependencies;
+	public DependencyAnalyzer(BytecodeLoader loader) {
+		if (loader == null) {
+			throw new IllegalArgumentException(
+					"Argument `loader` cannot be null");
+		}
+		this.loader = loader;
 	}
 
-	public DependencyField getDependencyForField(String name) {
-		for (DependencyField field : dependencies) {
-			if (field.getName().equals(name)) {
-				return field;
+	public DependencyField locateField(String owner, String name) {
+		// TODO check args
+		processClass(owner);
+		return fields.get(fieldKey(owner, name));
+	}
+
+	public Collection<DependencyField> locateFields(String owner) {
+		// TODO check args
+		processClass(owner);
+		List<DependencyField> matches = new ArrayList<DependencyField>();
+		for (DependencyField field : fields.values()) {
+			if (field.getOwner().equals(owner)) {
+				matches.add(field);
 			}
 		}
-		return null;
+		return matches;
+
 	}
 
-	@Override
-	public void visit(int version, int access, String name, String signature,
-			String superName, String[] interfaces) {
-		dependencies = new ArrayList<DependencyField>();
-		className = name;
+	/**
+	 * @param owner
+	 */
+	private void processClass(String owner) {
+		if (!owners.contains(owner)) {
+			byte[] bytecode = loader.loadBytecode(owner);
+			if (bytecode == null) {
+				throw new CannotLoadBytecodeException(owner);
+			}
+			ClassReader reader = new ClassReader(bytecode);
+			reader.accept(new Analyzer(), ClassReader.SKIP_CODE
+					+ ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES);
+
+			owners.add(owner);
+		}
 	}
 
-	@Override
-	public FieldVisitor visitField(int access, String name, String desc,
-			String signature, Object value) {
+	private static String fieldKey(String owner, String name) {
+		return owner + "." + name;
+	}
 
-		final DependencyField field = new DependencyField(className, name, desc);
-		return new FieldVisitorAdapter() {
+	private class Analyzer extends ClassVisitorAdapter {
+		private String owner;
 
-			@Override
-			public AnnotationVisitor visitAnnotation(String desc,
-					boolean visible) {
-				if (visible) {
-					if (Type.getType(desc).equals(DEPENDENCY_TYPE)) {
-						dependencies.add(field);
-						return new AnnotationVisitorAdapter() {
+		@Override
+		public void visit(int version, int access, String name,
+				String signature, String superName, String[] interfaces) {
+			owner = name;
+		}
 
-							@Override
-							public void visitEnum(String name, String desc,
-									String value) {
+		@Override
+		public FieldVisitor visitField(final int fieldAccess,
+				final String fieldName, final String fieldDesc,
+				String signature, Object value) {
+			return new FieldVisitorAdapter() {
 
-								if ("strategy".equals(name)) {
-									field.setStrategy(InjectionStrategy
-											.valueOf(value));
-								}
-							}
-
-						};
+				@Override
+				public AnnotationVisitor visitAnnotation(String desc,
+						boolean visible) {
+					if (visible) {
+						return visitFieldAnnotation(fieldAccess, fieldName,
+								fieldDesc, desc);
 					}
 					return null;
 				}
-				return null;
+			};
+		}
+
+		private AnnotationVisitor visitFieldAnnotation(int fieldAcess,
+				String fieldName, String fieldDesc, String annotDesc) {
+			if (Type.getType(annotDesc).equals(DEPENDENCY_TYPE)) {
+				final DependencyField field = new DependencyField(owner,
+						fieldName, fieldDesc);
+
+				fields.put(fieldKey(owner, fieldName), field);
+				return new AnnotationVisitorAdapter() {
+
+					@Override
+					public void visitEnum(String name, String desc, String value) {
+
+						if ("strategy".equals(name)) {
+							field.setStrategy(InjectionStrategy.valueOf(value));
+						}
+					}
+
+				};
 			}
-		};
+			return null;
+
+		}
 	}
 }

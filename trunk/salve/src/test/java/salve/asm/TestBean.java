@@ -15,6 +15,12 @@ public class TestBean {
 	}
 
 	public RedDependency getDependency() {
-		return dependency;
+		return new InnerBean().getDependency();
+	}
+
+	private class InnerBean {
+		public RedDependency getDependency() {
+			return dependency;
+		}
 	}
 }

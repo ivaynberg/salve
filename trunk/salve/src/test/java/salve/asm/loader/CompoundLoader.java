@@ -17,9 +17,9 @@ public class CompoundLoader implements BytecodeLoader {
 		return this;
 	}
 
-	public byte[] load(String className) {
+	public byte[] loadBytecode(String className) {
 		for (BytecodeLoader loader : delegates) {
-			byte[] bytecode = loader.load(className);
+			byte[] bytecode = loader.loadBytecode(className);
 			if (bytecode != null) {
 				return bytecode;
 			}

@@ -20,7 +20,7 @@ public class MemoryLoader implements BytecodeLoader {
 		this.bytecode = bytecode;
 	}
 
-	public byte[] load(String className) {
+	public byte[] loadBytecode(String className) {
 		if (this.className.equals(className)) {
 			return bytecode;
 		}
