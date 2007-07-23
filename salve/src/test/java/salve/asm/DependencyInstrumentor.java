@@ -23,19 +23,20 @@ import salve.dependency.KeyImpl;
 import salve.dependency.impl.DependencyConstants;
 
 class DependencyInstrumentor extends ClassAdapter implements Opcodes {
-	private final DependencyAnalyzer identifier;
+	private final DependencyAnalyzer locator;
 	private boolean seenClinit = false;
-	private String subject = null;
+	private String owner = null;
 
-	public DependencyInstrumentor(ClassVisitor cv, DependencyAnalyzer identifier) {
+	public DependencyInstrumentor(ClassVisitor cv,
+			DependencyAnalyzer locator) {
 		super(cv);
-		this.identifier = identifier;
+		this.locator = locator;
 	}
 
 	@Override
 	public void visit(int version, int access, String name, String signature,
 			String superName, String[] interfaces) {
-		subject = name;
+		owner = name;
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
@@ -50,7 +51,7 @@ class DependencyInstrumentor extends ClassAdapter implements Opcodes {
 	@Override
 	public FieldVisitor visitField(int access, String name, String desc,
 			String signature, Object value) {
-		DependencyField field = identifier.getDependencyForField(name);
+		DependencyField field = locator.locateField(owner, name);
 		if (field == null) {
 			return super.visitField(access, name, desc, signature, value);
 		} else {
@@ -96,7 +97,7 @@ class DependencyInstrumentor extends ClassAdapter implements Opcodes {
 			final String keyImplName = Type.getType(KeyImpl.class)
 					.getInternalName();
 
-			for (DependencyField field : identifier.getDependencies()) {
+			for (DependencyField field : locator.locateFields(owner)) {
 				final String fieldName = DependencyConstants.KEY_FIELD_PREFIX
 						+ field.getName();
 
@@ -107,7 +108,7 @@ class DependencyInstrumentor extends ClassAdapter implements Opcodes {
 				Label l1 = new Label();
 				mv.visitLabel(l1);
 				mv.visitLdcInsn(Type.getType(field.getDesc()));
-				mv.visitLdcInsn(Type.getObjectType(subject));
+				mv.visitLdcInsn(Type.getObjectType(owner));
 				Label l2 = new Label();
 				mv.visitLabel(l2);
 				mv.visitLdcInsn(fieldName);
@@ -116,7 +117,7 @@ class DependencyInstrumentor extends ClassAdapter implements Opcodes {
 				mv
 						.visitMethodInsn(INVOKESPECIAL, keyImplName, "<init>",
 								"(Ljava/lang/Class;Ljava/lang/Class;Ljava/lang/String;)V");
-				mv.visitFieldInsn(PUTSTATIC, subject, fieldName,
+				mv.visitFieldInsn(PUTSTATIC, owner, fieldName,
 						"Lsalve/dependency/Key;");
 			}
 
@@ -137,7 +138,7 @@ class DependencyInstrumentor extends ClassAdapter implements Opcodes {
 		@Override
 		public void visitFieldInsn(int opcode, String owner, String name,
 				String desc) {
-			DependencyField field = identifier.getDependencyForField(name);
+			DependencyField field = locator.locateField(owner, name);
 			if (field != null) {
 				if (fieldToLocal == null) {
 					fieldToLocal = new HashMap<DependencyField, Integer>();

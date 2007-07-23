@@ -6,8 +6,8 @@ import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import salve.asm.loader.ClassLoaderLoader;
 import salve.asm.loader.BytecodePool;
+import salve.asm.loader.ClassLoaderLoader;
 
 public class Instrumentor {
 
@@ -15,12 +15,11 @@ public class Instrumentor {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		BytecodePool classPath = new BytecodePool();
 		classPath.addLoader(new ClassLoaderLoader(loader));
-		byte[] bytecode = classPath.load("salve/asm/TestBean");
+		byte[] bytecode = classPath.loadBytecode("salve/asm/TestBean");
 		ClassReader reader = new ClassReader(bytecode);
-		DependencyAnalyzer analyzer = new DependencyAnalyzer();
-		reader.accept(analyzer, ClassReader.SKIP_DEBUG + ClassReader.SKIP_CODE);
+		DependencyAnalyzer locator = new DependencyAnalyzer(classPath);
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		ClassAdapter adapter = new DependencyInstrumentor(writer, analyzer);
+		ClassAdapter adapter = new DependencyInstrumentor(writer, locator);
 		reader.accept(adapter, 0);
 
 		classPath.save("salve/asm/TestBean", writer.toByteArray());

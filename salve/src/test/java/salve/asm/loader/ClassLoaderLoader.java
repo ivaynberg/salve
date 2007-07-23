@@ -17,7 +17,7 @@ public class ClassLoaderLoader implements BytecodeLoader {
 		this.loader = loader;
 	}
 
-	public byte[] load(String className) {
+	public byte[] loadBytecode(String className) {
 		InputStream is = loader.getResourceAsStream(className + ".class");
 		if (is == null) {
 			return null;

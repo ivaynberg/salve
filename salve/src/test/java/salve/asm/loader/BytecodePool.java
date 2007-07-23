@@ -15,10 +15,10 @@ public class BytecodePool extends CompoundLoader {
 	private final ConcurrentHashMap<String, byte[]> cache = new ConcurrentHashMap<String, byte[]>();
 
 	@Override
-	public byte[] load(String className) {
+	public byte[] loadBytecode(String className) {
 		byte[] bytecode = cache.get(className);
 		if (bytecode == null) {
-			bytecode = super.load(className);
+			bytecode = super.loadBytecode(className);
 			if (bytecode == null) {
 				bytecode = NOT_FOUND;
 			}
@@ -43,7 +43,7 @@ public class BytecodePool extends CompoundLoader {
 	public Class loadClass(final String className)
 			throws ClassNotFoundException {
 
-		byte[] bytecode = load(className);
+		byte[] bytecode = loadBytecode(className);
 		if (bytecode == null) {
 			throw new ClassNotFoundException(className);
 		}
