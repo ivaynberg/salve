@@ -1,13 +1,13 @@
-package salve.asm;
+package salve.dependency;
 
 import java.io.FileOutputStream;
 
-import salve.asm.DependencyAnalyzer;
-import salve.asm.DependencyInstrumentorAdapter;
 import salve.asm.TestBean;
 import salve.asm.loader.BytecodePool;
 import salve.asm.loader.ClassLoaderLoader;
 import salve.asm.loader.MemoryLoader;
+import salve.dependency.impl.DependencyAnalyzer;
+import salve.dependency.impl.DependencyInstrumentorAdapter;
 import salve.org.objectweb.asm.ClassAdapter;
 import salve.org.objectweb.asm.ClassReader;
 import salve.org.objectweb.asm.ClassWriter;
@@ -25,8 +25,8 @@ public class DependencyInstrumentor implements salve.Instrumentor {
 		DependencyAnalyzer analyzer = new DependencyAnalyzer(pool);
 		ClassReader reader = new ClassReader(bytecode);
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		DependencyInstrumentorAdapter inst = new DependencyInstrumentorAdapter(writer,
-				analyzer);
+		DependencyInstrumentorAdapter inst = new DependencyInstrumentorAdapter(
+				writer, analyzer);
 		reader.accept(inst, 0);
 
 		return writer.toByteArray();
@@ -40,7 +40,8 @@ public class DependencyInstrumentor implements salve.Instrumentor {
 		ClassReader reader = new ClassReader(bytecode);
 		DependencyAnalyzer locator = new DependencyAnalyzer(classPath);
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		ClassAdapter adapter = new DependencyInstrumentorAdapter(writer, locator);
+		ClassAdapter adapter = new DependencyInstrumentorAdapter(writer,
+				locator);
 		reader.accept(adapter, 0);
 
 		classPath.save("salve/asm/TestBean", writer.toByteArray());

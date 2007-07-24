@@ -1,7 +1,7 @@
 /**
  * 
  */
-package salve.asm;
+package salve.dependency.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,6 @@ import salve.dependency.DependencyLibrary;
 import salve.dependency.InjectionStrategy;
 import salve.dependency.Key;
 import salve.dependency.KeyImpl;
-import salve.dependency.impl.DependencyConstants;
 import salve.org.objectweb.asm.ClassAdapter;
 import salve.org.objectweb.asm.ClassVisitor;
 import salve.org.objectweb.asm.FieldVisitor;
@@ -22,12 +21,14 @@ import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
 import salve.org.objectweb.asm.commons.LocalVariablesSorter;
 
-class DependencyInstrumentorAdapter extends ClassAdapter implements Opcodes {
+public class DependencyInstrumentorAdapter extends ClassAdapter implements
+		Opcodes {
 	private final DependencyAnalyzer locator;
 	private boolean seenClinit = false;
 	private String owner = null;
 
-	public DependencyInstrumentorAdapter(ClassVisitor cv, DependencyAnalyzer locator) {
+	public DependencyInstrumentorAdapter(ClassVisitor cv,
+			DependencyAnalyzer locator) {
 		super(cv);
 		this.locator = locator;
 	}
