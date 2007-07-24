@@ -1,6 +1,6 @@
-package salve.asm;
+package salve.dependency;
 
-public class BlueDependency {
+public class RedDependency {
 	public void method1() {
 
 	}
