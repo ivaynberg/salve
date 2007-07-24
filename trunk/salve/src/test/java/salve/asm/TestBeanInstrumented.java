@@ -1,26 +1,32 @@
 package salve.asm;
 
+import salve.dependency.Dependency;
 import salve.dependency.DependencyLibrary;
 import salve.dependency.Key;
 import salve.dependency.KeyImpl;
 
 public class TestBeanInstrumented {
-	public static final Key _salvedepkey$dependency = new KeyImpl(
-			RedDependency.class, TestBeanInstrumented.class,
-			"_salvedepkey$dependency");
+	public static final Key _salvedepkey$red = new KeyImpl(RedDependency.class,
+			TestBeanInstrumented.class, "_salvedepkey$red");
 
-	public int doit() {
-		int a = 4;
-		int b = 5;
-		b = a;
-		return a;
+	@Dependency
+	private RedDependency red;
+
+	@Dependency
+	private BlueDependency blue;
+
+	public void execute() {
+		_salveloc$blue();
+		blue.method1();
+		blue.method2();
 	}
 
-	public RedDependency getDependency() {
-		RedDependency _localdependency = (RedDependency) DependencyLibrary
-				.locate(_salvedepkey$dependency);
-
-		return _localdependency;
+	private void _salveloc$blue() {
+		if (blue == null) {
+			Key key = new KeyImpl(BlueDependency.class,
+					TestBeanInstrumented.class, "blue");
+			blue = (BlueDependency) DependencyLibrary.locate(key);
+		}
 	}
 
 }

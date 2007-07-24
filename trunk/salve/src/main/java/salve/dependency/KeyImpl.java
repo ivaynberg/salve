@@ -11,12 +11,13 @@ public class KeyImpl implements Key {
 
 	private final Annotation[] annots;
 
-	public KeyImpl(Class<?> dependencyType, Class<?> keyOwner, String keyFieldName) {
+	public KeyImpl(Class<?> dependencyType, Class<?> keyOwner,
+			String keyFieldName) {
 
 		this.type = dependencyType;
 		Field field;
 		try {
-			field = keyOwner.getField(keyFieldName);
+			field = keyOwner.getDeclaredField(keyFieldName);
 			annots = field.getAnnotations();
 		} catch (Exception e) {
 			throw new RuntimeException(e);

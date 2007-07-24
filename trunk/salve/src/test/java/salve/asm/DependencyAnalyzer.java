@@ -8,16 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Type;
 
 import salve.asm.util.AnnotationVisitorAdapter;
 import salve.asm.util.ClassVisitorAdapter;
 import salve.asm.util.FieldVisitorAdapter;
 import salve.dependency.Dependency;
 import salve.dependency.InjectionStrategy;
+import salve.org.objectweb.asm.AnnotationVisitor;
+import salve.org.objectweb.asm.ClassReader;
+import salve.org.objectweb.asm.FieldVisitor;
+import salve.org.objectweb.asm.Type;
 
 public class DependencyAnalyzer {
 	private static final Type DEPENDENCY_TYPE = Type.getType(Dependency.class);

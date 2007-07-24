@@ -6,29 +6,28 @@ package salve.asm;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.objectweb.asm.ClassAdapter;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodAdapter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.LocalVariablesSorter;
-
 import salve.asm.util.AsmUtil;
 import salve.dependency.DependencyLibrary;
+import salve.dependency.InjectionStrategy;
 import salve.dependency.Key;
 import salve.dependency.KeyImpl;
 import salve.dependency.impl.DependencyConstants;
+import salve.org.objectweb.asm.ClassAdapter;
+import salve.org.objectweb.asm.ClassVisitor;
+import salve.org.objectweb.asm.FieldVisitor;
+import salve.org.objectweb.asm.Label;
+import salve.org.objectweb.asm.MethodAdapter;
+import salve.org.objectweb.asm.MethodVisitor;
+import salve.org.objectweb.asm.Opcodes;
+import salve.org.objectweb.asm.Type;
+import salve.org.objectweb.asm.commons.LocalVariablesSorter;
 
 class DependencyInstrumentor extends ClassAdapter implements Opcodes {
 	private final DependencyAnalyzer locator;
 	private boolean seenClinit = false;
 	private String owner = null;
 
-	public DependencyInstrumentor(ClassVisitor cv,
-			DependencyAnalyzer locator) {
+	public DependencyInstrumentor(ClassVisitor cv, DependencyAnalyzer locator) {
 		super(cv);
 		this.locator = locator;
 	}
@@ -55,9 +54,65 @@ class DependencyInstrumentor extends ClassAdapter implements Opcodes {
 		if (field == null) {
 			return super.visitField(access, name, desc, signature, value);
 		} else {
-			return super.visitField(ACC_PUBLIC + ACC_STATIC + ACC_FINAL,
-					DependencyConstants.KEY_FIELD_PREFIX + name, Type
-							.getDescriptor(Key.class), null, null);
+			if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
+				// TODO copy annots
+				return super.visitField(ACC_PUBLIC + ACC_STATIC + ACC_FINAL,
+						DependencyConstants.KEY_FIELD_PREFIX + name, Type
+								.getDescriptor(Key.class), null, null);
+			} else {
+				Type fieldOwnerType = Type.getObjectType(field.getOwner());
+				Type fieldType = Type.getType(field.getDesc());
+
+				MethodVisitor mv = cv.visitMethod(ACC_PRIVATE,
+						DependencyConstants.LOCATOR_METHOD_PREFIX + name,
+						"()V", null, null);
+				mv.visitCode();
+				Label l0 = new Label();
+				mv.visitLabel(l0);
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETFIELD, fieldOwnerType.getInternalName(),
+						field.getName(), field.getDesc());
+				Label l1 = new Label();
+				mv.visitJumpInsn(IFNONNULL, l1);
+				Label l2 = new Label();
+				mv.visitLabel(l2);
+				mv.visitTypeInsn(NEW, "salve/dependency/KeyImpl");
+				mv.visitInsn(DUP);
+				mv.visitLdcInsn(Type.getType(field.getDesc()));
+				Label l3 = new Label();
+				mv.visitLabel(l3);
+				mv.visitLdcInsn(Type.getType(fieldOwnerType.getDescriptor()));
+				mv.visitLdcInsn(field.getName());
+				Label l4 = new Label();
+				mv.visitLabel(l4);
+				mv
+						.visitMethodInsn(INVOKESPECIAL,
+								"salve/dependency/KeyImpl", "<init>",
+								"(Ljava/lang/Class;Ljava/lang/Class;Ljava/lang/String;)V");
+				mv.visitVarInsn(ASTORE, 1);
+				Label l5 = new Label();
+				mv.visitLabel(l5);
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitVarInsn(ALOAD, 1);
+				mv.visitMethodInsn(INVOKESTATIC,
+						"salve/dependency/DependencyLibrary", "locate",
+						"(Lsalve/dependency/Key;)Ljava/lang/Object;");
+				mv.visitTypeInsn(CHECKCAST, fieldType.getInternalName());
+				mv.visitFieldInsn(PUTFIELD, fieldOwnerType.getInternalName(),
+						field.getName(), field.getDesc());
+				mv.visitLabel(l1);
+				mv.visitInsn(RETURN);
+				Label l6 = new Label();
+				mv.visitLabel(l6);
+				mv.visitLocalVariable("this", fieldOwnerType.getDescriptor(),
+						null, l0, l6, 0);
+				mv.visitLocalVariable("key", "Lsalve/dependency/Key;", null,
+						l5, l1, 1);
+				mv.visitMaxs(5, 2);
+				mv.visitEnd();
+				// XXX remove @dependency annot from field
+				return super.visitField(access, name, desc, signature, value);
+			}
 		}
 	}
 
@@ -98,6 +153,9 @@ class DependencyInstrumentor extends ClassAdapter implements Opcodes {
 					.getInternalName();
 
 			for (DependencyField field : locator.locateFields(owner)) {
+				if (InjectionStrategy.INJECT_FIELD.equals(field.getStrategy())) {
+					continue;
+				}
 				final String fieldName = DependencyConstants.KEY_FIELD_PREFIX
 						+ field.getName();
 
@@ -145,30 +203,48 @@ class DependencyInstrumentor extends ClassAdapter implements Opcodes {
 				}
 
 				Integer local = fieldToLocal.get(field);
-				if (local == null) {
-					local = new Integer(lvs.newLocal(Type.getType(field
-							.getDesc())));
-					Label l0 = new Label();
-					visitLabel(l0);
-					visitFieldInsn(GETSTATIC, field.getOwner(),
-							DependencyConstants.KEY_FIELD_PREFIX
-									+ field.getName(), Type
-									.getDescriptor(Key.class));
-					visitMethodInsn(INVOKESTATIC, Type
-							.getInternalName(DependencyLibrary.class),
-							"locate",
-							"(Lsalve/dependency/Key;)Ljava/lang/Object;");
-					Label l1 = new Label();
-					visitLabel(l1);
-					visitTypeInsn(CHECKCAST, Type.getType(field.getDesc())
-							.getInternalName());
-					visitVarInsn(ASTORE, local.intValue());
-					Label l2 = new Label();
-					visitLabel(l2);
-					visitVarInsn(ALOAD, local.intValue());
-					fieldToLocal.put(field, local);
+
+				if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
+					if (local == null) {
+						local = new Integer(lvs.newLocal(Type.getType(field
+								.getDesc())));
+						Label l0 = new Label();
+						visitLabel(l0);
+						visitFieldInsn(GETSTATIC, field.getOwner(),
+								DependencyConstants.KEY_FIELD_PREFIX
+										+ field.getName(), Type
+										.getDescriptor(Key.class));
+						visitMethodInsn(INVOKESTATIC, Type
+								.getInternalName(DependencyLibrary.class),
+								"locate",
+								"(Lsalve/dependency/Key;)Ljava/lang/Object;");
+						Label l1 = new Label();
+						visitLabel(l1);
+						visitTypeInsn(CHECKCAST, Type.getType(field.getDesc())
+								.getInternalName());
+						visitVarInsn(ASTORE, local.intValue());
+						Label l2 = new Label();
+						visitLabel(l2);
+						visitVarInsn(ALOAD, local.intValue());
+						fieldToLocal.put(field, local);
+					} else {
+						visitVarInsn(ALOAD, local.intValue());
+					}
 				} else {
-					visitVarInsn(ALOAD, local.intValue());
+					if (local == null) {
+						// first time access to this var, insert locator call
+						Label l0 = new Label();
+						mv.visitLabel(l0);
+						mv.visitVarInsn(ALOAD, 0);
+						mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(),
+								DependencyConstants.LOCATOR_METHOD_PREFIX
+										+ field.getName(), "()V");
+						fieldToLocal.put(field, new Integer(-1));
+						super.visitFieldInsn(opcode, owner, name, desc);
+					} else {
+						super.visitFieldInsn(opcode, owner, name, desc);
+					}
+
 				}
 			} else {
 				super.visitFieldInsn(opcode, owner, name, desc);

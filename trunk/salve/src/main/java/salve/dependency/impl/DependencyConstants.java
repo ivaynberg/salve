@@ -5,6 +5,7 @@ import javassist.NotFoundException;
 
 public class DependencyConstants {
 	public static final String KEY_FIELD_PREFIX = "_salvedepkey$";
+	public static final String LOCATOR_METHOD_PREFIX = "_salveloc$";
 
 	private static final String[] PARAMS_CACHE = { "", "$1", "$1,$2",
 			"$1,$2,$3", "$1,$2,$3,$4", "$1,$2,$3,$4,$5", "$1,$2,$3,$4,$5,$6",
