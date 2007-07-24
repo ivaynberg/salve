@@ -8,8 +8,9 @@ import org.objectweb.asm.ClassWriter;
 
 import salve.asm.loader.BytecodePool;
 import salve.asm.loader.ClassLoaderLoader;
+import salve.asm.loader.MemoryLoader;
 
-public class Instrumentor {
+public class Instrumentor implements salve.Instrumentor {
 
 	public static void main(String[] args) throws Exception {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -64,4 +65,21 @@ public class Instrumentor {
 		 */
 	}
 
+	public byte[] instrument(ClassLoader loader, String name, byte[] bytecode)
+			throws Exception {
+
+		BytecodePool pool = new BytecodePool();
+		pool.addLoader(new MemoryLoader(name, bytecode));
+		pool.addLoader(new ClassLoaderLoader(loader));
+		pool.addLoader(new ClassLoaderLoader(Object.class.getClassLoader()));
+
+		DependencyAnalyzer analyzer = new DependencyAnalyzer(pool);
+		ClassReader reader = new ClassReader(bytecode);
+		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		DependencyInstrumentor inst = new DependencyInstrumentor(writer,
+				analyzer);
+		reader.accept(inst, 0);
+
+		return writer.toByteArray();
+	}
 }

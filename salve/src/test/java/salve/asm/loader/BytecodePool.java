@@ -47,6 +47,11 @@ public class BytecodePool extends CompoundLoader {
 		if (bytecode == null) {
 			throw new ClassNotFoundException(className);
 		}
+		return loadClass(className, bytecode);
+	}
+
+	public Class loadClass(final String className, byte[] bytecode) {
+		// TODO checkargs
 		try {
 			ClassLoader loader = Thread.currentThread().getContextClassLoader();
 			Class klass = loader.loadClass(CLASS_LOADER_REFLECT_CLASS_NAME);
