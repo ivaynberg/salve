@@ -1,282 +1,87 @@
-/**
- * 
- */
 package salve.asm;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.FileOutputStream;
 
-import salve.asm.util.AsmUtil;
-import salve.dependency.DependencyLibrary;
-import salve.dependency.InjectionStrategy;
-import salve.dependency.Key;
-import salve.dependency.KeyImpl;
-import salve.dependency.impl.DependencyConstants;
+import salve.asm.DependencyAnalyzer;
+import salve.asm.DependencyInstrumentorAdapter;
+import salve.asm.TestBean;
+import salve.asm.loader.BytecodePool;
+import salve.asm.loader.ClassLoaderLoader;
+import salve.asm.loader.MemoryLoader;
 import salve.org.objectweb.asm.ClassAdapter;
-import salve.org.objectweb.asm.ClassVisitor;
-import salve.org.objectweb.asm.FieldVisitor;
-import salve.org.objectweb.asm.Label;
-import salve.org.objectweb.asm.MethodAdapter;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Opcodes;
-import salve.org.objectweb.asm.Type;
-import salve.org.objectweb.asm.commons.LocalVariablesSorter;
+import salve.org.objectweb.asm.ClassReader;
+import salve.org.objectweb.asm.ClassWriter;
 
-class DependencyInstrumentor extends ClassAdapter implements Opcodes {
-	private final DependencyAnalyzer locator;
-	private boolean seenClinit = false;
-	private String owner = null;
+public class DependencyInstrumentor implements salve.Instrumentor {
 
-	public DependencyInstrumentor(ClassVisitor cv, DependencyAnalyzer locator) {
-		super(cv);
-		this.locator = locator;
+	public byte[] instrument(ClassLoader loader, String name, byte[] bytecode)
+			throws Exception {
+
+		BytecodePool pool = new BytecodePool();
+		pool.addLoader(new MemoryLoader(name, bytecode));
+		pool.addLoader(new ClassLoaderLoader(loader));
+		pool.addLoader(new ClassLoaderLoader(Object.class.getClassLoader()));
+
+		DependencyAnalyzer analyzer = new DependencyAnalyzer(pool);
+		ClassReader reader = new ClassReader(bytecode);
+		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		DependencyInstrumentorAdapter inst = new DependencyInstrumentorAdapter(writer,
+				analyzer);
+		reader.accept(inst, 0);
+
+		return writer.toByteArray();
 	}
 
-	@Override
-	public void visit(int version, int access, String name, String signature,
-			String superName, String[] interfaces) {
-		owner = name;
-		super.visit(version, access, name, signature, superName, interfaces);
-	}
+	public static void main(String[] args) throws Exception {
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		BytecodePool classPath = new BytecodePool();
+		classPath.addLoader(new ClassLoaderLoader(loader));
+		byte[] bytecode = classPath.loadBytecode("salve/asm/TestBean");
+		ClassReader reader = new ClassReader(bytecode);
+		DependencyAnalyzer locator = new DependencyAnalyzer(classPath);
+		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		ClassAdapter adapter = new DependencyInstrumentorAdapter(writer, locator);
+		reader.accept(adapter, 0);
 
-	@Override
-	public void visitEnd() {
-		if (!seenClinit) {
-			generateClInit();
-		}
-		super.visitEnd();
-	}
+		classPath.save("salve/asm/TestBean", writer.toByteArray());
 
-	@Override
-	public FieldVisitor visitField(int access, String name, String desc,
-			String signature, Object value) {
-		DependencyField field = locator.locateField(owner, name);
-		if (field == null) {
-			return super.visitField(access, name, desc, signature, value);
-		} else {
-			if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
-				// TODO copy annots
-				return super.visitField(ACC_PUBLIC + ACC_STATIC + ACC_FINAL,
-						DependencyConstants.KEY_FIELD_PREFIX + name, Type
-								.getDescriptor(Key.class), null, null);
-			} else {
-				Type fieldOwnerType = Type.getObjectType(field.getOwner());
-				Type fieldType = Type.getType(field.getDesc());
+		FileOutputStream out = new FileOutputStream(
+				"target/test-classes/Test.class");
+		final byte[] bytes = writer.toByteArray();
+		out.write(writer.toByteArray());
+		out.close();
 
-				MethodVisitor mv = cv.visitMethod(ACC_PRIVATE,
-						DependencyConstants.LOCATOR_METHOD_PREFIX + name,
-						"()V", null, null);
-				mv.visitCode();
-				Label l0 = new Label();
-				mv.visitLabel(l0);
-				mv.visitVarInsn(ALOAD, 0);
-				mv.visitFieldInsn(GETFIELD, fieldOwnerType.getInternalName(),
-						field.getName(), field.getDesc());
-				Label l1 = new Label();
-				mv.visitJumpInsn(IFNONNULL, l1);
-				Label l2 = new Label();
-				mv.visitLabel(l2);
-				mv.visitTypeInsn(NEW, "salve/dependency/KeyImpl");
-				mv.visitInsn(DUP);
-				mv.visitLdcInsn(Type.getType(field.getDesc()));
-				Label l3 = new Label();
-				mv.visitLabel(l3);
-				mv.visitLdcInsn(Type.getType(fieldOwnerType.getDescriptor()));
-				mv.visitLdcInsn(field.getName());
-				Label l4 = new Label();
-				mv.visitLabel(l4);
-				mv
-						.visitMethodInsn(INVOKESPECIAL,
-								"salve/dependency/KeyImpl", "<init>",
-								"(Ljava/lang/Class;Ljava/lang/Class;Ljava/lang/String;)V");
-				mv.visitVarInsn(ASTORE, 1);
-				Label l5 = new Label();
-				mv.visitLabel(l5);
-				mv.visitVarInsn(ALOAD, 0);
-				mv.visitVarInsn(ALOAD, 1);
-				mv.visitMethodInsn(INVOKESTATIC,
-						"salve/dependency/DependencyLibrary", "locate",
-						"(Lsalve/dependency/Key;)Ljava/lang/Object;");
-				mv.visitTypeInsn(CHECKCAST, fieldType.getInternalName());
-				mv.visitFieldInsn(PUTFIELD, fieldOwnerType.getInternalName(),
-						field.getName(), field.getDesc());
-				mv.visitLabel(l1);
-				mv.visitInsn(RETURN);
-				Label l6 = new Label();
-				mv.visitLabel(l6);
-				mv.visitLocalVariable("this", fieldOwnerType.getDescriptor(),
-						null, l0, l6, 0);
-				mv.visitLocalVariable("key", "Lsalve/dependency/Key;", null,
-						l5, l1, 1);
-				mv.visitMaxs(5, 2);
-				mv.visitEnd();
-				// XXX remove @dependency annot from field
-				return super.visitField(access, name, desc, signature, value);
-			}
-		}
-	}
+		Class tb = classPath.loadClass("salve/asm/TestBean");
 
-	@Override
-	public MethodVisitor visitMethod(int access, String name, String desc,
-			String signature, String[] exceptions) {
-		MethodVisitor mv = super.visitMethod(access, name, desc, signature,
-				exceptions);
-		if (AsmUtil.isClInitMethod(access, name, desc)) {
-			seenClinit = true;
-			return new ClInitInstrumentor(mv);
-		} else {
-			return new MethodInstrumentor(access, desc, mv);
-		}
-	}
+		Object b = tb.newInstance();
+		System.out.println(b.getClass().getName());
+		TestBean bb = (TestBean) b;
+		bb.execute();
 
-	private void generateClInit() {
-		MethodVisitor mvv = null;
-		mvv = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
-		ClInitInstrumentor mv = new ClInitInstrumentor(mvv);
-		mv.visitCode();
-		Label l4 = new Label();
-		mv.visitLabel(l4);
-		mv.visitInsn(RETURN);
-		mv.visitMaxs(0, 0);
-		mv.visitEnd();
-	}
-
-	private class ClInitInstrumentor extends MethodAdapter {
-
-		public ClInitInstrumentor(MethodVisitor mv) {
-			super(mv);
-		}
-
-		@Override
-		public void visitCode() {
-			final String keyImplName = Type.getType(KeyImpl.class)
-					.getInternalName();
-
-			for (DependencyField field : locator.locateFields(owner)) {
-				if (InjectionStrategy.INJECT_FIELD.equals(field.getStrategy())) {
-					continue;
-				}
-				final String fieldName = DependencyConstants.KEY_FIELD_PREFIX
-						+ field.getName();
-
-				Label l0 = new Label();
-				mv.visitLabel(l0);
-				mv.visitTypeInsn(NEW, keyImplName);
-				mv.visitInsn(DUP);
-				Label l1 = new Label();
-				mv.visitLabel(l1);
-				mv.visitLdcInsn(Type.getType(field.getDesc()));
-				mv.visitLdcInsn(Type.getObjectType(owner));
-				Label l2 = new Label();
-				mv.visitLabel(l2);
-				mv.visitLdcInsn(fieldName);
-				Label l3 = new Label();
-				mv.visitLabel(l3);
-				mv
-						.visitMethodInsn(INVOKESPECIAL, keyImplName, "<init>",
-								"(Ljava/lang/Class;Ljava/lang/Class;Ljava/lang/String;)V");
-				mv.visitFieldInsn(PUTSTATIC, owner, fieldName,
-						"Lsalve/dependency/Key;");
-			}
-
-			super.visitCode();
-		}
-	}
-
-	private class MethodInstrumentor extends MethodAdapter implements Opcodes {
-		private final LocalVariablesSorter lvs;
-
-		private Map<DependencyField, Integer> fieldToLocal;
-
-		public MethodInstrumentor(int acc, String desc, MethodVisitor mv) {
-			super(mv);
-			lvs = new LocalVariablesSorter(acc, desc, mv);
-		}
-
-		@Override
-		public void visitFieldInsn(int opcode, String owner, String name,
-				String desc) {
-			DependencyField field = locator.locateField(owner, name);
-			if (field != null) {
-				if (fieldToLocal == null) {
-					fieldToLocal = new HashMap<DependencyField, Integer>();
-				}
-
-				Integer local = fieldToLocal.get(field);
-
-				if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
-					if (local == null) {
-						local = new Integer(lvs.newLocal(Type.getType(field
-								.getDesc())));
-						Label l0 = new Label();
-						visitLabel(l0);
-						visitFieldInsn(GETSTATIC, field.getOwner(),
-								DependencyConstants.KEY_FIELD_PREFIX
-										+ field.getName(), Type
-										.getDescriptor(Key.class));
-						visitMethodInsn(INVOKESTATIC, Type
-								.getInternalName(DependencyLibrary.class),
-								"locate",
-								"(Lsalve/dependency/Key;)Ljava/lang/Object;");
-						Label l1 = new Label();
-						visitLabel(l1);
-						visitTypeInsn(CHECKCAST, Type.getType(field.getDesc())
-								.getInternalName());
-						visitVarInsn(ASTORE, local.intValue());
-						Label l2 = new Label();
-						visitLabel(l2);
-						visitVarInsn(ALOAD, local.intValue());
-						fieldToLocal.put(field, local);
-					} else {
-						visitVarInsn(ALOAD, local.intValue());
-					}
-				} else {
-					if (local == null) {
-						// first time access to this var, insert locator call
-						Label l0 = new Label();
-						mv.visitLabel(l0);
-						mv.visitVarInsn(ALOAD, 0);
-						mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(),
-								DependencyConstants.LOCATOR_METHOD_PREFIX
-										+ field.getName(), "()V");
-						fieldToLocal.put(field, new Integer(-1));
-						super.visitFieldInsn(opcode, owner, name, desc);
-					} else {
-						super.visitFieldInsn(opcode, owner, name, desc);
-					}
-
-				}
-			} else {
-				super.visitFieldInsn(opcode, owner, name, desc);
-			}
-		}
-
-		@Override
-		public void visitFrame(int type, int local, Object[] local2, int stack,
-				Object[] stack2) {
-			lvs.visitFrame(type, local, local2, stack, stack2);
-		}
-
-		@Override
-		public void visitIincInsn(int var, int increment) {
-			lvs.visitIincInsn(var, increment);
-		}
-
-		@Override
-		public void visitLocalVariable(String name, String desc,
-				String signature, Label start, Label end, int index) {
-			lvs.visitLocalVariable(name, desc, signature, start, end, index);
-		}
-
-		@Override
-		public void visitMaxs(int maxStack, int maxLocals) {
-			lvs.visitMaxs(maxStack, maxLocals);
-		}
-
-		@Override
-		public void visitVarInsn(int opcode, int var) {
-			lvs.visitVarInsn(opcode, var);
-		}
-
+		/*
+		 * reader.accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
+		 * 
+		 * ClassReader instr = new ClassReader(writer.toByteArray());
+		 * StringBuilderOutputStream sbos = new StringBuilderOutputStream();
+		 * instr.accept(new ASMifierClassVisitor(new PrintWriter(sbos)), 0);
+		 * 
+		 * ClassReader targetr = new ClassReader(loader
+		 * .getResourceAsStream("salve/asm/TestBeanInstrumented.class"));
+		 * StringBuilderOutputStream tsbos = new StringBuilderOutputStream();
+		 * targetr.accept(new ASMifierClassVisitor(new PrintWriter(tsbos)), 0);
+		 * 
+		 * String s = sbos.getBuilder().toString(); String t =
+		 * tsbos.getBuilder().toString(); s = s.replace("\r\n", "\n"); s =
+		 * s.replace("\n\r", "\n"); t = t.replace("\r\n", "\n"); t =
+		 * t.replace("\n\r", "\n");
+		 * 
+		 * t = t.replace("TestBeanInstrumented", "TestBean");
+		 * 
+		 * MyersDiff diff = new MyersDiff(); Revision r =
+		 * diff.diff(s.split("\n"), t.split("\n")); //
+		 * System.out.println(r.toString());
+		 * 
+		 * System.out.println(tsbos.getBuilder().toString());
+		 */
 	}
 }
