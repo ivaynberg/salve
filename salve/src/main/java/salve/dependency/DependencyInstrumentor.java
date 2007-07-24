@@ -2,7 +2,6 @@ package salve.dependency;
 
 import java.io.FileOutputStream;
 
-import salve.asm.TestBean;
 import salve.asm.loader.BytecodePool;
 import salve.asm.loader.ClassLoaderLoader;
 import salve.asm.loader.MemoryLoader;
@@ -13,24 +12,6 @@ import salve.org.objectweb.asm.ClassReader;
 import salve.org.objectweb.asm.ClassWriter;
 
 public class DependencyInstrumentor implements salve.Instrumentor {
-
-	public byte[] instrument(ClassLoader loader, String name, byte[] bytecode)
-			throws Exception {
-
-		BytecodePool pool = new BytecodePool();
-		pool.addLoader(new MemoryLoader(name, bytecode));
-		pool.addLoader(new ClassLoaderLoader(loader));
-		pool.addLoader(new ClassLoaderLoader(Object.class.getClassLoader()));
-
-		DependencyAnalyzer analyzer = new DependencyAnalyzer(pool);
-		ClassReader reader = new ClassReader(bytecode);
-		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		DependencyInstrumentorAdapter inst = new DependencyInstrumentorAdapter(
-				writer, analyzer);
-		reader.accept(inst, 0);
-
-		return writer.toByteArray();
-	}
 
 	public static void main(String[] args) throws Exception {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -84,5 +65,23 @@ public class DependencyInstrumentor implements salve.Instrumentor {
 		 * 
 		 * System.out.println(tsbos.getBuilder().toString());
 		 */
+	}
+
+	public byte[] instrument(ClassLoader loader, String name, byte[] bytecode)
+			throws Exception {
+
+		BytecodePool pool = new BytecodePool();
+		pool.addLoader(new MemoryLoader(name, bytecode));
+		pool.addLoader(new ClassLoaderLoader(loader));
+		pool.addLoader(new ClassLoaderLoader(Object.class.getClassLoader()));
+
+		DependencyAnalyzer analyzer = new DependencyAnalyzer(pool);
+		ClassReader reader = new ClassReader(bytecode);
+		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		DependencyInstrumentorAdapter inst = new DependencyInstrumentorAdapter(
+				writer, analyzer);
+		reader.accept(inst, 0);
+
+		return writer.toByteArray();
 	}
 }

@@ -1,4 +1,4 @@
-package salve.asm;
+package salve.dependency;
 
 import salve.dependency.Dependency;
 import salve.dependency.InjectionStrategy;
