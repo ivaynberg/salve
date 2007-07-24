@@ -2,15 +2,32 @@ package salve.asm;
 
 import java.io.FileOutputStream;
 
-import org.objectweb.asm.ClassAdapter;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-
 import salve.asm.loader.BytecodePool;
 import salve.asm.loader.ClassLoaderLoader;
 import salve.asm.loader.MemoryLoader;
+import salve.org.objectweb.asm.ClassAdapter;
+import salve.org.objectweb.asm.ClassReader;
+import salve.org.objectweb.asm.ClassWriter;
 
 public class Instrumentor implements salve.Instrumentor {
+
+	public byte[] instrument(ClassLoader loader, String name, byte[] bytecode)
+			throws Exception {
+
+		BytecodePool pool = new BytecodePool();
+		pool.addLoader(new MemoryLoader(name, bytecode));
+		pool.addLoader(new ClassLoaderLoader(loader));
+		pool.addLoader(new ClassLoaderLoader(Object.class.getClassLoader()));
+
+		DependencyAnalyzer analyzer = new DependencyAnalyzer(pool);
+		ClassReader reader = new ClassReader(bytecode);
+		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		DependencyInstrumentor inst = new DependencyInstrumentor(writer,
+				analyzer);
+		reader.accept(inst, 0);
+
+		return writer.toByteArray();
+	}
 
 	public static void main(String[] args) throws Exception {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -36,7 +53,7 @@ public class Instrumentor implements salve.Instrumentor {
 		Object b = tb.newInstance();
 		System.out.println(b.getClass().getName());
 		TestBean bb = (TestBean) b;
-		bb.getDependency();
+		bb.execute();
 
 		/*
 		 * reader.accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
@@ -63,23 +80,5 @@ public class Instrumentor implements salve.Instrumentor {
 		 * 
 		 * System.out.println(tsbos.getBuilder().toString());
 		 */
-	}
-
-	public byte[] instrument(ClassLoader loader, String name, byte[] bytecode)
-			throws Exception {
-
-		BytecodePool pool = new BytecodePool();
-		pool.addLoader(new MemoryLoader(name, bytecode));
-		pool.addLoader(new ClassLoaderLoader(loader));
-		pool.addLoader(new ClassLoaderLoader(Object.class.getClassLoader()));
-
-		DependencyAnalyzer analyzer = new DependencyAnalyzer(pool);
-		ClassReader reader = new ClassReader(bytecode);
-		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		DependencyInstrumentor inst = new DependencyInstrumentor(writer,
-				analyzer);
-		reader.accept(inst, 0);
-
-		return writer.toByteArray();
 	}
 }

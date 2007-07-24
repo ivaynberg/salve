@@ -1,6 +1,6 @@
 package salve.asm.util;
 
-import org.objectweb.asm.Opcodes;
+import salve.org.objectweb.asm.Opcodes;
 
 public class AsmUtil {
 

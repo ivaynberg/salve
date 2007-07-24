@@ -1,26 +1,19 @@
 package salve.asm;
 
 import salve.dependency.Dependency;
+import salve.dependency.InjectionStrategy;
 
 public class TestBean {
 
 	@Dependency
-	private RedDependency dependency;
+	private RedDependency red;
 
-	public int doit() {
-		int a = 5;
-		int b = 2;
-		a = a + b;
-		return a;
+	@Dependency(strategy = InjectionStrategy.INJECT_FIELD)
+	private BlueDependency blue;
+
+	public void execute() {
+		blue.method1();
+		blue.method2();
 	}
 
-	public RedDependency getDependency() {
-		return new InnerBean().getDependency();
-	}
-
-	private class InnerBean {
-		public RedDependency getDependency() {
-			return dependency;
-		}
-	}
 }

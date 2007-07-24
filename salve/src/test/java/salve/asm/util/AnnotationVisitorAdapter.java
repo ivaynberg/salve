@@ -1,6 +1,6 @@
 package salve.asm.util;
 
-import org.objectweb.asm.AnnotationVisitor;
+import salve.org.objectweb.asm.AnnotationVisitor;
 
 public class AnnotationVisitorAdapter implements AnnotationVisitor {
 
