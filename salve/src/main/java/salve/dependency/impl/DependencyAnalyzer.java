@@ -1,4 +1,4 @@
-package salve.asm;
+package salve.dependency.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
+import salve.asm.BytecodeLoader;
+import salve.asm.CannotLoadBytecodeException;
 import salve.asm.util.AnnotationVisitorAdapter;
 import salve.asm.util.ClassVisitorAdapter;
 import salve.asm.util.FieldVisitorAdapter;

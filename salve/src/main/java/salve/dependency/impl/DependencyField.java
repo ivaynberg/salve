@@ -1,7 +1,7 @@
 /**
  * 
  */
-package salve.asm;
+package salve.dependency.impl;
 
 import salve.dependency.InjectionStrategy;
 
