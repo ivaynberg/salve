@@ -1,5 +1,7 @@
 package salve.dependency;
 
+import junit.framework.Assert;
+
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -22,7 +24,7 @@ public class DependencyInstrumentorTest {
 	}
 
 	@Test
-	public void testLookups() throws Exception {
+	public void testFieldRead() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 
 		/*
@@ -49,6 +51,30 @@ public class DependencyInstrumentorTest {
 		bean.method1();
 		bean.method2();
 		EasyMock.verify(locator, blue, red);
+	}
+
+	@Test
+	public void testFieldReadOnReturn() throws Exception {
+		Bean bean = (Bean) beanClass.newInstance();
+		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class)))
+				.andReturn(red);
+		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
+				.andReturn(blue);
+
+		EasyMock.replay(locator, blue, red);
+		Assert.assertTrue(bean.getRed() == red);
+		Assert.assertTrue(bean.getBlue() == blue);
+		EasyMock.verify(locator, blue, red);
+	}
+
+	// @Test
+	public void testFieldWrite() throws Exception {
+		Bean bean = (Bean) beanClass.newInstance();
+
+		bean.setRed(red);
+		bean.setBlue(blue);
+		Assert.assertTrue(bean.getRed() == red);
+		Assert.assertTrue(bean.getBlue() == blue);
 	}
 
 	@BeforeClass
