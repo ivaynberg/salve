@@ -5,9 +5,9 @@ import salve.dependency.DependencyLibrary;
 import salve.dependency.Key;
 import salve.dependency.KeyImpl;
 
-public class TestBeanInstrumented {
+public class BeanInstrumented {
 	public static final Key _salvedepkey$red = new KeyImpl(RedDependency.class,
-			TestBeanInstrumented.class, "_salvedepkey$red");
+			BeanInstrumented.class, "_salvedepkey$red");
 
 	@Dependency
 	private RedDependency red;
@@ -24,7 +24,7 @@ public class TestBeanInstrumented {
 	private void _salveloc$blue() {
 		if (blue == null) {
 			Key key = new KeyImpl(BlueDependency.class,
-					TestBeanInstrumented.class, "blue");
+					BeanInstrumented.class, "blue");
 			blue = (BlueDependency) DependencyLibrary.locate(key);
 		}
 	}
