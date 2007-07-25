@@ -17,7 +17,7 @@ public class DependencyInstrumentor implements salve.Instrumentor {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		BytecodePool classPath = new BytecodePool();
 		classPath.addLoader(new ClassLoaderLoader(loader));
-		byte[] bytecode = classPath.loadBytecode("salve/asm/TestBean");
+		byte[] bytecode = classPath.loadBytecode("salve/dependency/Bean");
 		ClassReader reader = new ClassReader(bytecode);
 		DependencyAnalyzer locator = new DependencyAnalyzer(classPath);
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -25,7 +25,7 @@ public class DependencyInstrumentor implements salve.Instrumentor {
 				locator);
 		reader.accept(adapter, 0);
 
-		classPath.save("salve/asm/TestBean", writer.toByteArray());
+		classPath.save("salve/dependency/Bean", writer.toByteArray());
 
 		FileOutputStream out = new FileOutputStream(
 				"target/test-classes/Test.class");
@@ -33,12 +33,12 @@ public class DependencyInstrumentor implements salve.Instrumentor {
 		out.write(writer.toByteArray());
 		out.close();
 
-		Class tb = classPath.loadClass("salve/asm/TestBean");
+		Class tb = classPath.loadClass("salve/dependency/Bean");
 
 		Object b = tb.newInstance();
 		System.out.println(b.getClass().getName());
-		TestBean bb = (TestBean) b;
-		bb.execute();
+		Bean bb = (Bean) b;
+		bb.run();
 
 		/*
 		 * reader.accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
@@ -73,7 +73,14 @@ public class DependencyInstrumentor implements salve.Instrumentor {
 		BytecodePool pool = new BytecodePool();
 		pool.addLoader(new MemoryLoader(name, bytecode));
 		pool.addLoader(new ClassLoaderLoader(loader));
-		pool.addLoader(new ClassLoaderLoader(Object.class.getClassLoader()));
+		if (Object.class.getClassLoader() != null) {
+			pool
+					.addLoader(new ClassLoaderLoader(Object.class
+							.getClassLoader()));
+		} else {
+			pool.addLoader(new ClassLoaderLoader(Thread.currentThread()
+					.getContextClassLoader()));
+		}
 
 		DependencyAnalyzer analyzer = new DependencyAnalyzer(pool);
 		ClassReader reader = new ClassReader(bytecode);
