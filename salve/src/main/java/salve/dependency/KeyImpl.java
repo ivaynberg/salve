@@ -6,10 +6,22 @@ import java.util.Arrays;
 
 public class KeyImpl implements Key {
 	private static final long serialVersionUID = 1L;
-
+	private static final Annotation[] EMPTY = new Annotation[0];
 	private final Class<?> type;
 
 	private final Annotation[] annots;
+
+	public KeyImpl(Class<?> type) {
+		super();
+		this.type = type;
+		annots = EMPTY;
+	}
+
+	public KeyImpl(Class<?> type, Annotation[] annots) {
+		super();
+		this.type = type;
+		this.annots = annots;
+	}
 
 	public KeyImpl(Class<?> dependencyType, Class<?> keyOwner,
 			String keyFieldName) {

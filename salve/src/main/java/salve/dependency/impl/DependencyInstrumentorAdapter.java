@@ -57,9 +57,10 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 		} else {
 			if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
 				// TODO copy annots
-				return super.visitField(ACC_PUBLIC + ACC_STATIC + ACC_FINAL,
+				return new DependencyAnnotRemover(super.visitField(ACC_PUBLIC
+						+ ACC_STATIC + ACC_FINAL,
 						DependencyConstants.KEY_FIELD_PREFIX + name, Type
-								.getDescriptor(Key.class), null, null);
+								.getDescriptor(Key.class), null, null));
 			} else {
 				Type fieldOwnerType = Type.getObjectType(field.getOwner());
 				Type fieldType = Type.getType(field.getDesc());
@@ -111,8 +112,8 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 						l5, l1, 1);
 				mv.visitMaxs(5, 2);
 				mv.visitEnd();
-				// XXX remove @dependency annot from field
-				return super.visitField(access, name, desc, signature, value);
+				return new DependencyAnnotRemover(super.visitField(access,
+						name, desc, signature, value));
 			}
 		}
 	}

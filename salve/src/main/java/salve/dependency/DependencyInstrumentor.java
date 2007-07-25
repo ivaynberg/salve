@@ -38,7 +38,7 @@ public class DependencyInstrumentor implements salve.Instrumentor {
 		Object b = tb.newInstance();
 		System.out.println(b.getClass().getName());
 		Bean bb = (Bean) b;
-		bb.run();
+		bb.method1();
 
 		/*
 		 * reader.accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);

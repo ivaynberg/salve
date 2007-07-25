@@ -1,11 +1,7 @@
 package salve.dependency;
 
-public class BlueDependency {
-	public void method1() {
+public interface BlueDependency {
+	public void method1();
 
-	}
-
-	public void method2() {
-
-	}
+	public void method2();
 }
