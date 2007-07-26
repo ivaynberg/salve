@@ -4,11 +4,15 @@ public class Bean {
 
 	private static BlackDependency staticBlack;
 
+	@Square
 	@Dependency
+	@Circle
 	private RedDependency red;
 
 	@Dependency(strategy = InjectionStrategy.INJECT_FIELD)
 	private BlueDependency blue;
+
+	@Circle
 	private BlackDependency black;
 
 	public BlackDependency getBlack() {

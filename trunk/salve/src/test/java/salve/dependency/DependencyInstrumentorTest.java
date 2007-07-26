@@ -1,5 +1,7 @@
 package salve.dependency;
 
+import java.lang.annotation.Annotation;
+
 import junit.framework.Assert;
 
 import org.easymock.EasyMock;
@@ -9,6 +11,7 @@ import org.junit.Test;
 
 import salve.asm.loader.BytecodePool;
 import salve.asm.loader.ClassLoaderLoader;
+import salve.dependency.impl.DependencyConstants;
 
 public class DependencyInstrumentorTest {
 	private static String BEAN_NAME = "salve/dependency/Bean";
@@ -24,6 +27,25 @@ public class DependencyInstrumentorTest {
 	}
 
 	@Test
+	public void testAnnotations() throws Exception {
+		Annotation[] annots = beanClass.getDeclaredField(
+				DependencyConstants.KEY_FIELD_PREFIX + "red").getAnnotations();
+		Assert.assertEquals(2, annots.length);
+		final Class a1 = annots[0].annotationType();
+		final Class a2 = annots[1].annotationType();
+		Assert.assertTrue(a1.equals(Square.class) && a2.equals(Circle.class)
+				|| a2.equals(Square.class) && a1.equals(Circle.class));
+
+		annots = beanClass.getDeclaredField("blue").getAnnotations();
+		Assert.assertEquals(0, annots.length);
+
+		annots = beanClass.getDeclaredField("black").getAnnotations();
+		Assert.assertEquals(1, annots.length);
+		Assert.assertEquals(Circle.class, annots[0].annotationType());
+
+	}
+
+	@Test
 	public void testFieldRead() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 
@@ -33,7 +55,9 @@ public class DependencyInstrumentorTest {
 		 * looked up only once because it is cached in the field. red is looked
 		 * up twice because it is cached per method and we call two methods
 		 */
-		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class)))
+		EasyMock.expect(
+				locator.locate(new KeyImpl(RedDependency.class, Bean.class,
+						DependencyConstants.KEY_FIELD_PREFIX + "red")))
 				.andReturn(red).times(2);
 		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
 				.andReturn(blue);
@@ -56,7 +80,9 @@ public class DependencyInstrumentorTest {
 	@Test
 	public void testFieldReadOnReturn() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
-		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class)))
+		EasyMock.expect(
+				locator.locate(new KeyImpl(RedDependency.class, Bean.class,
+						DependencyConstants.KEY_FIELD_PREFIX + "red")))
 				.andReturn(red);
 		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
 				.andReturn(blue);
@@ -68,11 +94,26 @@ public class DependencyInstrumentorTest {
 	}
 
 	@Test
+	public void testFieldRemoval() throws Exception {
+		try {
+			beanClass.getDeclaredField("red");
+			Assert.fail("Field `red` should have been removed");
+		} catch (NoSuchFieldException e) {
+			// noop
+		}
+	}
+
+	@Test
 	public void testFieldWrite() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 
-		bean.setBlue(blue);
-		Assert.assertTrue(bean.getBlue() == blue);
+		try {
+			bean.setBlue(blue);
+			Assert
+					.fail("Attempted to write to removed dependency field and did not get IllegalFieldWriteException");
+		} catch (IllegalFieldWriteException e) {
+			// noop
+		}
 		try {
 			bean.setRed(red);
 			Assert
@@ -81,12 +122,7 @@ public class DependencyInstrumentorTest {
 			// noop
 		}
 
-	}
-
-	@Test
-	public void testNonDependencyFields() throws Exception {
 		// make sure non dependency fields are left alone
-		Bean bean = (Bean) beanClass.newInstance();
 		BlackDependency black = EasyMock.createMock(BlackDependency.class);
 		Assert.assertTrue(bean.getBlack() == null);
 		bean.setBlack(black);
