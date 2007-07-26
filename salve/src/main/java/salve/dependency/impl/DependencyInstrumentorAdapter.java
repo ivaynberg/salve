@@ -211,6 +211,23 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 
 			DependencyField field = locator.locateField(owner, name);
 			if (field != null) {
+
+				if (opcode == PUTFIELD) {
+					// throw IllegalFieldWriteException
+					Label l0 = new Label();
+					visitLabel(l0);
+					visitTypeInsn(NEW,
+							"salve/dependency/IllegalFieldWriteException");
+					visitInsn(DUP);
+					visitLdcInsn(field.getOwner().replace("/", "."));
+					visitLdcInsn(field.getName());
+					visitMethodInsn(INVOKESPECIAL, Type
+							.getInternalName(IllegalFieldWriteException.class),
+							"<init>", "(Ljava/lang/String;Ljava/lang/String;)V");
+					visitInsn(ATHROW);
+					return;
+				}
+
 				if (fieldToLocal == null) {
 					fieldToLocal = new HashMap<DependencyField, Integer>();
 				}
@@ -218,24 +235,6 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 				Integer local = fieldToLocal.get(field);
 
 				if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
-					if (opcode == PUTFIELD) {
-						// throw IllegalFieldWriteException
-						Label l0 = new Label();
-						visitLabel(l0);
-						visitTypeInsn(NEW,
-								"salve/dependency/IllegalFieldWriteException");
-						visitInsn(DUP);
-						visitLdcInsn(field.getOwner().replace("/", "."));
-						visitLdcInsn(field.getName());
-						visitMethodInsn(
-								INVOKESPECIAL,
-								Type
-										.getInternalName(IllegalFieldWriteException.class),
-								"<init>",
-								"(Ljava/lang/String;Ljava/lang/String;)V");
-						visitInsn(ATHROW);
-						return;
-					}
 					if (local == null) {
 						local = new Integer(lvs.newLocal(Type.getType(field
 								.getDesc())));
