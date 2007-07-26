@@ -8,6 +8,7 @@ import java.util.Map;
 
 import salve.asm.util.AsmUtil;
 import salve.dependency.DependencyLibrary;
+import salve.dependency.IllegalFieldWriteException;
 import salve.dependency.InjectionStrategy;
 import salve.dependency.Key;
 import salve.dependency.KeyImpl;
@@ -127,7 +128,11 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 			seenClinit = true;
 			return new ClInitInstrumentor(mv);
 		} else {
-			return new MethodInstrumentor(access, desc, mv);
+			if (name.startsWith(DependencyConstants.LOCATOR_METHOD_PREFIX)) {
+				return mv;
+			} else {
+				return new MethodInstrumentor(access, desc, mv);
+			}
 		}
 	}
 
@@ -198,6 +203,12 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 		@Override
 		public void visitFieldInsn(int opcode, String owner, String name,
 				String desc) {
+
+			if (opcode == GETSTATIC || opcode == PUTSTATIC) {
+				super.visitFieldInsn(opcode, owner, name, desc);
+				return;
+			}
+
 			DependencyField field = locator.locateField(owner, name);
 			if (field != null) {
 				if (fieldToLocal == null) {
@@ -207,6 +218,24 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 				Integer local = fieldToLocal.get(field);
 
 				if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
+					if (opcode == PUTFIELD) {
+						// throw IllegalFieldWriteException
+						Label l0 = new Label();
+						visitLabel(l0);
+						visitTypeInsn(NEW,
+								"salve/dependency/IllegalFieldWriteException");
+						visitInsn(DUP);
+						visitLdcInsn(field.getOwner().replace("/", "."));
+						visitLdcInsn(field.getName());
+						visitMethodInsn(
+								INVOKESPECIAL,
+								Type
+										.getInternalName(IllegalFieldWriteException.class),
+								"<init>",
+								"(Ljava/lang/String;Ljava/lang/String;)V");
+						visitInsn(ATHROW);
+						return;
+					}
 					if (local == null) {
 						local = new Integer(lvs.newLocal(Type.getType(field
 								.getDesc())));
@@ -233,6 +262,10 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 						visitVarInsn(ALOAD, local.intValue());
 					}
 				} else {
+					if (opcode == PUTFIELD) {
+						super.visitFieldInsn(opcode, owner, name, desc);
+						return;
+					}
 					if (local == null) {
 						// first time access to this var, insert locator call
 						Label l0 = new Label();
@@ -243,13 +276,16 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 										+ field.getName(), "()V");
 						fieldToLocal.put(field, new Integer(-1));
 						super.visitFieldInsn(opcode, owner, name, desc);
+						return;
 					} else {
 						super.visitFieldInsn(opcode, owner, name, desc);
+						return;
 					}
 
 				}
 			} else {
 				super.visitFieldInsn(opcode, owner, name, desc);
+				return;
 			}
 		}
 
