@@ -152,7 +152,6 @@ public class DependencyInstrumentorTest {
 	private static void loadBeans() throws Exception {
 		ClassLoader classLoader = DependencyInstrumentorTest.class
 				.getClassLoader();
-
 		BytecodePool pool = new BytecodePool();
 		pool.addLoader(new ClassLoaderLoader(classLoader));
 
