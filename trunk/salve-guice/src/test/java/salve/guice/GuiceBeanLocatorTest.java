@@ -1,16 +1,15 @@
 package salve.guice;
 
-import javassist.ClassClassPath;
-import javassist.ClassPool;
-import javassist.CtClass;
 import junit.framework.Assert;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import salve.asm.loader.BytecodePool;
+import salve.asm.loader.ClassLoaderLoader;
+import salve.dependency.DependencyInstrumentor;
 import salve.dependency.DependencyLibrary;
 import salve.dependency.Locator;
-import salve.dependency.impl.PojoInstrumentor;
 import salve.guice.model.Blue;
 import salve.guice.model.Injected;
 import salve.guice.model.MockService;
@@ -26,6 +25,8 @@ public class GuiceBeanLocatorTest {
 	private static Injector injector;
 	private static Object injected;
 	private static Locator locator;
+
+	private static final String BEAN_NAME = "salve/guice/model/Injected";
 
 	@Test
 	public void testLookupByType() {
@@ -68,11 +69,18 @@ public class GuiceBeanLocatorTest {
 
 		DependencyLibrary.addLocator(locator);
 
-		ClassPool cp = new ClassPool(ClassPool.getDefault());
-		cp.appendClassPath(new ClassClassPath(GuiceBeanLocatorTest.class));
-		CtClass clazz = cp.get("salve.guice.model.Injected");
-		PojoInstrumentor inst = new PojoInstrumentor(clazz);
-		inst.instrument();
-		injected = inst.getInstrumented().toClass().newInstance();
+		ClassLoader classLoader = GuiceBeanLocatorTest.class.getClassLoader();
+		BytecodePool pool = new BytecodePool();
+		pool.addLoader(new ClassLoaderLoader(classLoader));
+
+		byte[] bytecode = pool.loadBytecode(BEAN_NAME);
+		if (bytecode == null) {
+			throw new RuntimeException("Could not load bytecode for "
+					+ BEAN_NAME);
+		}
+
+		DependencyInstrumentor inst = new DependencyInstrumentor();
+		bytecode = inst.instrument(classLoader, BEAN_NAME, bytecode);
+		injected = pool.loadClass(BEAN_NAME, bytecode).newInstance();
 	}
 }
