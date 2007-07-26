@@ -2,12 +2,13 @@ package salve.dependency;
 
 public class Bean {
 
+	private static BlackDependency staticBlack;
+
 	@Dependency
 	private RedDependency red;
 
 	@Dependency(strategy = InjectionStrategy.INJECT_FIELD)
 	private BlueDependency blue;
-
 	private BlackDependency black;
 
 	public BlackDependency getBlack() {
@@ -46,6 +47,14 @@ public class Bean {
 
 	public void setRed(RedDependency red) {
 		this.red = red;
+	}
+
+	public static BlackDependency getStaticBlack() {
+		return staticBlack;
+	}
+
+	public static void setStaticBlack(BlackDependency staticBlack) {
+		Bean.staticBlack = staticBlack;
 	}
 
 }

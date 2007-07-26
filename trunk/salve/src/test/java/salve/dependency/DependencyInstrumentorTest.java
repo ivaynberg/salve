@@ -67,14 +67,35 @@ public class DependencyInstrumentorTest {
 		EasyMock.verify(locator, blue, red);
 	}
 
-	// @Test
+	@Test
 	public void testFieldWrite() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 
-		bean.setRed(red);
 		bean.setBlue(blue);
-		Assert.assertTrue(bean.getRed() == red);
 		Assert.assertTrue(bean.getBlue() == blue);
+		try {
+			bean.setRed(red);
+			Assert
+					.fail("Attempted to write to removed dependency field and did not get IllegalFieldWriteException");
+		} catch (IllegalFieldWriteException e) {
+			// noop
+		}
+
+	}
+
+	@Test
+	public void testNonDependencyFields() throws Exception {
+		// make sure non dependency fields are left alone
+		Bean bean = (Bean) beanClass.newInstance();
+		BlackDependency black = EasyMock.createMock(BlackDependency.class);
+		Assert.assertTrue(bean.getBlack() == null);
+		bean.setBlack(black);
+		Assert.assertTrue(bean.getBlack() == black);
+
+		Assert.assertTrue(Bean.getStaticBlack() == null);
+		Bean.setStaticBlack(black);
+		Assert.assertTrue(Bean.getStaticBlack() == black);
+
 	}
 
 	@BeforeClass
@@ -84,6 +105,8 @@ public class DependencyInstrumentorTest {
 	}
 
 	private static void initDependencyLibrary() {
+		DependencyLibrary.clear();
+
 		blue = EasyMock.createMock(BlueDependency.class);
 		red = EasyMock.createMock(RedDependency.class);
 		locator = EasyMock.createMock(Locator.class);
