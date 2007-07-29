@@ -4,6 +4,14 @@ public class Bean {
 
 	private static BlackDependency staticBlack;
 
+	public static BlackDependency getStaticBlack() {
+		return staticBlack;
+	}
+
+	public static void setStaticBlack(BlackDependency staticBlack) {
+		Bean.staticBlack = staticBlack;
+	}
+
 	@Square
 	@Dependency
 	@Circle
@@ -37,8 +45,15 @@ public class Bean {
 	public void method2() {
 		blue.method1();
 		blue.method2();
+		// System.out.println("1: " + red);
 		red.method1();
-		red.method2();
+		// System.out.println("2: " + red);
+		Object tmp = null;
+		if (tmp == null) {
+			// System.out.println("3: " + red);
+			// System.out.println(red);
+			tmp = red.method2();
+		}
 	}
 
 	public void setBlack(BlackDependency black) {
@@ -51,14 +66,6 @@ public class Bean {
 
 	public void setRed(RedDependency red) {
 		this.red = red;
-	}
-
-	public static BlackDependency getStaticBlack() {
-		return staticBlack;
-	}
-
-	public static void setStaticBlack(BlackDependency staticBlack) {
-		Bean.staticBlack = staticBlack;
 	}
 
 }

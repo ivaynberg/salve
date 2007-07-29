@@ -131,7 +131,10 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 			if (name.startsWith(DependencyConstants.LOCATOR_METHOD_PREFIX)) {
 				return mv;
 			} else {
-				return new MethodInstrumentor(access, desc, mv);
+				MethodInstrumentor inst = new MethodInstrumentor(access, desc,
+						mv);
+				inst.lvs = new LocalVariablesSorter(access, desc, inst);
+				return inst.lvs;
 			}
 		}
 	}
@@ -191,13 +194,12 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 	}
 
 	private class MethodInstrumentor extends MethodAdapter implements Opcodes {
-		private final LocalVariablesSorter lvs;
+		public LocalVariablesSorter lvs;
 
 		private Map<DependencyField, Integer> fieldToLocal;
 
 		public MethodInstrumentor(int acc, String desc, MethodVisitor mv) {
 			super(mv);
-			lvs = new LocalVariablesSorter(acc, desc, mv);
 		}
 
 		@Override
@@ -240,25 +242,27 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 								.getDesc())));
 						Label l0 = new Label();
 						visitLabel(l0);
-						visitFieldInsn(GETSTATIC, field.getOwner(),
+						visitInsn(POP);
+						mv.visitFieldInsn(GETSTATIC, field.getOwner(),
 								DependencyConstants.KEY_FIELD_PREFIX
 										+ field.getName(), Type
 										.getDescriptor(Key.class));
-						visitMethodInsn(INVOKESTATIC, Type
+						mv.visitMethodInsn(INVOKESTATIC, Type
 								.getInternalName(DependencyLibrary.class),
 								"locate",
 								"(Lsalve/dependency/Key;)Ljava/lang/Object;");
 						Label l1 = new Label();
-						visitLabel(l1);
-						visitTypeInsn(CHECKCAST, Type.getType(field.getDesc())
-								.getInternalName());
-						visitVarInsn(ASTORE, local.intValue());
+						mv.visitLabel(l1);
+						mv.visitTypeInsn(CHECKCAST, Type.getType(
+								field.getDesc()).getInternalName());
+						mv.visitVarInsn(ASTORE, local.intValue());
 						Label l2 = new Label();
-						visitLabel(l2);
-						visitVarInsn(ALOAD, local.intValue());
+						mv.visitLabel(l2);
+						mv.visitVarInsn(ALOAD, local.intValue());
 						fieldToLocal.put(field, local);
 					} else {
-						visitVarInsn(ALOAD, local.intValue());
+						mv.visitInsn(POP);
+						mv.visitVarInsn(ALOAD, local.intValue());
 					}
 				} else {
 					if (opcode == PUTFIELD) {
@@ -274,45 +278,18 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 								DependencyConstants.LOCATOR_METHOD_PREFIX
 										+ field.getName(), "()V");
 						fieldToLocal.put(field, new Integer(-1));
-						super.visitFieldInsn(opcode, owner, name, desc);
+						mv.visitFieldInsn(opcode, owner, name, desc);
 						return;
 					} else {
-						super.visitFieldInsn(opcode, owner, name, desc);
+						mv.visitFieldInsn(opcode, owner, name, desc);
 						return;
 					}
 
 				}
 			} else {
-				super.visitFieldInsn(opcode, owner, name, desc);
+				mv.visitFieldInsn(opcode, owner, name, desc);
 				return;
 			}
-		}
-
-		@Override
-		public void visitFrame(int type, int local, Object[] local2, int stack,
-				Object[] stack2) {
-			lvs.visitFrame(type, local, local2, stack, stack2);
-		}
-
-		@Override
-		public void visitIincInsn(int var, int increment) {
-			lvs.visitIincInsn(var, increment);
-		}
-
-		@Override
-		public void visitLocalVariable(String name, String desc,
-				String signature, Label start, Label end, int index) {
-			lvs.visitLocalVariable(name, desc, signature, start, end, index);
-		}
-
-		@Override
-		public void visitMaxs(int maxStack, int maxLocals) {
-			lvs.visitMaxs(maxStack, maxLocals);
-		}
-
-		@Override
-		public void visitVarInsn(int opcode, int var) {
-			lvs.visitVarInsn(opcode, var);
 		}
 
 	}
