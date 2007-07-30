@@ -2,15 +2,11 @@ package salve.dependency;
 
 public class Bean {
 
+	// force this bean to have a clinit
+	@SuppressWarnings("unused")
+	private static long FORCE_CLINIT = System.currentTimeMillis();
+
 	private static BlackDependency staticBlack;
-
-	public static BlackDependency getStaticBlack() {
-		return staticBlack;
-	}
-
-	public static void setStaticBlack(BlackDependency staticBlack) {
-		Bean.staticBlack = staticBlack;
-	}
 
 	@Square
 	@Dependency
@@ -66,6 +62,14 @@ public class Bean {
 
 	public void setRed(RedDependency red) {
 		this.red = red;
+	}
+
+	public static BlackDependency getStaticBlack() {
+		return staticBlack;
+	}
+
+	public static void setStaticBlack(BlackDependency staticBlack) {
+		Bean.staticBlack = staticBlack;
 	}
 
 }

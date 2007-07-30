@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import salve.dependency.InjectionStrategy;
+import salve.org.objectweb.asm.ClassAdapter;
 import salve.org.objectweb.asm.ClassVisitor;
 import salve.org.objectweb.asm.FieldVisitor;
 import salve.org.objectweb.asm.Label;
@@ -15,16 +16,15 @@ import salve.org.objectweb.asm.MethodVisitor;
 import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
 import salve.org.objectweb.asm.commons.LocalVariablesSorter;
-import salve.org.objectweb.asm.commons.StaticInitMerger;
 
-public class DependencyClassInstrumentor extends StaticInitMerger implements
+public class DependencyClassInstrumentor extends ClassAdapter implements
 		Opcodes, BytecodeConstants {
 	private final DependencyAnalyzer analyzer;
 	private String owner = null;
 
 	public DependencyClassInstrumentor(ClassVisitor cv,
 			DependencyAnalyzer analyzer) {
-		super(CLINIT_METHOD_PREFIX, cv);
+		super(cv);
 		this.analyzer = analyzer;
 	}
 
@@ -152,7 +152,8 @@ public class DependencyClassInstrumentor extends StaticInitMerger implements
 
 	private void generateKeyInitializerMethod() {
 		MethodVisitor mv = null;
-		mv = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+		mv = cv.visitMethod(ACC_PRIVATE + ACC_STATIC, "<clinit>", "()V", null,
+				null);
 		mv.visitCode();
 
 		for (DependencyField field : analyzer.locateFields(owner)) {
