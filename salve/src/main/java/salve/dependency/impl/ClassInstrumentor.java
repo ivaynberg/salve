@@ -7,9 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import salve.dependency.DependencyLibrary;
 import salve.dependency.InjectionStrategy;
-import salve.dependency.RedDependency;
 import salve.org.objectweb.asm.ClassAdapter;
 import salve.org.objectweb.asm.ClassVisitor;
 import salve.org.objectweb.asm.FieldVisitor;
@@ -188,6 +186,16 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	}
 
 	/**
+	 * Generates bytecode to lazy-init a local with a dependency
+	 * 
+	 * <pre>
+	 * 	if (local == null) {
+	 * 		Key key = new KeyImpl(...);
+	 * 		local = DependencyLibrary.locate(key);
+	 * 	}
+	 * }
+	 * </pre>
+	 * 
 	 * @param field
 	 * @param local
 	 */
@@ -258,9 +266,8 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		@Override
 		public void visitFieldInsn(final int opcode, final String owner,
 				final String name, final String desc) {
-			/*
-			 * Keep in mind this instruction is always preceded by ALOAD 0 ;this
-			 */
+
+			// Keep in mind this instruction is always preceded by ALOAD 0 ;this
 
 			boolean instrument = false;
 			DependencyField field = null;
@@ -297,20 +304,6 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 				mv.visitVarInsn(ALOAD, 0);
 				mv.visitFieldInsn(opcode, owner, name, desc);
 				break;
-			}
-
-		}
-
-		private void foo() {
-			Object a = null;
-			RedDependency b = null;
-
-			if (1 == 2 - 1) {
-
-				if (b == null) {
-					b = (RedDependency) DependencyLibrary.locate(null);
-				}
-
 			}
 
 		}
