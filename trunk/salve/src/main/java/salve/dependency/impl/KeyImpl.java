@@ -1,8 +1,10 @@
-package salve.dependency;
+package salve.dependency.impl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+
+import salve.dependency.Key;
 
 public class KeyImpl implements Key {
 	private static final long serialVersionUID = 1L;

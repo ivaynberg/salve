@@ -7,7 +7,7 @@ public interface BytecodeConstants {
 	public static final String FIELDINIT_METHOD_PREFIX = DEPNS + "fldinit$";
 	public static final String CLINIT_METHOD_PREFIX = DEPNS + "clinit$";
 
-	public static final String KEYIMPL_NAME = "salve/dependency/KeyImpl";
+	public static final String KEYIMPL_NAME = "salve/dependency/impl/KeyImpl";
 	public static final String KEYIMPL_INIT_DESC = "(Ljava/lang/Class;Ljava/lang/Class;Ljava/lang/String;)V";
 	public static final String DEPLIB_NAME = "salve/dependency/DependencyLibrary";
 	public static final String KEY_NAME = "salve/dependency/Key";

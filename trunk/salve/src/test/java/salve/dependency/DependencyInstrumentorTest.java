@@ -13,6 +13,7 @@ import org.junit.Test;
 import salve.asm.loader.BytecodePool;
 import salve.asm.loader.ClassLoaderLoader;
 import salve.dependency.impl.DependencyConstants;
+import salve.dependency.impl.KeyImpl;
 
 public class DependencyInstrumentorTest {
 	private static String BEAN_NAME = "salve/dependency/Bean";
