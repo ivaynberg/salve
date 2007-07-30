@@ -22,6 +22,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		BytecodeConstants {
 	private final ClassAnalyzer analyzer;
 	private String owner = null;
+	private MethodVisitor clinit;
 
 	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer) {
 		super(cv);
@@ -33,8 +34,14 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 			String superName, String[] interfaces) {
 		owner = name;
 		cv.visit(version, access, name, signature, superName, interfaces);
-		generateKeyInitializerMethod();
+		startClinitMethod();
 		generateFieldInitiazerMethods();
+	}
+
+	@Override
+	public void visitEnd() {
+		endClinitMethod();
+		super.visitEnd();
 	}
 
 	@Override
@@ -65,12 +72,17 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc,
 			String signature, String[] exceptions) {
+
+		if (name.equals("<clinit>")) {
+			return new ClinitMerger(clinit);
+		}
+
 		MethodVisitor mv = cv.visitMethod(access, name, desc, signature,
 				exceptions);
 
 		boolean instrument = true;
 
-		if ((access & ACC_STATIC) != 0
+		if ((access & ACC_STATIC) != 0 || (access & ACC_ABSTRACT) != 0
 				|| name.startsWith(FIELDINIT_METHOD_PREFIX)
 				|| analyzer.getDependenciesInMethod(name, desc) == null) {
 			instrument = false;
@@ -84,6 +96,12 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		} else {
 			return mv;
 		}
+	}
+
+	private void endClinitMethod() {
+		clinit.visitInsn(RETURN);
+		clinit.visitMaxs(0, 0);
+		clinit.visitEnd();
 	}
 
 	/**
@@ -152,39 +170,6 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		}
 	}
 
-	private void generateKeyInitializerMethod() {
-		MethodVisitor mv = null;
-		mv = cv.visitMethod(ACC_PRIVATE + ACC_STATIC, "<clinit>", "()V", null,
-				null);
-		mv.visitCode();
-
-		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
-			if (InjectionStrategy.INJECT_FIELD.equals(field.getStrategy())) {
-				continue;
-			}
-
-			final String fieldName = KEY_FIELD_PREFIX + field.getName();
-
-			mv.visitLabel(new Label());
-			mv.visitTypeInsn(NEW, KEYIMPL_NAME);
-			mv.visitInsn(DUP);
-			mv.visitLabel(new Label());
-			mv.visitLdcInsn(field.getType());
-			mv.visitLdcInsn(Type.getObjectType(owner));
-			mv.visitLabel(new Label());
-			mv.visitLdcInsn(fieldName);
-			mv.visitLabel(new Label());
-			mv.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>",
-					KEYIMPL_INIT_DESC);
-			mv.visitFieldInsn(PUTSTATIC, owner, fieldName, KEY_DESC);
-		}
-
-		mv.visitLabel(new Label());
-		mv.visitInsn(RETURN);
-		mv.visitMaxs(0, 0);
-		mv.visitEnd();
-	}
-
 	/**
 	 * Generates bytecode to lazy-init a local with a dependency
 	 * 
@@ -234,6 +219,32 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		mv.visitLdcInsn(field.getName());
 		mv.visitMethodInsn(INVOKESPECIAL, IFWE_NAME, "<init>", IFWE_INIT_DESC);
 		mv.visitInsn(ATHROW);
+	}
+
+	private void startClinitMethod() {
+		clinit = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+		clinit.visitCode();
+
+		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
+			if (InjectionStrategy.INJECT_FIELD.equals(field.getStrategy())) {
+				continue;
+			}
+
+			final String fieldName = KEY_FIELD_PREFIX + field.getName();
+
+			clinit.visitLabel(new Label());
+			clinit.visitTypeInsn(NEW, KEYIMPL_NAME);
+			clinit.visitInsn(DUP);
+			clinit.visitLabel(new Label());
+			clinit.visitLdcInsn(field.getType());
+			clinit.visitLdcInsn(Type.getObjectType(owner));
+			clinit.visitLabel(new Label());
+			clinit.visitLdcInsn(fieldName);
+			clinit.visitLabel(new Label());
+			clinit.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>",
+					KEYIMPL_INIT_DESC);
+			clinit.visitFieldInsn(PUTSTATIC, owner, fieldName, KEY_DESC);
+		}
 	}
 
 	private class MethodInstrumentor extends MethodAdapter implements Opcodes {

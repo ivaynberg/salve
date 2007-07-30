@@ -3,12 +3,10 @@ package salve.dependency;
 import salve.asm.loader.BytecodePool;
 import salve.asm.loader.ClassLoaderLoader;
 import salve.asm.loader.MemoryLoader;
-import salve.dependency.impl.BytecodeConstants;
 import salve.dependency.impl.ClassAnalyzer;
 import salve.dependency.impl.ClassInstrumentor;
 import salve.org.objectweb.asm.ClassReader;
 import salve.org.objectweb.asm.ClassWriter;
-import salve.org.objectweb.asm.commons.StaticInitMerger;
 
 public class DependencyInstrumentor implements salve.Instrumentor {
 
@@ -30,10 +28,7 @@ public class DependencyInstrumentor implements salve.Instrumentor {
 		ClassAnalyzer analyzer = new ClassAnalyzer(pool);
 		ClassReader reader = new ClassReader(bytecode);
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		StaticInitMerger clinitMerger = new StaticInitMerger(
-				BytecodeConstants.CLINIT_METHOD_PREFIX, writer);
-		ClassInstrumentor inst = new ClassInstrumentor(
-				clinitMerger, analyzer);
+		ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer);
 		reader.accept(inst, 0);
 
 		return writer.toByteArray();
