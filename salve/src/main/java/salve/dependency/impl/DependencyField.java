@@ -4,6 +4,7 @@
 package salve.dependency.impl;
 
 import salve.dependency.InjectionStrategy;
+import salve.org.objectweb.asm.Type;
 
 class DependencyField {
 	String name;
@@ -61,6 +62,10 @@ class DependencyField {
 
 	public InjectionStrategy getStrategy() {
 		return strategy;
+	}
+
+	public Type getType() {
+		return Type.getType(desc);
 	}
 
 	@Override

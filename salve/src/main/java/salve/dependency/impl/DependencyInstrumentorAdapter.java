@@ -83,6 +83,21 @@ public class DependencyInstrumentorAdapter extends StaticInitMerger implements O
 		}
 	}
 
+	/**
+	 * Generates a method used to initialize a dependency field. Looks like
+	 * this:
+	 * 
+	 * <pre>
+	 * private void _salinit$dao() {
+	 * 	if (dao == null) {
+	 * 		Key key = new KeyImpl(Dao.class, getClass(), &quot;dao&quot;);
+	 * 		dao = DependencyLibrary.locate(key);
+	 * 	}
+	 * }
+	 * </pre>
+	 * 
+	 * @param field
+	 */
 	private void generateFieldInitializerMethod(DependencyField field) {
 		Type fieldOwnerType = Type.getObjectType(field.getOwner());
 		Type fieldType = Type.getType(field.getDesc());
@@ -174,9 +189,43 @@ public class DependencyInstrumentorAdapter extends StaticInitMerger implements O
 		mv.visitEnd();
 	}
 
-	private class MethodInstrumentor extends MethodAdapter implements Opcodes {
-		public LocalVariablesSorter lvs;
+	/**
+	 * @param field
+	 * @param local
+	 */
+	private void generateLoadDependencyIntoLocalBytecode(MethodVisitor mv, DependencyField field, int local) {
+		Label l0 = new Label();
+		mv.visitLabel(l0);
+		mv.visitFieldInsn(GETSTATIC, field.getOwner(), DependencyConstants.KEY_FIELD_PREFIX + field.getName(), Type
+				.getDescriptor(Key.class));
+		mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(DependencyLibrary.class), "locate",
+				"(Lsalve/dependency/Key;)Ljava/lang/Object;");
+		Label l1 = new Label();
+		mv.visitLabel(l1);
+		mv.visitTypeInsn(CHECKCAST, Type.getType(field.getDesc()).getInternalName());
+		mv.visitVarInsn(ASTORE, local);
+		Label l2 = new Label();
+		mv.visitLabel(l2);
+		mv.visitVarInsn(ALOAD, local);
+	}
 
+	/**
+	 * @param field
+	 */
+	private void generateThrowIllegalFieldWriteExceptionBytecode(MethodVisitor mv, DependencyField field) {
+		Label l0 = new Label();
+		mv.visitLabel(l0);
+		mv.visitTypeInsn(NEW, "salve/dependency/IllegalFieldWriteException");
+		mv.visitInsn(DUP);
+		mv.visitLdcInsn(field.getOwner().replace("/", "."));
+		mv.visitLdcInsn(field.getName());
+		mv.visitMethodInsn(INVOKESPECIAL, Type.getInternalName(IllegalFieldWriteException.class), "<init>",
+				"(Ljava/lang/String;Ljava/lang/String;)V");
+		mv.visitInsn(ATHROW);
+	}
+
+	private class MethodInstrumentor extends MethodAdapter implements Opcodes {
+		private LocalVariablesSorter lvs;
 		private Map<DependencyField, Integer> fieldToLocal;
 
 		public MethodInstrumentor(int acc, String desc, MethodVisitor mv) {
@@ -184,85 +233,76 @@ public class DependencyInstrumentorAdapter extends StaticInitMerger implements O
 		}
 
 		@Override
-		public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+		public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
+			/*
+			 * Keep in mind this instruction is always preceded by ALOAD 0 ;this
+			 */
+
+			boolean instrument = false;
+			DependencyField field = null;
 
 			if (opcode == GETSTATIC || opcode == PUTSTATIC) {
-				super.visitFieldInsn(opcode, owner, name, desc);
-				return;
+				instrument = false;
+			} else {
+				field = analyzer.locateField(owner, name);
+				instrument = field != null;
 			}
 
-			DependencyField field = analyzer.locateField(owner, name);
-			if (field != null) {
-
-				if (opcode == PUTFIELD) {
-					// throw IllegalFieldWriteException
-					Label l0 = new Label();
-					visitLabel(l0);
-					visitTypeInsn(NEW, "salve/dependency/IllegalFieldWriteException");
-					visitInsn(DUP);
-					visitLdcInsn(field.getOwner().replace("/", "."));
-					visitLdcInsn(field.getName());
-					visitMethodInsn(INVOKESPECIAL, Type.getInternalName(IllegalFieldWriteException.class), "<init>",
-							"(Ljava/lang/String;Ljava/lang/String;)V");
-					visitInsn(ATHROW);
-					return;
-				}
-
-				if (fieldToLocal == null) {
-					fieldToLocal = new HashMap<DependencyField, Integer>();
-				}
-
-				Integer local = fieldToLocal.get(field);
-
-				if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
-					if (local == null) {
-						local = new Integer(lvs.newLocal(Type.getType(field.getDesc())));
-						Label l0 = new Label();
-						visitLabel(l0);
-						visitInsn(POP);
-						mv.visitFieldInsn(GETSTATIC, field.getOwner(), DependencyConstants.KEY_FIELD_PREFIX
-								+ field.getName(), Type.getDescriptor(Key.class));
-						mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(DependencyLibrary.class), "locate",
-								"(Lsalve/dependency/Key;)Ljava/lang/Object;");
-						Label l1 = new Label();
-						mv.visitLabel(l1);
-						mv.visitTypeInsn(CHECKCAST, Type.getType(field.getDesc()).getInternalName());
-						mv.visitVarInsn(ASTORE, local.intValue());
-						Label l2 = new Label();
-						mv.visitLabel(l2);
-						mv.visitVarInsn(ALOAD, local.intValue());
-						fieldToLocal.put(field, local);
-					} else {
-						mv.visitInsn(POP);
-						mv.visitVarInsn(ALOAD, local.intValue());
-					}
-				} else {
-					if (opcode == PUTFIELD) {
-						super.visitFieldInsn(opcode, owner, name, desc);
-						return;
-					}
-					if (local == null) {
-						// first time access to this var, insert locator call
-						Label l0 = new Label();
-						mv.visitLabel(l0);
-						mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(), DependencyConstants.LOCATOR_METHOD_PREFIX
-								+ field.getName(), "()V");
-						mv.visitVarInsn(ALOAD, 0);
-						mv.visitFieldInsn(opcode, owner, name, desc);
-
-						fieldToLocal.put(field, new Integer(-1));
-						return;
-					} else {
-						mv.visitFieldInsn(opcode, owner, name, desc);
-						return;
-					}
-
-				}
-			} else {
+			if (!instrument) {
 				mv.visitFieldInsn(opcode, owner, name, desc);
 				return;
 			}
+
+			if (opcode == PUTFIELD) {
+				mv.visitInsn(POP); // Pop off ALOAD 0 ;this
+				generateThrowIllegalFieldWriteExceptionBytecode(mv, field);
+				return;
+			}
+
+			final int local = getLocalForField(field);
+
+			if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
+				visitInsn(POP);// Pop off ALOAD 0 ;this
+				if (local == 0) {
+					int newLocal = lvs.newLocal(field.getType());
+					setLocalForField(field, newLocal);
+					generateLoadDependencyIntoLocalBytecode(mv, field, newLocal);
+				} else {
+					mv.visitVarInsn(ALOAD, local);
+				}
+			} else {
+				if (local == 0) {
+					setLocalForField(field, -1);
+					mv.visitLabel(new Label());
+					mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(), DependencyConstants.LOCATOR_METHOD_PREFIX
+							+ field.getName(), "()V");
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitFieldInsn(opcode, owner, name, desc);
+				} else {
+					mv.visitFieldInsn(opcode, owner, name, desc);
+				}
+
+			}
+
+		}
+
+		private int getLocalForField(DependencyField field) {
+			if (fieldToLocal == null) {
+				return 0;
+			} else {
+				Integer i = fieldToLocal.get(field);
+				return i == null ? 0 : i;
+			}
+		}
+
+		private void setLocalForField(DependencyField field, int local) {
+			if (fieldToLocal == null) {
+				fieldToLocal = new HashMap<DependencyField, Integer>();
+			}
+			fieldToLocal.put(field, local);
+
 		}
 
 	}
+
 }
