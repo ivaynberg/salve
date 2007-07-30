@@ -15,7 +15,7 @@ import salve.asm.loader.ClassLoaderLoader;
 import salve.dependency.impl.DependencyConstants;
 import salve.dependency.impl.KeyImpl;
 
-public class DependencyInstrumentorTest {
+public class DependencyInstrumentorTest extends Assert {
 	private static String BEAN_NAME = "salve/dependency/Bean";
 	private static Class<?> beanClass;
 
@@ -69,19 +69,26 @@ public class DependencyInstrumentorTest {
 	public void testAnnotations() throws Exception {
 		Annotation[] annots = beanClass.getDeclaredField(
 				DependencyConstants.KEY_FIELD_PREFIX + "red").getAnnotations();
-		Assert.assertEquals(2, annots.length);
+		assertEquals(2, annots.length);
 		final Class<?> a1 = annots[0].annotationType();
 		final Class<?> a2 = annots[1].annotationType();
-		Assert.assertTrue(a1.equals(Square.class) && a2.equals(Circle.class)
+		assertTrue(a1.equals(Square.class) && a2.equals(Circle.class)
 				|| a2.equals(Square.class) && a1.equals(Circle.class));
 
 		annots = beanClass.getDeclaredField("blue").getAnnotations();
-		Assert.assertEquals(0, annots.length);
+		assertEquals(0, annots.length);
 
 		annots = beanClass.getDeclaredField("black").getAnnotations();
-		Assert.assertEquals(1, annots.length);
-		Assert.assertEquals(Circle.class, annots[0].annotationType());
+		assertEquals(1, annots.length);
+		assertEquals(Circle.class, annots[0].annotationType());
 
+	}
+
+	@SuppressWarnings("static-access")
+	@Test
+	public void testClinitMerge() throws Exception {
+		Bean bean = (Bean) beanClass.newInstance();
+		assertTrue(bean.FORCE_CLINIT != 0);
 	}
 
 	@Test
@@ -100,7 +107,7 @@ public class DependencyInstrumentorTest {
 				.andReturn(red).times(2);
 		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
 				.andReturn(blue);
-		// inside bean.method1() and bean.method2() we call all four methodsare
+		// inside bean.method1() and bean.method2() we call all four methods
 		blue.method1();
 		blue.method1();
 		blue.method2();
@@ -127,8 +134,8 @@ public class DependencyInstrumentorTest {
 				.andReturn(blue);
 
 		EasyMock.replay(locator, blue, red);
-		Assert.assertTrue(bean.getRed() == red);
-		Assert.assertTrue(bean.getBlue() == blue);
+		assertTrue(bean.getRed() == red);
+		assertTrue(bean.getBlue() == blue);
 		EasyMock.verify(locator, blue, red);
 	}
 
@@ -136,7 +143,7 @@ public class DependencyInstrumentorTest {
 	public void testFieldRemoval() throws Exception {
 		try {
 			beanClass.getDeclaredField("red");
-			Assert.fail("Field `red` should have been removed");
+			fail("Field `red` should have been removed");
 		} catch (NoSuchFieldException e) {
 			// noop
 		}
@@ -163,13 +170,12 @@ public class DependencyInstrumentorTest {
 
 		// make sure non dependency fields are left alone
 		BlackDependency black = EasyMock.createMock(BlackDependency.class);
-		Assert.assertTrue(bean.getBlack() == null);
+		assertTrue(bean.getBlack() == null);
 		bean.setBlack(black);
-		Assert.assertTrue(bean.getBlack() == black);
+		assertTrue(bean.getBlack() == black);
 
-		Assert.assertTrue(Bean.getStaticBlack() == null);
+		assertTrue(Bean.getStaticBlack() == null);
 		Bean.setStaticBlack(black);
-		Assert.assertTrue(Bean.getStaticBlack() == black);
-
+		assertTrue(Bean.getStaticBlack() == black);
 	}
 }

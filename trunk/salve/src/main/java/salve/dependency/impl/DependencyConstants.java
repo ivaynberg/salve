@@ -3,6 +3,12 @@ package salve.dependency.impl;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 
+/**
+ * @deprecated
+ * @author ivaynberg
+ * 
+ */
+@Deprecated
 public class DependencyConstants {
 	public static final String KEY_FIELD_PREFIX = "_salvedepkey$";
 	public static final String LOCATOR_METHOD_PREFIX = "_salveloc$";
@@ -13,10 +19,6 @@ public class DependencyConstants {
 			"$1,$2,$3,$4,$5,$6,$7,$8,$9", "$1,$2,$3,$4,$5,$6,$7,$8,$9,$10" };
 
 	private static final String PROXY_CLASS_SUFFIX = "$SalveProxy";
-
-	private DependencyConstants() {
-
-	}
 
 	public static void insertParamsList(CtMethod method, StringBuilder code)
 			throws NotFoundException {
@@ -37,5 +39,9 @@ public class DependencyConstants {
 
 	public static final String proxyClassName(String type) {
 		return type + PROXY_CLASS_SUFFIX;
+	}
+
+	private DependencyConstants() {
+
 	}
 }

@@ -4,7 +4,7 @@ public class Bean {
 
 	// force this bean to have a clinit
 	@SuppressWarnings("unused")
-	private static long FORCE_CLINIT = System.currentTimeMillis();
+	public static final long FORCE_CLINIT = System.currentTimeMillis();
 
 	private static BlackDependency staticBlack;
 

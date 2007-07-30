@@ -20,9 +20,10 @@ import salve.org.objectweb.asm.AnnotationVisitor;
 import salve.org.objectweb.asm.ClassReader;
 import salve.org.objectweb.asm.FieldVisitor;
 import salve.org.objectweb.asm.MethodVisitor;
+import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
 
-public class ClassAnalyzer {
+public class ClassAnalyzer implements Opcodes, BytecodeConstants {
 	private static final Type DEPENDENCY_TYPE = Type.getType(Dependency.class);
 
 	private static String fieldKey(String owner, String name) {
@@ -114,6 +115,12 @@ public class ClassAnalyzer {
 		public MethodVisitor visitMethod(final int access, final String name,
 				final String desc, final String signature,
 				final String[] exceptions) {
+
+			if ((access & ACC_STATIC) != 0 || (access & ACC_ABSTRACT) != 0
+					|| name.startsWith(FIELDINIT_METHOD_PREFIX)) {
+				return null;
+			}
+
 			final String method = name + desc;
 			return new MethodVisitorAdapter() {
 				@Override
