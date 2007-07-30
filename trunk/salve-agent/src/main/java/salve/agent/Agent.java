@@ -62,7 +62,7 @@ public class Agent {
 				if (conf != null) {
 					byte[] bytecode = classfileBuffer;
 					for (Instrumentor inst : conf.getInstrumentors()) {
-						bytecode = inst.instrument(loader, name, bytecode);
+						bytecode = inst.instrument(loader, className, bytecode);
 					}
 					return bytecode;
 				}
