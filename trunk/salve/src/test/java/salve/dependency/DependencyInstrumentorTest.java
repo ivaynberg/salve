@@ -70,8 +70,8 @@ public class DependencyInstrumentorTest {
 		Annotation[] annots = beanClass.getDeclaredField(
 				DependencyConstants.KEY_FIELD_PREFIX + "red").getAnnotations();
 		Assert.assertEquals(2, annots.length);
-		final Class a1 = annots[0].annotationType();
-		final Class a2 = annots[1].annotationType();
+		final Class<?> a1 = annots[0].annotationType();
+		final Class<?> a2 = annots[1].annotationType();
 		Assert.assertTrue(a1.equals(Square.class) && a2.equals(Circle.class)
 				|| a2.equals(Square.class) && a1.equals(Circle.class));
 
