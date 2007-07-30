@@ -131,14 +131,14 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 				.getName(), field.getDesc());
 		Label l1 = new Label();
 		mv.visitJumpInsn(IFNONNULL, l1);
-		mv.visitLabel(new Label());
+
 		mv.visitTypeInsn(NEW, KEYIMPL_NAME);
 		mv.visitInsn(DUP);
 		mv.visitLdcInsn(field.getType());
-		mv.visitLabel(new Label());
+
 		mv.visitLdcInsn(Type.getType(fieldOwnerType.getDescriptor()));
 		mv.visitLdcInsn(field.getName());
-		mv.visitLabel(new Label());
+
 		mv.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>",
 				KEYIMPL_INIT_DESC);
 		mv.visitVarInsn(ASTORE, 1);
@@ -187,18 +187,16 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	private void generateLoadDependencyIntoLocalBytecode(MethodVisitor mv,
 			DependencyField field, int local) {
 
-		mv.visitLabel(new Label());
 		mv.visitVarInsn(ALOAD, local);
 		Label initialized = new Label();
 		mv.visitJumpInsn(IFNONNULL, initialized);
-		mv.visitLabel(new Label());
 
 		mv.visitFieldInsn(GETSTATIC, field.getOwner(), KEY_FIELD_PREFIX
 				+ field.getName(), KEY_DESC);
 
 		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD,
 				DEPLIB_LOCATE_METHOD_DESC);
-		mv.visitLabel(new Label());
+
 		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
 		mv.visitVarInsn(ASTORE, local);
 
@@ -308,7 +306,6 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 				generateLoadDependencyIntoLocalBytecode(mv, field, local);
 				break;
 			case INJECT_FIELD:
-				mv.visitLabel(new Label());
 				// ALOAD 0 ;this is already on the stack
 				mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(),
 						FIELDINIT_METHOD_PREFIX + field.getName(), "()V");
