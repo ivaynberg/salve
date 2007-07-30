@@ -3,10 +3,13 @@
  */
 package salve.dependency.impl;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import salve.dependency.DependencyLibrary;
 import salve.dependency.InjectionStrategy;
+import salve.dependency.RedDependency;
 import salve.org.objectweb.asm.ClassAdapter;
 import salve.org.objectweb.asm.ClassVisitor;
 import salve.org.objectweb.asm.FieldVisitor;
@@ -17,13 +20,12 @@ import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
 import salve.org.objectweb.asm.commons.LocalVariablesSorter;
 
-public class DependencyClassInstrumentor extends ClassAdapter implements
-		Opcodes, BytecodeConstants {
-	private final DependencyAnalyzer analyzer;
+public class ClassInstrumentor extends ClassAdapter implements Opcodes,
+		BytecodeConstants {
+	private final ClassAnalyzer analyzer;
 	private String owner = null;
 
-	public DependencyClassInstrumentor(ClassVisitor cv,
-			DependencyAnalyzer analyzer) {
+	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer) {
 		super(cv);
 		this.analyzer = analyzer;
 	}
@@ -40,7 +42,7 @@ public class DependencyClassInstrumentor extends ClassAdapter implements
 	@Override
 	public FieldVisitor visitField(final int access, final String name,
 			final String desc, final String signature, final Object value) {
-		final DependencyField field = analyzer.locateField(owner, name);
+		final DependencyField field = analyzer.getDependency(owner, name);
 		if (field != null) {
 			FieldVisitor fv = null;
 			if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
@@ -67,16 +69,18 @@ public class DependencyClassInstrumentor extends ClassAdapter implements
 			String signature, String[] exceptions) {
 		MethodVisitor mv = cv.visitMethod(access, name, desc, signature,
 				exceptions);
+
 		boolean instrument = true;
 
-		if ((access & ACC_STATIC) != 0) {
-			instrument = false;
-		} else if (name.startsWith(FIELDINIT_METHOD_PREFIX)) {
+		if ((access & ACC_STATIC) != 0
+				|| name.startsWith(FIELDINIT_METHOD_PREFIX)
+				|| analyzer.getDependenciesInMethod(name, desc) == null) {
 			instrument = false;
 		}
 
 		if (instrument) {
-			MethodInstrumentor inst = new MethodInstrumentor(access, desc, mv);
+			MethodInstrumentor inst = new MethodInstrumentor(access, name,
+					desc, mv);
 			inst.lvs = new LocalVariablesSorter(access, desc, inst);
 			return inst.lvs;
 		} else {
@@ -143,7 +147,7 @@ public class DependencyClassInstrumentor extends ClassAdapter implements
 	}
 
 	private void generateFieldInitiazerMethods() {
-		for (DependencyField field : analyzer.locateFields(owner)) {
+		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
 			if (InjectionStrategy.INJECT_FIELD == field.getStrategy()) {
 				generateFieldInitializerMethod(field);
 			}
@@ -156,7 +160,7 @@ public class DependencyClassInstrumentor extends ClassAdapter implements
 				null);
 		mv.visitCode();
 
-		for (DependencyField field : analyzer.locateFields(owner)) {
+		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
 			if (InjectionStrategy.INJECT_FIELD.equals(field.getStrategy())) {
 				continue;
 			}
@@ -189,15 +193,23 @@ public class DependencyClassInstrumentor extends ClassAdapter implements
 	 */
 	private void generateLoadDependencyIntoLocalBytecode(MethodVisitor mv,
 			DependencyField field, int local) {
+
 		mv.visitLabel(new Label());
+		mv.visitVarInsn(ALOAD, local);
+		Label initialized = new Label();
+		mv.visitJumpInsn(IFNONNULL, initialized);
+		mv.visitLabel(new Label());
+
 		mv.visitFieldInsn(GETSTATIC, field.getOwner(), KEY_FIELD_PREFIX
 				+ field.getName(), KEY_DESC);
+
 		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD,
 				DEPLIB_LOCATE_METHOD_DESC);
 		mv.visitLabel(new Label());
 		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
 		mv.visitVarInsn(ASTORE, local);
-		mv.visitLabel(new Label());
+
+		mv.visitLabel(initialized);
 		mv.visitVarInsn(ALOAD, local);
 	}
 
@@ -219,9 +231,28 @@ public class DependencyClassInstrumentor extends ClassAdapter implements
 	private class MethodInstrumentor extends MethodAdapter implements Opcodes {
 		private LocalVariablesSorter lvs;
 		private Map<DependencyField, Integer> fieldToLocal;
+		private final Collection<DependencyField> referencedFields;
 
-		public MethodInstrumentor(int acc, String desc, MethodVisitor mv) {
+		public MethodInstrumentor(int acc, String name, String desc,
+				MethodVisitor mv) {
 			super(mv);
+			referencedFields = analyzer.getDependenciesInMethod(name, desc);
+		}
+
+		@Override
+		public void visitCode() {
+			super.visitCode();
+			if (referencedFields != null) {
+				for (DependencyField field : referencedFields) {
+					if (InjectionStrategy.REMOVE_FIELD == field.getStrategy()) {
+						final int local = lvs.newLocal(field.getType());
+						setLocalForField(field, local);
+						// init local to null
+						mv.visitInsn(ACONST_NULL);
+						mv.visitVarInsn(ASTORE, local);
+					}
+				}
+			}
 		}
 
 		@Override
@@ -237,7 +268,7 @@ public class DependencyClassInstrumentor extends ClassAdapter implements
 			if (opcode == GETSTATIC || opcode == PUTSTATIC) {
 				instrument = false;
 			} else {
-				field = analyzer.locateField(owner, name);
+				field = analyzer.getDependency(owner, name);
 				instrument = field != null;
 			}
 
@@ -252,27 +283,32 @@ public class DependencyClassInstrumentor extends ClassAdapter implements
 				return;
 			}
 
-			final int local = getLocalForField(field);
-
-			if (field.getStrategy().equals(InjectionStrategy.REMOVE_FIELD)) {
+			switch (field.getStrategy()) {
+			case REMOVE_FIELD:
+				final int local = getLocalForField(field);
 				visitInsn(POP);// Pop off ALOAD 0 ;this
-				if (local == 0) {
-					int newLocal = lvs.newLocal(field.getType());
-					setLocalForField(field, newLocal);
-					generateLoadDependencyIntoLocalBytecode(mv, field, newLocal);
-				} else {
-					mv.visitVarInsn(ALOAD, local);
-				}
-			} else {
-				if (local == 0) {
-					setLocalForField(field, -1);
-					mv.visitLabel(new Label());
-					mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(),
-							FIELDINIT_METHOD_PREFIX + field.getName(), "()V");
-					mv.visitVarInsn(ALOAD, 0);
-					mv.visitFieldInsn(opcode, owner, name, desc);
-				} else {
-					mv.visitFieldInsn(opcode, owner, name, desc);
+				generateLoadDependencyIntoLocalBytecode(mv, field, local);
+				break;
+			case INJECT_FIELD:
+				mv.visitLabel(new Label());
+				// ALOAD 0 ;this is already on the stack
+				mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(),
+						FIELDINIT_METHOD_PREFIX + field.getName(), "()V");
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(opcode, owner, name, desc);
+				break;
+			}
+
+		}
+
+		private void foo() {
+			Object a = null;
+			RedDependency b = null;
+
+			if (1 == 2 - 1) {
+
+				if (b == null) {
+					b = (RedDependency) DependencyLibrary.locate(null);
 				}
 
 			}
@@ -280,12 +316,7 @@ public class DependencyClassInstrumentor extends ClassAdapter implements
 		}
 
 		private int getLocalForField(DependencyField field) {
-			if (fieldToLocal == null) {
-				return 0;
-			} else {
-				Integer i = fieldToLocal.get(field);
-				return i == null ? 0 : i;
-			}
+			return fieldToLocal.get(field);
 		}
 
 		private void setLocalForField(DependencyField field, int local) {
