@@ -273,12 +273,13 @@ public class DependencyInstrumentorAdapter extends ClassAdapter implements
 						// first time access to this var, insert locator call
 						Label l0 = new Label();
 						mv.visitLabel(l0);
-						mv.visitVarInsn(ALOAD, 0);
 						mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(),
 								DependencyConstants.LOCATOR_METHOD_PREFIX
 										+ field.getName(), "()V");
-						fieldToLocal.put(field, new Integer(-1));
+						mv.visitVarInsn(ALOAD, 0);
 						mv.visitFieldInsn(opcode, owner, name, desc);
+
+						fieldToLocal.put(field, new Integer(-1));
 						return;
 					} else {
 						mv.visitFieldInsn(opcode, owner, name, desc);
