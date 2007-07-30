@@ -6,10 +6,7 @@ package salve.dependency.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import salve.dependency.DependencyLibrary;
 import salve.dependency.InjectionStrategy;
-import salve.dependency.Key;
-import salve.dependency.KeyImpl;
 import salve.org.objectweb.asm.ClassVisitor;
 import salve.org.objectweb.asm.FieldVisitor;
 import salve.org.objectweb.asm.Label;
@@ -54,7 +51,7 @@ public class DependencyClassInstrumentor extends StaticInitMerger implements
 				 */
 				final int a = ACC_PUBLIC + ACC_STATIC + ACC_FINAL;
 				final String n = KEY_FIELD_PREFIX + name;
-				final String d = Type.getDescriptor(Key.class);
+				final String d = KEY_DESC;
 				fv = cv.visitField(a, n, d, null, null);
 			} else {
 				fv = cv.visitField(access, name, desc, signature, value);
@@ -158,9 +155,6 @@ public class DependencyClassInstrumentor extends StaticInitMerger implements
 		mv = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
 		mv.visitCode();
 
-		final String keyImplName = Type.getType(KeyImpl.class)
-				.getInternalName();
-
 		for (DependencyField field : analyzer.locateFields(owner)) {
 			if (InjectionStrategy.INJECT_FIELD.equals(field.getStrategy())) {
 				continue;
@@ -169,7 +163,7 @@ public class DependencyClassInstrumentor extends StaticInitMerger implements
 			final String fieldName = KEY_FIELD_PREFIX + field.getName();
 
 			mv.visitLabel(new Label());
-			mv.visitTypeInsn(NEW, keyImplName);
+			mv.visitTypeInsn(NEW, KEYIMPL_NAME);
 			mv.visitInsn(DUP);
 			mv.visitLabel(new Label());
 			mv.visitLdcInsn(field.getType());
@@ -177,7 +171,7 @@ public class DependencyClassInstrumentor extends StaticInitMerger implements
 			mv.visitLabel(new Label());
 			mv.visitLdcInsn(fieldName);
 			mv.visitLabel(new Label());
-			mv.visitMethodInsn(INVOKESPECIAL, keyImplName, "<init>",
+			mv.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>",
 					KEYIMPL_INIT_DESC);
 			mv.visitFieldInsn(PUTSTATIC, owner, fieldName, KEY_DESC);
 		}
@@ -196,10 +190,9 @@ public class DependencyClassInstrumentor extends StaticInitMerger implements
 			DependencyField field, int local) {
 		mv.visitLabel(new Label());
 		mv.visitFieldInsn(GETSTATIC, field.getOwner(), KEY_FIELD_PREFIX
-				+ field.getName(), Type.getDescriptor(Key.class));
-		mv.visitMethodInsn(INVOKESTATIC, Type
-				.getInternalName(DependencyLibrary.class),
-				DEPLIB_LOCATE_METHOD, DEPLIB_LOCATE_METHOD_DESC);
+				+ field.getName(), KEY_DESC);
+		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD,
+				DEPLIB_LOCATE_METHOD_DESC);
 		mv.visitLabel(new Label());
 		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
 		mv.visitVarInsn(ASTORE, local);

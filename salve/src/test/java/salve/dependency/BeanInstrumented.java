@@ -3,7 +3,7 @@ package salve.dependency;
 import salve.dependency.Dependency;
 import salve.dependency.DependencyLibrary;
 import salve.dependency.Key;
-import salve.dependency.KeyImpl;
+import salve.dependency.impl.KeyImpl;
 
 public class BeanInstrumented {
 	public static final Key _salvedepkey$red = new KeyImpl(RedDependency.class,
