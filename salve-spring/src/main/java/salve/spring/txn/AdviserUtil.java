@@ -32,6 +32,8 @@ public class AdviserUtil {
 	}
 
 	public static PlatformTransactionManager locateTransactionManager() {
+		// XXX better exception handling - wrap dependency not found with a
+		// nice message
 		TransactionAttributeSourceAdvisor adviser = (TransactionAttributeSourceAdvisor) DependencyLibrary
 				.locate(AdviserKey.INSTANCE);
 
@@ -42,7 +44,7 @@ public class AdviserUtil {
 		return base.getTransactionManager();
 	}
 
-	private static class AdviserKey implements Key {
+	static class AdviserKey implements Key {
 
 		public static final AdviserKey INSTANCE = new AdviserKey();
 
