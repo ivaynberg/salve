@@ -8,14 +8,6 @@ public class Bean {
 
 	private static BlackDependency staticBlack;
 
-	public static BlackDependency getStaticBlack() {
-		return staticBlack;
-	}
-
-	public static void setStaticBlack(BlackDependency staticBlack) {
-		Bean.staticBlack = staticBlack;
-	}
-
 	@Square
 	@Dependency
 	@Circle
@@ -57,6 +49,12 @@ public class Bean {
 
 	}
 
+	public void methodInner() {
+		InnerBean bean = new InnerBean();
+		bean.method();
+
+	}
+
 	public void setBlack(BlackDependency black) {
 		this.black = black;
 	}
@@ -67,6 +65,21 @@ public class Bean {
 
 	public void setRed(RedDependency red) {
 		this.red = red;
+	}
+
+	public static BlackDependency getStaticBlack() {
+		return staticBlack;
+	}
+
+	public static void setStaticBlack(BlackDependency staticBlack) {
+		Bean.staticBlack = staticBlack;
+	}
+
+	private class InnerBean {
+		public void method() {
+			red.method1();
+			blue.method1();
+		}
 	}
 
 }

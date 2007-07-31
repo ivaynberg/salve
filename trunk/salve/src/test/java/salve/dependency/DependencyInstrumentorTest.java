@@ -23,43 +23,6 @@ public class DependencyInstrumentorTest extends Assert {
 	private static RedDependency red;
 	private static Locator locator;
 
-	@BeforeClass
-	public static void initClass() throws Exception {
-		loadBeans();
-		initDependencyLibrary();
-	}
-
-	private static void initDependencyLibrary() {
-		DependencyLibrary.clear();
-
-		blue = EasyMock.createMock(BlueDependency.class);
-		red = EasyMock.createMock(RedDependency.class);
-		locator = EasyMock.createMock(Locator.class);
-		DependencyLibrary.addLocator(locator);
-	}
-
-	private static void loadBeans() throws Exception {
-		ClassLoader classLoader = DependencyInstrumentorTest.class
-				.getClassLoader();
-		BytecodePool pool = new BytecodePool();
-		pool.addLoader(new ClassLoaderLoader(classLoader));
-
-		byte[] bytecode = pool.loadBytecode(BEAN_NAME);
-		if (bytecode == null) {
-			throw new RuntimeException("Could not load bytecode for "
-					+ BEAN_NAME);
-		}
-
-		DependencyInstrumentor inst = new DependencyInstrumentor();
-		bytecode = inst.instrument(classLoader, BEAN_NAME, bytecode);
-		beanClass = pool.loadClass(BEAN_NAME, bytecode);
-
-		FileOutputStream fos = new FileOutputStream(
-				"target/test-classes/salve/dependency/Bean$Instrumented.class");
-		fos.write(bytecode);
-		fos.close();
-	}
-
 	@Before
 	public void resetMocks() {
 		EasyMock.reset(blue, red, locator);
@@ -177,5 +140,61 @@ public class DependencyInstrumentorTest extends Assert {
 		assertTrue(Bean.getStaticBlack() == null);
 		Bean.setStaticBlack(black);
 		assertTrue(Bean.getStaticBlack() == black);
+	}
+
+	@Test
+	public void testInnerClassFieldRead() throws Exception {
+		Bean bean = (Bean) beanClass.newInstance();
+
+		EasyMock.expect(
+				locator.locate(new KeyImpl(RedDependency.class, Bean.class,
+						DependencyConstants.KEY_FIELD_PREFIX + "red")))
+				.andReturn(red);
+		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
+				.andReturn(blue);
+
+		blue.method1();
+		red.method1();
+
+		EasyMock.replay(locator, blue, red);
+		bean.methodInner();
+		EasyMock.verify(locator, blue, red);
+	}
+
+	@BeforeClass
+	public static void initClass() throws Exception {
+		loadBeans();
+		initDependencyLibrary();
+	}
+
+	private static void initDependencyLibrary() {
+		DependencyLibrary.clear();
+
+		blue = EasyMock.createMock(BlueDependency.class);
+		red = EasyMock.createMock(RedDependency.class);
+		locator = EasyMock.createMock(Locator.class);
+		DependencyLibrary.addLocator(locator);
+	}
+
+	private static void loadBeans() throws Exception {
+		ClassLoader classLoader = DependencyInstrumentorTest.class
+				.getClassLoader();
+		BytecodePool pool = new BytecodePool();
+		pool.addLoader(new ClassLoaderLoader(classLoader));
+
+		byte[] bytecode = pool.loadBytecode(BEAN_NAME);
+		if (bytecode == null) {
+			throw new RuntimeException("Could not load bytecode for "
+					+ BEAN_NAME);
+		}
+
+		DependencyInstrumentor inst = new DependencyInstrumentor();
+		bytecode = inst.instrument(classLoader, BEAN_NAME, bytecode);
+		beanClass = pool.loadClass(BEAN_NAME, bytecode);
+
+		FileOutputStream fos = new FileOutputStream(
+				"target/test-classes/salve/dependency/Bean$Instrumented.class");
+		fos.write(bytecode);
+		fos.close();
 	}
 }
