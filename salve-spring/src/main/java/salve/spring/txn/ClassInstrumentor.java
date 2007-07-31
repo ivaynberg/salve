@@ -33,14 +33,6 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	}
 
 	@Override
-	public void visitEnd() {
-		clinit.visitInsn(RETURN);
-		clinit.visitMaxs(0, 0);
-		clinit.visitEnd();
-		super.visitEnd();
-	}
-
-	@Override
 	public AnnotationVisitor visitAnnotation(final String desc,
 			final boolean visible) {
 		// rewrite @Transactional as @SpringTransactional
@@ -55,6 +47,14 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		} else {
 			return cv.visitAnnotation(desc, visible);
 		}
+	}
+
+	@Override
+	public void visitEnd() {
+		clinit.visitInsn(RETURN);
+		clinit.visitMaxs(0, 0);
+		clinit.visitEnd();
+		super.visitEnd();
 	}
 
 	@Override
@@ -139,7 +139,10 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 			}
 
 			super.visitCode();
+		}
 
+		@Override
+		protected void onMethodEnter() {
 			if (shouldInstrument()) {
 				ptm = newLocal(Type.getType(PTM_DESC));
 				status = newLocal(Type.getType(STATUS_DESC));
@@ -161,22 +164,25 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		}
 
 		@Override
-		protected void onMethodEnter() {
-			if (shouldInstrument()) {
-
-			}
-		}
-
-		@Override
 		protected void onMethodExit(int opcode) {
 			if (shouldInstrument()) {
-				mv.visitVarInsn(ALOAD, ptm);
-				mv.visitVarInsn(ALOAD, status);
-				mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
-				mv.visitMethodInsn(INVOKESTATIC, ADVISERUTIL_NAME,
-						ADVISERUTIL_COMPLETE_METHOD_NAME,
-						ADVISERUTIL_COMPLETE_METHOD_DESC);
+				if (opcode == ATHROW) {
+					mv.visitInsn(DUP);
+					mv.visitVarInsn(ALOAD, ptm);
+					mv.visitVarInsn(ALOAD, status);
+					mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
+					mv.visitMethodInsn(INVOKESTATIC, ADVISERUTIL_NAME,
+							ADVISERUTIL_COMPLETE_METHOD_NAME,
+							ADVISERUTIL_COMPLETE_METHOD_DESC2);
+				} else {
+					mv.visitVarInsn(ALOAD, ptm);
+					mv.visitVarInsn(ALOAD, status);
+					mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
+					mv.visitMethodInsn(INVOKESTATIC, ADVISERUTIL_NAME,
+							ADVISERUTIL_COMPLETE_METHOD_NAME,
+							ADVISERUTIL_COMPLETE_METHOD_DESC);
 
+				}
 			}
 		}
 

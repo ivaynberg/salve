@@ -63,6 +63,11 @@ public class AdviserUtil {
 		public Class<?> getType() {
 			return TransactionAttributeSourceAdvisor.class;
 		}
+
+		@Override
+		public String toString() {
+			return "{" + getClass().getName() + "}";
+		}
 	}
 
 }

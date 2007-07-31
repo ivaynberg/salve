@@ -1,6 +1,6 @@
 package salve.spring.txn;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.AccessibleObject;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.NoRollbackRuleAttribute;
@@ -11,9 +11,13 @@ public class TransactionAttribute extends RuleBasedTransactionAttribute {
 	public TransactionAttribute(Class clazz, String methodName,
 			Class[] methodArgTypes) {
 		try {
-			Method method = clazz.getDeclaredMethod(methodName, methodArgTypes);
-			SpringTransactional t = method
-					.getAnnotation(SpringTransactional.class);
+			AccessibleObject ao;
+			if ("<init>".equals(methodName)) {
+				ao = clazz.getDeclaredConstructor(methodArgTypes);
+			} else {
+				ao = clazz.getDeclaredMethod(methodName, methodArgTypes);
+			}
+			SpringTransactional t = ao.getAnnotation(SpringTransactional.class);
 			if (t == null) {
 				t = (SpringTransactional) clazz
 						.getAnnotation(SpringTransactional.class);
