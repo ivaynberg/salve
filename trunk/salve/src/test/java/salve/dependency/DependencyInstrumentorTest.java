@@ -12,10 +12,10 @@ import org.junit.Test;
 
 import salve.asm.loader.BytecodePool;
 import salve.asm.loader.ClassLoaderLoader;
-import salve.dependency.impl.DependencyConstants;
+import salve.dependency.impl.Constants;
 import salve.dependency.impl.KeyImpl;
 
-public class DependencyInstrumentorTest extends Assert {
+public class DependencyInstrumentorTest extends Assert implements Constants {
 	private static String BEAN_NAME = "salve/dependency/Bean";
 	private static Class<?> beanClass;
 
@@ -31,7 +31,7 @@ public class DependencyInstrumentorTest extends Assert {
 	@Test
 	public void testAnnotations() throws Exception {
 		Annotation[] annots = beanClass.getDeclaredField(
-				DependencyConstants.KEY_FIELD_PREFIX + "red").getAnnotations();
+				KEY_FIELD_PREFIX + "red").getAnnotations();
 		assertEquals(2, annots.length);
 		final Class<?> a1 = annots[0].annotationType();
 		final Class<?> a2 = annots[1].annotationType();
@@ -66,8 +66,7 @@ public class DependencyInstrumentorTest extends Assert {
 		 */
 		EasyMock.expect(
 				locator.locate(new KeyImpl(RedDependency.class, Bean.class,
-						DependencyConstants.KEY_FIELD_PREFIX + "red")))
-				.andReturn(red).times(2);
+						KEY_FIELD_PREFIX + "red"))).andReturn(red).times(2);
 		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
 				.andReturn(blue);
 		// inside bean.method1() and bean.method2() we call all four methods
@@ -91,8 +90,7 @@ public class DependencyInstrumentorTest extends Assert {
 		Bean bean = (Bean) beanClass.newInstance();
 		EasyMock.expect(
 				locator.locate(new KeyImpl(RedDependency.class, Bean.class,
-						DependencyConstants.KEY_FIELD_PREFIX + "red")))
-				.andReturn(red);
+						KEY_FIELD_PREFIX + "red"))).andReturn(red);
 		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
 				.andReturn(blue);
 
@@ -148,8 +146,7 @@ public class DependencyInstrumentorTest extends Assert {
 
 		EasyMock.expect(
 				locator.locate(new KeyImpl(RedDependency.class, Bean.class,
-						DependencyConstants.KEY_FIELD_PREFIX + "red")))
-				.andReturn(red);
+						KEY_FIELD_PREFIX + "red"))).andReturn(red);
 		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
 				.andReturn(blue);
 

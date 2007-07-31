@@ -18,8 +18,9 @@ import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
 import salve.org.objectweb.asm.commons.LocalVariablesSorter;
 
+// FIXME factor out a staticinitmerger
 public class ClassInstrumentor extends ClassAdapter implements Opcodes,
-		BytecodeConstants {
+		Constants {
 	private final ClassAnalyzer analyzer;
 	private String owner = null;
 	private MethodVisitor clinit;
