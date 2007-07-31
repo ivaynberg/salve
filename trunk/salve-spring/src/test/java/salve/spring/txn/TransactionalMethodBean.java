@@ -4,11 +4,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class TransactionalMethodBean {
 	@Transactional
-	public void simple() {
-
-	}
-
-	@Transactional
 	public void args1(int a) {
 
 	}
@@ -18,10 +13,7 @@ public class TransactionalMethodBean {
 
 	}
 
-	public Object ret(Object p) {
-		return p;
-	}
-
+	@Transactional
 	public Object exception(int kind, Object p) {
 		if (kind == 1) {
 			throw new ArrayIndexOutOfBoundsException();
@@ -29,6 +21,16 @@ public class TransactionalMethodBean {
 			throw new IllegalStateException();
 		}
 		return p;
+	}
+
+	@Transactional
+	public Object ret(Object p) {
+		return p;
+	}
+
+	@Transactional
+	public void simple() {
+
 	}
 
 }

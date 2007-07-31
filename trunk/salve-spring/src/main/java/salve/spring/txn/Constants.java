@@ -13,6 +13,7 @@ public interface Constants {
 	static final String ADVISERUTIL_LOCATE_METHOD_DESC = "()Lorg/springframework/transaction/PlatformTransactionManager;";
 	static final String ADVISERUTIL_COMPLETE_METHOD_NAME = "complete";
 	static final String ADVISERUTIL_COMPLETE_METHOD_DESC = "(Lorg/springframework/transaction/PlatformTransactionManager;Lorg/springframework/transaction/TransactionStatus;Lsalve/spring/txn/TransactionAttribute;)V";
+	static final String ADVISERUTIL_COMPLETE_METHOD_DESC2 = "(Ljava/lang/Throwable;Lorg/springframework/transaction/PlatformTransactionManager;Lorg/springframework/transaction/TransactionStatus;Lsalve/spring/txn/TransactionAttribute;)V";
 	static final String TXNATTR_NAME = "salve/spring/txn/TransactionAttribute";
 	static final String TXNATTR_DESC = "Lsalve/spring/txn/TransactionAttribute;";
 	static final String TXNATTR_INIT_DESC = "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;)V";

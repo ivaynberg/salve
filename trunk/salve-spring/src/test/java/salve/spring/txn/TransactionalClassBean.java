@@ -1,5 +1,10 @@
 package salve.spring.txn;
 
-public class TransactionalClassBean {
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
+public class TransactionalClassBean {
+	public void method() {
+
+	}
 }
