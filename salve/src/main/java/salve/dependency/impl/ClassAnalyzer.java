@@ -23,7 +23,7 @@ import salve.org.objectweb.asm.MethodVisitor;
 import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
 
-public class ClassAnalyzer implements Opcodes, BytecodeConstants {
+public class ClassAnalyzer implements Opcodes, Constants {
 	private static final Type DEPENDENCY_TYPE = Type.getType(Dependency.class);
 
 	private final BytecodeLoader loader;

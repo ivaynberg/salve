@@ -1,6 +1,6 @@
 package salve.dependency.impl;
 
-public interface BytecodeConstants {
+public interface Constants {
 	public static final String NS = "_salve";
 	public static final String DEPNS = NS + "dep";
 	public static final String KEY_FIELD_PREFIX = DEPNS + "key$";
