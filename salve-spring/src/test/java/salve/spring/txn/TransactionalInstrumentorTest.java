@@ -35,6 +35,15 @@ public class TransactionalInstrumentorTest extends Assert {
 		EasyMock.reset(locator, ptm);
 	}
 
+	@SuppressWarnings("static-access")
+	@Test
+	public void testClinit() throws Exception {
+		TransactionalMethodBean bean = (TransactionalMethodBean) methodBeanClass
+				.newInstance();
+		assertTrue(bean.CLINIT_FORCER != 0);
+
+	}
+
 	@Test
 	public void testReturnValue() throws Exception {
 		TransactionalMethodBean bean = (TransactionalMethodBean) methodBeanClass
@@ -144,6 +153,7 @@ public class TransactionalInstrumentorTest extends Assert {
 		EasyMock.verify(locator, ptm);
 	}
 
+	@SuppressWarnings("static-access")
 	@Test
 	public void testTransactionalClassInstrumentation() throws Exception {
 
@@ -161,6 +171,7 @@ public class TransactionalInstrumentorTest extends Assert {
 		EasyMock.replay(locator, ptm);
 		TransactionalClassBean bean = (TransactionalClassBean) classBeanClass
 				.newInstance();
+		assertTrue(bean.CLINIT_FORCER != 0);
 		EasyMock.verify(locator, ptm);
 
 		// test method is instrumented

@@ -63,6 +63,8 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 
 		if ("<clinit>".equals(name)) {
 			return new ClinitMerger(clinit);
+		} else if ((access & ACC_STATIC) != 0) {
+			return cv.visitMethod(access, name, desc, signature, exceptions);
 		}
 
 		MethodVisitor mv = cv.visitMethod(access, name, desc, signature,
