@@ -1,4 +1,4 @@
-package salve.asm;
+package salve;
 
 public interface BytecodeLoader {
 	byte[] loadBytecode(String className);

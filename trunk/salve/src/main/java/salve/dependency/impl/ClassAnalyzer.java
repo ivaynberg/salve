@@ -8,12 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import salve.asm.BytecodeLoader;
-import salve.asm.CannotLoadBytecodeException;
-import salve.asm.util.AnnotationVisitorAdapter;
-import salve.asm.util.ClassVisitorAdapter;
-import salve.asm.util.FieldVisitorAdapter;
-import salve.asm.util.MethodVisitorAdapter;
+import salve.BytecodeLoader;
+import salve.CannotLoadBytecodeException;
 import salve.dependency.Dependency;
 import salve.dependency.InjectionStrategy;
 import salve.org.objectweb.asm.AnnotationVisitor;
@@ -22,6 +18,10 @@ import salve.org.objectweb.asm.FieldVisitor;
 import salve.org.objectweb.asm.MethodVisitor;
 import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
+import salve.util.asm.AnnotationVisitorAdapter;
+import salve.util.asm.ClassVisitorAdapter;
+import salve.util.asm.FieldVisitorAdapter;
+import salve.util.asm.MethodVisitorAdapter;
 
 public class ClassAnalyzer implements Opcodes, Constants {
 	private static final Type DEPENDENCY_TYPE = Type.getType(Dependency.class);

@@ -1,6 +1,6 @@
-package salve.asm.loader;
+package salve.loader;
 
-import salve.asm.BytecodeLoader;
+import salve.BytecodeLoader;
 
 public class MemoryLoader implements BytecodeLoader {
 	private final String className;
@@ -9,15 +9,13 @@ public class MemoryLoader implements BytecodeLoader {
 	public MemoryLoader(String className, byte[] bytecode) {
 		super();
 		if (className == null) {
-			throw new IllegalArgumentException(
-					"Argument `className` cannot be null");
+			throw new IllegalArgumentException("Argument `className` cannot be null");
 		}
 		if (bytecode == null) {
-			throw new IllegalArgumentException(
-					"Argument `bytecode` cannot be null");
+			throw new IllegalArgumentException("Argument `bytecode` cannot be null");
 		}
-		this.className = className;
 		this.bytecode = bytecode;
+		this.className = className;
 	}
 
 	public byte[] loadBytecode(String className) {

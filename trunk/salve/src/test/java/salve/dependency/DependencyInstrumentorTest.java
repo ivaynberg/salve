@@ -1,6 +1,5 @@
 package salve.dependency;
 
-import java.io.FileOutputStream;
 import java.lang.annotation.Annotation;
 
 import junit.framework.Assert;
@@ -10,10 +9,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.asm.loader.BytecodePool;
-import salve.asm.loader.ClassLoaderLoader;
 import salve.dependency.impl.Constants;
 import salve.dependency.impl.KeyImpl;
+import salve.loader.BytecodePool;
+import salve.loader.ClassLoaderLoader;
 
 public class DependencyInstrumentorTest extends Assert implements Constants {
 	private static String BEAN_NAME = "salve/dependency/Bean";
@@ -30,13 +29,12 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 	@Test
 	public void testAnnotations() throws Exception {
-		Annotation[] annots = beanClass.getDeclaredField(
-				KEY_FIELD_PREFIX + "red").getAnnotations();
+		Annotation[] annots = beanClass.getDeclaredField(KEY_FIELD_PREFIX + "red").getAnnotations();
 		assertEquals(2, annots.length);
 		final Class<?> a1 = annots[0].annotationType();
 		final Class<?> a2 = annots[1].annotationType();
-		assertTrue(a1.equals(Square.class) && a2.equals(Circle.class)
-				|| a2.equals(Square.class) && a1.equals(Circle.class));
+		assertTrue(a1.equals(Square.class) && a2.equals(Circle.class) || a2.equals(Square.class)
+				&& a1.equals(Circle.class));
 
 		annots = beanClass.getDeclaredField("blue").getAnnotations();
 		assertEquals(0, annots.length);
@@ -64,11 +62,9 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 		 * looked up only once because it is cached in the field. red is looked
 		 * up twice because it is cached per method and we call two methods
 		 */
-		EasyMock.expect(
-				locator.locate(new KeyImpl(RedDependency.class, Bean.class,
-						KEY_FIELD_PREFIX + "red"))).andReturn(red).times(2);
-		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
-				.andReturn(blue);
+		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+				.andReturn(red).times(2);
+		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
 		// inside bean.method1() and bean.method2() we call all four methods
 		blue.method1();
 		blue.method1();
@@ -88,11 +84,9 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	@Test
 	public void testFieldReadOnReturn() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
-		EasyMock.expect(
-				locator.locate(new KeyImpl(RedDependency.class, Bean.class,
-						KEY_FIELD_PREFIX + "red"))).andReturn(red);
-		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
-				.andReturn(blue);
+		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+				.andReturn(red);
+		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
 
 		EasyMock.replay(locator, blue, red);
 		assertTrue(bean.getRed() == red);
@@ -116,15 +110,13 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 		try {
 			bean.setBlue(blue);
-			Assert
-					.fail("Attempted to write to removed dependency field and did not get IllegalFieldWriteException");
+			Assert.fail("Attempted to write to removed dependency field and did not get IllegalFieldWriteException");
 		} catch (IllegalFieldWriteException e) {
 			// noop
 		}
 		try {
 			bean.setRed(red);
-			Assert
-					.fail("Attempted to write to removed dependency field and did not get IllegalFieldWriteException");
+			Assert.fail("Attempted to write to removed dependency field and did not get IllegalFieldWriteException");
 		} catch (IllegalFieldWriteException e) {
 			// noop
 		}
@@ -144,11 +136,9 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	public void testInnerClassFieldRead() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 
-		EasyMock.expect(
-				locator.locate(new KeyImpl(RedDependency.class, Bean.class,
-						KEY_FIELD_PREFIX + "red"))).andReturn(red);
-		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class)))
-				.andReturn(blue);
+		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+				.andReturn(red);
+		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
 
 		blue.method1();
 		red.method1();
@@ -174,24 +164,14 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	}
 
 	private static void loadBeans() throws Exception {
-		ClassLoader classLoader = DependencyInstrumentorTest.class
-				.getClassLoader();
+		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
 		BytecodePool pool = new BytecodePool();
 		pool.addLoader(new ClassLoaderLoader(classLoader));
+		beanClass = pool.instrumentIntoClass(BEAN_NAME, new DependencyInstrumentor());
 
-		byte[] bytecode = pool.loadBytecode(BEAN_NAME);
-		if (bytecode == null) {
-			throw new RuntimeException("Could not load bytecode for "
-					+ BEAN_NAME);
-		}
-
-		DependencyInstrumentor inst = new DependencyInstrumentor();
-		bytecode = inst.instrument(classLoader, BEAN_NAME, bytecode);
-		beanClass = pool.loadClass(BEAN_NAME, bytecode);
-
-		FileOutputStream fos = new FileOutputStream(
-				"target/test-classes/salve/dependency/Bean$Instrumented.class");
-		fos.write(bytecode);
-		fos.close();
+		// FileOutputStream fos = new FileOutputStream(
+		// "target/test-classes/salve/dependency/Bean$Instrumented.class");
+		// fos.write(bytecode);
+		// fos.close();
 	}
 }

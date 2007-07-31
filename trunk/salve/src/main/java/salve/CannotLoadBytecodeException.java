@@ -1,4 +1,4 @@
-package salve.asm;
+package salve;
 
 public class CannotLoadBytecodeException extends RuntimeException {
 	public CannotLoadBytecodeException(String className) {

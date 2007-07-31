@@ -9,17 +9,14 @@ public interface Instrumentor {
 	/**
 	 * Instruments bytecode
 	 * 
+	 * @param className
+	 *            fully qualified class name (salve/asm/BytecodeLoader)
 	 * @param loader
-	 *            defining classloader of the class being transformed, maybe
-	 *            null if bootstrapping classloader
-	 * @param name
-	 *            fully qualified class name
-	 * @param bytecode
-	 *            bytecode
+	 *            bytecodeLoader that can be used to load bytecode for specified
+	 *            class and any referenced classes
 	 * @return instrumented bytecode
 	 * @throws Exception
 	 *             if instrumentation fails
 	 */
-	byte[] instrument(ClassLoader loader, String name, byte[] bytecode)
-			throws Exception;
+	byte[] instrument(String className, BytecodeLoader loader) throws InstrumentationException;
 }
