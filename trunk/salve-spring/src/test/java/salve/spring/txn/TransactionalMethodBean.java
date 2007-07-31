@@ -3,6 +3,8 @@ package salve.spring.txn;
 import org.springframework.transaction.annotation.Transactional;
 
 public class TransactionalMethodBean {
+	public static long CLINIT_FORCER = System.currentTimeMillis();
+
 	@Transactional
 	public void args1(int a) {
 
