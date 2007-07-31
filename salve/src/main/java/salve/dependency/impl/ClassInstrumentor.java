@@ -80,13 +80,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		MethodVisitor mv = cv.visitMethod(access, name, desc, signature,
 				exceptions);
 
-		boolean instrument = true;
-
-		if ((access & ACC_STATIC) != 0 || (access & ACC_ABSTRACT) != 0
-				|| name.startsWith(FIELDINIT_METHOD_PREFIX)
-				|| analyzer.getDependenciesInMethod(name, desc) == null) {
-			instrument = false;
-		}
+		boolean instrument = analyzer.getDependenciesInMethod(name, desc) != null;
 
 		if (instrument) {
 			MethodInstrumentor inst = new MethodInstrumentor(access, name,

@@ -26,14 +26,10 @@ import salve.org.objectweb.asm.Type;
 public class ClassAnalyzer implements Opcodes, BytecodeConstants {
 	private static final Type DEPENDENCY_TYPE = Type.getType(Dependency.class);
 
-	private static String fieldKey(String owner, String name) {
-		return owner + "." + name;
-	}
-
 	private final BytecodeLoader loader;
+
 	private final Set<String> owners = new HashSet<String>();
 	private final Map<String, DependencyField> fields = new HashMap<String, DependencyField>();
-
 	private final Map<String, List<DependencyField>> methodToFields = new HashMap<String, List<DependencyField>>();
 
 	public ClassAnalyzer(BytecodeLoader loader) {
@@ -84,6 +80,10 @@ public class ClassAnalyzer implements Opcodes, BytecodeConstants {
 		}
 	}
 
+	private static String fieldKey(String owner, String name) {
+		return owner + "." + name;
+	}
+
 	private class Analyzer extends ClassVisitorAdapter {
 		private String owner;
 
@@ -116,7 +116,9 @@ public class ClassAnalyzer implements Opcodes, BytecodeConstants {
 				final String desc, final String signature,
 				final String[] exceptions) {
 
-			if ((access & ACC_STATIC) != 0 || (access & ACC_ABSTRACT) != 0
+			// do not ignore static methods becuase jvm creates synthetic static
+			// methods that access fields
+			if ((access & ACC_ABSTRACT) != 0
 					|| name.startsWith(FIELDINIT_METHOD_PREFIX)) {
 				return null;
 			}
