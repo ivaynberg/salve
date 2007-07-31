@@ -1,6 +1,5 @@
 package salve.spring.txn;
 
-import salve.asm.util.GeneratorAdapter;
 import salve.org.objectweb.asm.AnnotationVisitor;
 import salve.org.objectweb.asm.ClassAdapter;
 import salve.org.objectweb.asm.ClassVisitor;
@@ -8,6 +7,7 @@ import salve.org.objectweb.asm.MethodVisitor;
 import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
 import salve.org.objectweb.asm.commons.AdviceAdapter;
+import salve.util.asm.GeneratorAdapter;
 
 public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		Constants {

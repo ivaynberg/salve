@@ -13,6 +13,9 @@ import salve.Instrumentor;
 import salve.config.Config;
 import salve.config.PackageConfig;
 import salve.config.XmlConfigReader;
+import salve.loader.ClassLoaderLoader;
+import salve.loader.CompoundLoader;
+import salve.loader.MemoryLoader;
 
 public class Agent {
 	private static Instrumentation INSTRUMENTATION;
@@ -52,7 +55,6 @@ public class Agent {
 					throw new RuntimeException(
 							"Could not process salve configuration files", e);
 				}
-
 				seenLoaders.add(loader);
 			}
 
@@ -62,7 +64,10 @@ public class Agent {
 				if (conf != null) {
 					byte[] bytecode = classfileBuffer;
 					for (Instrumentor inst : conf.getInstrumentors()) {
-						bytecode = inst.instrument(loader, className, bytecode);
+						CompoundLoader bl = new CompoundLoader();
+						bl.addLoader(new MemoryLoader(className, bytecode));
+						bl.addLoader(new ClassLoaderLoader(loader));
+						bytecode = inst.instrument(className, bl);
 					}
 					return bytecode;
 				}

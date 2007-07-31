@@ -1,10 +1,10 @@
-package salve.asm.loader;
+package salve.loader;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import salve.asm.BytecodeLoader;
+import salve.BytecodeLoader;
 
 public class ClassLoaderLoader implements BytecodeLoader {
 	private final ClassLoader loader;

@@ -1,7 +1,6 @@
 package salve.config;
 
 import java.io.InputStream;
-import java.lang.instrument.ClassFileTransformer;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -40,16 +39,14 @@ public class XmlConfigReader {
 		}
 
 		@Override
-		public void endElement(String uri, String localName, String name)
-				throws SAXException {
+		public void endElement(String uri, String localName, String name) throws SAXException {
 			if ("package".equals(name)) {
 				onEndPackage();
 			}
 		}
 
 		@Override
-		public void startElement(String uri, String localName, String name,
-				Attributes attributes) throws SAXException {
+		public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
 			if ("package".equals(name)) {
 				String packageName = attributes.getValue("name");
 				onStartPackage(packageName);
@@ -75,27 +72,21 @@ public class XmlConfigReader {
 			try {
 				instClass = instrumentorLoader.loadClass(instClassName);
 			} catch (ClassNotFoundException e) {
-				throw new RTConfigException(
-						"Could not load instrumentor class " + instClassName);
+				throw new RTConfigException("Could not load instrumentor class " + instClassName);
 			}
 
 			Object inst;
 			try {
 				inst = instClass.newInstance();
 			} catch (InstantiationException e) {
-				throw new RTConfigException(
-						"Could not instantiate instrumentor of class "
-								+ instClassName, e);
+				throw new RTConfigException("Could not instantiate instrumentor of class " + instClassName, e);
 			} catch (IllegalAccessException e) {
-				throw new RTConfigException(
-						"Could not access instrumentor of class "
-								+ instClassName, e);
+				throw new RTConfigException("Could not access instrumentor of class " + instClassName, e);
 			}
 
 			if (!(inst instanceof Instrumentor)) {
-				throw new RTConfigException(String.format(
-						"Instrumentor class %s does not implement %s",
-						instClassName, ClassFileTransformer.class.getName()));
+				throw new RTConfigException(String.format("Instrumentor class %s does not implement %s", instClassName,
+						Instrumentor.class.getName()));
 			}
 
 			pconfig.add((Instrumentor) inst);

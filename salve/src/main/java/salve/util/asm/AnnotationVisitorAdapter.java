@@ -1,4 +1,4 @@
-package salve.asm.util;
+package salve.util.asm;
 
 import salve.org.objectweb.asm.AnnotationVisitor;
 

@@ -1,9 +1,9 @@
-package salve.asm.loader;
+package salve.loader;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import salve.asm.BytecodeLoader;
+import salve.BytecodeLoader;
 
 public class CompoundLoader implements BytecodeLoader {
 	private final List<BytecodeLoader> delegates = new ArrayList<BytecodeLoader>();

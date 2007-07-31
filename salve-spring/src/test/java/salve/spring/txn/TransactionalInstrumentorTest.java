@@ -14,11 +14,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.interceptor.TransactionAttributeSourceAdvisor;
 
-import salve.asm.loader.BytecodePool;
-import salve.asm.loader.ClassLoaderLoader;
-import salve.dependency.DependencyInstrumentorTest;
 import salve.dependency.DependencyLibrary;
 import salve.dependency.Locator;
+import salve.loader.BytecodePool;
 
 public class TransactionalInstrumentorTest extends Assert {
 	private static String METHODBEAN_NAME = "salve/spring/txn/TransactionalMethodBean";
@@ -207,29 +205,13 @@ public class TransactionalInstrumentorTest extends Assert {
 	}
 
 	private static void loadBeans() throws Exception {
-		ClassLoader classLoader = DependencyInstrumentorTest.class
+		ClassLoader loader = TransactionalInstrumentorTest.class
 				.getClassLoader();
-		BytecodePool pool = new BytecodePool();
-		pool.addLoader(new ClassLoaderLoader(classLoader));
-
-		byte[] bytecode = pool.loadBytecode(METHODBEAN_NAME);
-		if (bytecode == null) {
-			throw new RuntimeException("Could not load bytecode for "
-					+ METHODBEAN_NAME);
-		}
-
+		BytecodePool pool = new BytecodePool().addLoaderFor(loader);
 		TransactionalInstrumentor inst = new TransactionalInstrumentor();
-		bytecode = inst.instrument(classLoader, METHODBEAN_NAME, bytecode);
 
-		methodBeanClass = pool.loadClass(METHODBEAN_NAME, bytecode);
-
-		bytecode = pool.loadBytecode(CLASSBEAN_NAME);
-		if (bytecode == null) {
-			throw new RuntimeException("Could not load bytecode for "
-					+ CLASSBEAN_NAME);
-		}
-		bytecode = inst.instrument(classLoader, CLASSBEAN_NAME, bytecode);
-		classBeanClass = pool.loadClass(CLASSBEAN_NAME, bytecode);
+		methodBeanClass = pool.instrumentIntoClass(METHODBEAN_NAME, inst);
+		classBeanClass = pool.instrumentIntoClass(CLASSBEAN_NAME, inst);
 	}
 
 	private static class MockTransactionAttributeSourceAdvisor extends
