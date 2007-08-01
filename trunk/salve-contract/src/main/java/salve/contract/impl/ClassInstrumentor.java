@@ -8,12 +8,21 @@ import salve.org.objectweb.asm.ClassAdapter;
 import salve.org.objectweb.asm.ClassVisitor;
 import salve.org.objectweb.asm.Label;
 import salve.org.objectweb.asm.MethodVisitor;
+import salve.org.objectweb.asm.Type;
 import salve.org.objectweb.asm.commons.AdviceAdapter;
 
 public class ClassInstrumentor extends ClassAdapter {
+	private String owner;
 
 	public ClassInstrumentor(ClassVisitor cv) {
 		super(cv);
+	}
+
+	@Override
+	public void visit(int version, int access, String name, String signature,
+			String superName, String[] interfaces) {
+		owner = name;
+		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
 	@Override
@@ -26,6 +35,7 @@ public class ClassInstrumentor extends ClassAdapter {
 	private static class Arg {
 		private int index;
 		private String name;
+		private String desc;
 		private boolean notNull;
 		private boolean notEmpty;
 
@@ -35,6 +45,7 @@ public class ClassInstrumentor extends ClassAdapter {
 
 		private final String methodName;
 		private final String methodDesc;
+		private final int methodAccess;
 
 		private boolean notNull = false;
 		private boolean notEmpty = false;
@@ -47,6 +58,7 @@ public class ClassInstrumentor extends ClassAdapter {
 		public MethodInstrumentor(MethodVisitor mv, int access, String name,
 				String desc) {
 			super(mv, access, name, desc);
+			methodAccess = access;
 			methodName = name;
 			methodDesc = desc;
 		}
@@ -66,9 +78,10 @@ public class ClassInstrumentor extends ClassAdapter {
 		@Override
 		public void visitLocalVariable(String name, String desc,
 				String signature, Label start, Label end, int index) {
-			Arg arg = getArg(index);
+			Arg arg = getArg(index - 1);
 			if (arg != null) {
 				arg.name = name;
+				arg.desc = desc;
 			}
 			super.visitLocalVariable(name, desc, signature, start, end, index);
 		}
@@ -83,9 +96,18 @@ public class ClassInstrumentor extends ClassAdapter {
 					ifNonNull(end);
 					newInstance(ILLEGALARGEX);
 					dup();
-					String msg = "Argument `";
-					msg += arg.name == null ? arg.index : arg.name;
-					msg += "` cannot be null";
+					String msg = "Argument ";
+					if (arg.name != null) {
+						msg += "`" + arg.name + "`";
+					} else {
+						msg += "at index " + arg.index;
+						if (arg.desc != null) {
+							final String argType = Type.getType(arg.desc)
+									.getClassName();
+							msg += " and type " + argType;
+						}
+					}
+					msg += " cannot be null";
 					push(msg);
 					invokeConstructor(ILLEGALARGEX, ILLEGALARGEX_INIT);
 					throwException();
@@ -102,6 +124,7 @@ public class ClassInstrumentor extends ClassAdapter {
 				newInstance(ILLEGALSTATEEX);
 				dup();
 				String msg = "Method `";
+				// TODO better method name
 				msg += methodName + methodDesc;
 				msg += "` cannot return a null value";
 				push(msg);
