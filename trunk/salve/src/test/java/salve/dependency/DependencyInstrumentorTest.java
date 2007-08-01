@@ -1,6 +1,7 @@
 package salve.dependency;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 
 import junit.framework.Assert;
 
@@ -50,6 +51,21 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	public void testClinitMerge() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 		assertTrue(bean.FORCE_CLINIT != 0);
+	}
+
+	@Test
+	public void testFieldAccessInConstructor() throws Exception {
+
+		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+				.andReturn(red);
+		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+
+		EasyMock.replay(locator, blue, red);
+
+		Constructor<?> c = beanClass.getConstructor(int.class);
+		c.newInstance(5);
+
+		EasyMock.verify(locator, blue, red);
 	}
 
 	@Test
