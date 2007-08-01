@@ -46,6 +46,7 @@
 		<module>salve-maven2</module>
 		<module>salve-spring</module>
 		<module>salve-guice</module>
+                <module>salve-contract</module>
 	</modules>
 
 
