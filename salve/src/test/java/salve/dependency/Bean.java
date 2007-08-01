@@ -1,8 +1,8 @@
 package salve.dependency;
 
-public class Bean {
+public class Bean extends AbstractBean {
 
-	// force this bean to have a clinit
+	// force this class to have a clinit
 	@SuppressWarnings("unused")
 	public static final long FORCE_CLINIT = System.currentTimeMillis();
 
@@ -18,6 +18,16 @@ public class Bean {
 
 	@Circle
 	private BlackDependency black;
+
+	public Bean() {
+
+	}
+
+	public Bean(int num) {
+		super(num);
+		Object r = red;
+		Object b = blue;
+	}
 
 	public BlackDependency getBlack() {
 		return black;
