@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" skipped="0" tests="1" time="0.089" failures="0" name="salve.contract.ContractInstrumentorTest">
+  <properties>
+    <property value="Java(TM) 2 Runtime Environment, Standard Edition" name="java.runtime.name"/>
+    <property value="c:\jdk5\jre\bin" name="sun.boot.library.path"/>
+    <property value="1.5.0_12-b04" name="java.vm.version"/>
+    <property value="Sun Microsystems Inc." name="java.vm.vendor"/>
+    <property value="http://java.sun.com/" name="java.vendor.url"/>
+    <property value=";" name="path.separator"/>
+    <property value="Java HotSpot(TM) Client VM" name="java.vm.name"/>
+    <property value="sun.io" name="file.encoding.pkg"/>
+    <property value="US" name="user.country"/>
+    <property value="SUN_STANDARD" name="sun.java.launcher"/>
+    <property value="" name="sun.os.patch.level"/>
+    <property value="Java Virtual Machine Specification" name="java.vm.specification.name"/>
+    <property value="C:\dev\ws\salve-contract" name="user.dir"/>
+    <property value="1.5.0_12-b04" name="java.runtime.version"/>
+    <property value="sun.awt.Win32GraphicsEnvironment" name="java.awt.graphicsenv"/>
+    <property value="C:\dev\ws\salve-contract" name="basedir"/>
+    <property value="c:\jdk5\jre\lib\endorsed" name="java.endorsed.dirs"/>
+    <property value="x86" name="os.arch"/>
+    <property value="C:\Users\IVAYNB~1\AppData\Local\Temp\" name="java.io.tmpdir"/>
+    <property value="
+" name="line.separator"/>
+    <property value="Sun Microsystems Inc." name="java.vm.specification.vendor"/>
+    <property value="" name="user.variant"/>
+    <property value="Windows Vista" name="os.name"/>
+    <property value="Cp1252" name="sun.jnu.encoding"/>
+    <property value="c:\jdk5\jre\bin;.;C:\Windows\system32;C:\Windows;c:\jdk5\bin;c:\dev\mvn\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Program Files\Subversion\bin;C:\Program Files\QuickTime\QTSystem\" name="java.library.path"/>
+    <property value="Java Platform API Specification" name="java.specification.name"/>
+    <property value="49.0" name="java.class.version"/>
+    <property value="HotSpot Client Compiler" name="sun.management.compiler"/>
+    <property value="6.0" name="os.version"/>
+    <property value="C:\Users\ivaynberg" name="user.home"/>
+    <property value="" name="user.timezone"/>
+    <property value="sun.awt.windows.WPrinterJob" name="java.awt.printerjob"/>
+    <property value="Cp1252" name="file.encoding"/>
+    <property value="1.5" name="java.specification.version"/>
+    <property value="ivaynberg" name="user.name"/>
+    <property value="C:\Users\ivaynberg\.m2\repository\org\codehaus\plexus\plexus-archiver\1.0-alpha-7\plexus-archiver-1.0-alpha-7.jar;C:\Users\ivaynberg\.m2\repository\junit\junit\3.8.1\junit-3.8.1.jar;C:\Users\ivaynberg\.m2\repository\org\apache\maven\surefire\surefire-api\2.3\surefire-api-2.3.jar;C:\Users\ivaynberg\.m2\repository\org\codehaus\plexus\plexus-container-default\1.0-alpha-8\plexus-container-default-1.0-alpha-8.jar;C:\Users\ivaynberg\.m2\repository\classworlds\classworlds\1.1-alpha-2\classworlds-1.1-alpha-2.jar;C:\Users\ivaynberg\.m2\repository\org\codehaus\plexus\plexus-utils\1.1\plexus-utils-1.1.jar;C:\Users\ivaynberg\.m2\repository\commons-lang\commons-lang\2.1\commons-lang-2.1.jar;C:\Users\ivaynberg\.m2\repository\org\apache\maven\surefire\surefire-booter\2.3\surefire-booter-2.3.jar" name="java.class.path"/>
+    <property value="1.0" name="java.vm.specification.version"/>
+    <property value="32" name="sun.arch.data.model"/>
+    <property value="c:\jdk5\jre" name="java.home"/>
+    <property value="Sun Microsystems Inc." name="java.specification.vendor"/>
+    <property value="en" name="user.language"/>
+    <property value="sun.awt.windows.WToolkit" name="awt.toolkit"/>
+    <property value="mixed mode, sharing" name="java.vm.info"/>
+    <property value="1.5.0_12" name="java.version"/>
+    <property value="c:\jdk5\jre\lib\ext" name="java.ext.dirs"/>
+    <property value="c:\jdk5\jre\lib\rt.jar;c:\jdk5\jre\lib\i18n.jar;c:\jdk5\jre\lib\sunrsasign.jar;c:\jdk5\jre\lib\jsse.jar;c:\jdk5\jre\lib\jce.jar;c:\jdk5\jre\lib\charsets.jar;c:\jdk5\jre\classes" name="sun.boot.class.path"/>
+    <property value="Sun Microsystems Inc." name="java.vendor"/>
+    <property value="C:\Users\ivaynberg\.m2\repository" name="localRepository"/>
+    <property value="\" name="file.separator"/>
+    <property value="http://java.sun.com/cgi-bin/bugreport.cgi" name="java.vendor.url.bug"/>
+    <property value="little" name="sun.cpu.endian"/>
+    <property value="UnicodeLittle" name="sun.io.unicode.encoding"/>
+    <property value="windows" name="sun.desktop"/>
+    <property value="" name="sun.cpu.isalist"/>
+  </properties>
+  <testcase time="0.008" name="testNotNull"/>
+</testsuite>
