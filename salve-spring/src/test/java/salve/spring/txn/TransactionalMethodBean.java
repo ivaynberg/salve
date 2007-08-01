@@ -11,18 +11,27 @@ public class TransactionalMethodBean {
 	}
 
 	@Transactional
-	public void args2(Object a, double b) {
-
+	public Object args2(int mode, Object[] a, double[] b) {
+		switch (mode) {
+		case 1:
+			return a;
+		case 2:
+			return b;
+		default:
+			return null;
+		}
 	}
 
 	@Transactional
-	public Object exception(int kind, Object p) {
-		if (kind == 1) {
+	public Object exception(int mode, Object p) {
+		switch (mode) {
+		case 1:
 			throw new ArrayIndexOutOfBoundsException();
-		} else if (kind == 2) {
+		case 2:
 			throw new IllegalStateException();
+		default:
+			return p;
 		}
-		return p;
 	}
 
 	@Transactional

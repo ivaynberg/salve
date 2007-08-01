@@ -18,6 +18,7 @@ import salve.dependency.DependencyLibrary;
 import salve.dependency.Locator;
 import salve.loader.BytecodePool;
 
+// TODO factor out a bunch of this common code
 public class TransactionalInstrumentorTest extends Assert {
 	private static String METHODBEAN_NAME = "salve/spring/txn/TransactionalMethodBean";
 	private static String CLASSBEAN_NAME = "salve/spring/txn/TransactionalClassBean";
@@ -31,6 +32,41 @@ public class TransactionalInstrumentorTest extends Assert {
 	@Before
 	public void initMocks() {
 		EasyMock.reset(locator, ptm);
+	}
+
+	@Test
+	public void testArgs() throws Exception {
+		TransactionalMethodBean bean = (TransactionalMethodBean) methodBeanClass
+				.newInstance();
+		MockTransactionStatus status = new MockTransactionStatus();
+
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+		EasyMock.expect(
+				ptm
+						.getTransaction((TransactionDefinition) EasyMock
+								.anyObject())).andReturn(status);
+		ptm.commit(status);
+		EasyMock.replay(locator, ptm);
+		Object[] array1 = new Object[0];
+		assertTrue(bean.args2(1, array1, null) == array1);
+		EasyMock.verify(locator, ptm);
+
+		// ////////////////////////////////////////
+
+		EasyMock.reset(locator, ptm);
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+		EasyMock.expect(
+				ptm
+						.getTransaction((TransactionDefinition) EasyMock
+								.anyObject())).andReturn(status);
+		ptm.commit(status);
+		EasyMock.replay(locator, ptm);
+		double[] array2 = new double[0];
+		assertTrue(bean.args2(2, null, array2) == array2);
+		EasyMock.verify(locator, ptm);
+
 	}
 
 	@SuppressWarnings("static-access")
@@ -272,4 +308,5 @@ public class TransactionalInstrumentorTest extends Assert {
 			return ptm;
 		}
 	}
+
 }
