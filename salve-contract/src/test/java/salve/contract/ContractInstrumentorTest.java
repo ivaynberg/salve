@@ -27,7 +27,7 @@ public class ContractInstrumentorTest extends Assert {
 			fail("Expected " + IllegalArgumentException.class.getName());
 		} catch (IllegalArgumentException e) {
 			// expected
-			System.out.println(e.getMessage());
+			// System.out.println(e.getMessage());
 		}
 
 		try {
@@ -35,7 +35,7 @@ public class ContractInstrumentorTest extends Assert {
 			fail("Expected " + IllegalStateException.class.getName());
 		} catch (IllegalStateException e) {
 			// expected
-			System.out.println(e.getMessage());
+			// System.out.println(e.getMessage());
 		}
 	}
 
