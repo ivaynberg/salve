@@ -4,7 +4,7 @@ import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationException;
 import salve.Instrumentor;
-import salve.contract.impl.ClassInstrumentor;
+import salve.contract.impl.NotNullInstrumentor;
 import salve.org.objectweb.asm.ClassReader;
 import salve.org.objectweb.asm.ClassWriter;
 
@@ -37,7 +37,7 @@ public class ContractInstrumentor implements Instrumentor {
 
 			ClassReader reader = new ClassReader(bytecode);
 			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-			ClassInstrumentor inst = new ClassInstrumentor(writer);
+			NotNullInstrumentor inst = new NotNullInstrumentor(writer);
 			reader.accept(inst, 0);
 
 			return writer.toByteArray();
