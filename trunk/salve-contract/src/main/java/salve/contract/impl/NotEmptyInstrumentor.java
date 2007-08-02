@@ -7,10 +7,10 @@ import salve.org.objectweb.asm.ClassVisitor;
 import salve.org.objectweb.asm.Label;
 import salve.org.objectweb.asm.MethodVisitor;
 import salve.org.objectweb.asm.Type;
-import salve.util.asm.AsmUtil;
 
-public class NotNullInstrumentor extends ClassAdapter {
-	public NotNullInstrumentor(ClassVisitor cv) {
+public class NotEmptyInstrumentor extends ClassAdapter {
+
+	public NotEmptyInstrumentor(ClassVisitor cv) {
 		super(cv);
 	}
 
@@ -24,7 +24,7 @@ public class NotNullInstrumentor extends ClassAdapter {
 	private class MethodInstrumentor extends AbstractMethodInstrumentor
 			implements Constants {
 
-		private boolean notNull = false;
+		private boolean notEmpty = false;
 
 		private final Label methodStart = new Label();
 		private final Label paramsCheck = new Label();
@@ -38,15 +38,17 @@ public class NotNullInstrumentor extends ClassAdapter {
 
 		@Override
 		public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-			if (NOTNULL.getDescriptor().equals(desc)) {
-				final Type ret = getReturnType();
-				if (!checkType(ret)) {
+			if (NOTEMPTY.getDescriptor().equals(desc)) {
+				final Type type = getReturnType();
+				if (!STRING_TYPE.equals(type)) {
 					throw new IllegalAnnotationUseException(
 							"Annotation "
-									+ NOTNULL.getClassName()
-									+ " cannot be applied to a method with a primitive or void return types");
+									+ desc
+									+ " can only be applied on methods with return type "
+									+ STRING_TYPE.getClassName());
+
 				}
-				notNull = true;
+				notEmpty = true;
 				return null;
 			}
 			return super.visitAnnotation(desc, visible);
@@ -59,25 +61,40 @@ public class NotNullInstrumentor extends ClassAdapter {
 				for (int i = 0; i < annotatedParams.length; i++) {
 					if (annotatedParams[i]) {
 						final Label end = new Label();
+						final Label checkEmpty = new Label();
 						loadArg(i);
-						ifNonNull(end);
+						ifNonNull(checkEmpty);
 						throwIllegalArgumentException(i, "cannot be null");
+						mark(checkEmpty);
+						loadArg(i);
+						invokeVirtual(STRING_TYPE, STRING_TRIM_METHOD);
+						invokeVirtual(STRING_TYPE, STRING_LENGTH_METHOD);
+						ifZCmp(NE, end);
+						throwIllegalArgumentException(i, "cannot be empty");
 						mark(end);
 					}
 				}
 				goTo(methodStart);
 			}
 
-			if (notNull) {
-				String msg = "Method `";
-				msg += getMethodDefinitionString();
-				msg += "` cannot return a null value";
+			if (notEmpty) {
+				String nullMsg = "Method `" + getMethodDefinitionString()
+						+ "` cannot return a null value";
+				String emptyMsg = "Method `" + getMethodDefinitionString()
+						+ " cannot return an empty string";
 
-				Label end = new Label();
+				final Label end = new Label();
+				final Label checkEmpty = new Label();
 				mark(returnValueCheck);
 				dup();
-				ifNonNull(end);
-				throwIllegalStateException(msg);
+				ifNonNull(checkEmpty);
+				throwIllegalStateException(nullMsg);
+				mark(checkEmpty);
+				dup();
+				invokeVirtual(STRING_TYPE, STRING_TRIM_METHOD);
+				invokeVirtual(STRING_TYPE, STRING_LENGTH_METHOD);
+				ifZCmp(NE, end);
+				throwIllegalStateException(emptyMsg);
 				mark(end);
 				returnValue();
 			}
@@ -88,11 +105,13 @@ public class NotNullInstrumentor extends ClassAdapter {
 		@Override
 		public AnnotationVisitor visitParameterAnnotation(int parameter,
 				String desc, boolean visible) {
-			if (NOTNULL.getDescriptor().equals(desc)) {
-				if (!checkType(getParamType(parameter))) {
-					throw new IllegalAnnotationUseException("Annotation "
-							+ NOTNULL.getClassName()
-							+ " cannot be applied to a primitive argument");
+			if (NOTEMPTY.getDescriptor().equals(desc)) {
+				final Type type = getParamType(parameter);
+				if (!STRING_TYPE.equals(type)) {
+					throw new IllegalAnnotationUseException("Annotation " + desc
+							+ " can only be applied to arguments of type "
+							+ STRING_TYPE.getClassName());
+
 				}
 				if (annotatedParams == null) {
 					annotatedParams = new boolean[getParamCount()];
@@ -100,6 +119,7 @@ public class NotNullInstrumentor extends ClassAdapter {
 				annotatedParams[parameter] = true;
 				return null;
 			}
+
 			return super.visitParameterAnnotation(parameter, desc, visible);
 		}
 
@@ -113,13 +133,9 @@ public class NotNullInstrumentor extends ClassAdapter {
 
 		@Override
 		protected void onMethodExit(int opcode) {
-			if (notNull && opcode == ARETURN) {
+			if (notEmpty && opcode == ARETURN) {
 				goTo(returnValueCheck);
 			}
-		}
-
-		private boolean checkType(final Type ret) {
-			return !AsmUtil.isPrimitive(ret) & ret.getSort() != Type.VOID;
 		}
 
 	}
