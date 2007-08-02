@@ -17,37 +17,33 @@ import salve.org.objectweb.asm.MethodVisitor;
 import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
 import salve.org.objectweb.asm.commons.LocalVariablesSorter;
+import salve.org.objectweb.asm.commons.StaticInitMerger;
 
-// FIXME factor out a staticinitmerger
-public class ClassInstrumentor extends ClassAdapter implements Opcodes,
-		Constants {
+public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	private final ClassAnalyzer analyzer;
 	private String owner = null;
-	private MethodVisitor clinit;
 
 	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer) {
-		super(cv);
+		super(new StaticInitMerger(DEPNS + "_clinit", cv));
 		this.analyzer = analyzer;
 	}
 
 	@Override
-	public void visit(int version, int access, String name, String signature,
-			String superName, String[] interfaces) {
+	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		owner = name;
 		cv.visit(version, access, name, signature, superName, interfaces);
-		startClinitMethod();
 		generateFieldInitiazerMethods();
 	}
 
 	@Override
 	public void visitEnd() {
-		endClinitMethod();
+		addClinit();
 		super.visitEnd();
 	}
 
 	@Override
-	public FieldVisitor visitField(final int access, final String name,
-			final String desc, final String signature, final Object value) {
+	public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
+			final Object value) {
 		final DependencyField field = analyzer.getDependency(owner, name);
 		if (field != null) {
 			FieldVisitor fv = null;
@@ -71,21 +67,13 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	}
 
 	@Override
-	public MethodVisitor visitMethod(int access, String name, String desc,
-			String signature, String[] exceptions) {
-
-		if (name.equals("<clinit>")) {
-			return new ClinitMerger(clinit);
-		}
-
-		MethodVisitor mv = cv.visitMethod(access, name, desc, signature,
-				exceptions);
+	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+		MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
 
 		boolean instrument = analyzer.getDependenciesInMethod(name, desc) != null;
 
 		if (instrument) {
-			MethodInstrumentor inst = new MethodInstrumentor(access, name,
-					desc, mv);
+			MethodInstrumentor inst = new MethodInstrumentor(access, name, desc, mv);
 			inst.lvs = new LocalVariablesSorter(access, desc, inst);
 			return inst.lvs;
 		} else {
@@ -93,7 +81,41 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		}
 	}
 
-	private void endClinitMethod() {
+	private void addClinit() {
+		boolean hasRemoveFieldDependencies = false;
+		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
+			if (InjectionStrategy.REMOVE_FIELD.equals(field.getStrategy())) {
+				hasRemoveFieldDependencies = true;
+				break;
+			}
+		}
+		if (!hasRemoveFieldDependencies) {
+			return;
+		}
+
+		MethodVisitor clinit = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+		clinit.visitCode();
+
+		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
+			if (InjectionStrategy.INJECT_FIELD.equals(field.getStrategy())) {
+				continue;
+			}
+
+			final String fieldName = KEY_FIELD_PREFIX + field.getName();
+
+			clinit.visitLabel(new Label());
+			clinit.visitTypeInsn(NEW, KEYIMPL_NAME);
+			clinit.visitInsn(DUP);
+			clinit.visitLabel(new Label());
+			clinit.visitLdcInsn(field.getType());
+			clinit.visitLdcInsn(Type.getObjectType(owner));
+			clinit.visitLabel(new Label());
+			clinit.visitLdcInsn(fieldName);
+			clinit.visitLabel(new Label());
+			clinit.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>", KEYIMPL_INIT_DESC);
+			clinit.visitFieldInsn(PUTSTATIC, owner, fieldName, KEY_DESC);
+		}
+
 		clinit.visitInsn(RETURN);
 		clinit.visitMaxs(0, 0);
 		clinit.visitEnd();
@@ -116,14 +138,12 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	private void generateFieldInitializerMethod(DependencyField field) {
 		Type fieldOwnerType = Type.getObjectType(field.getOwner());
 
-		MethodVisitor mv = cv.visitMethod(ACC_PRIVATE, FIELDINIT_METHOD_PREFIX
-				+ field.getName(), "()V", null, null);
+		MethodVisitor mv = cv.visitMethod(ACC_PRIVATE, FIELDINIT_METHOD_PREFIX + field.getName(), "()V", null, null);
 		mv.visitCode();
 		Label l0 = new Label();
 		mv.visitLabel(l0);
 		mv.visitVarInsn(ALOAD, 0);
-		mv.visitFieldInsn(GETFIELD, fieldOwnerType.getInternalName(), field
-				.getName(), field.getDesc());
+		mv.visitFieldInsn(GETFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
 		Label l1 = new Label();
 		mv.visitJumpInsn(IFNONNULL, l1);
 
@@ -134,24 +154,20 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		mv.visitLdcInsn(Type.getType(fieldOwnerType.getDescriptor()));
 		mv.visitLdcInsn(field.getName());
 
-		mv.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>",
-				KEYIMPL_INIT_DESC);
+		mv.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>", KEYIMPL_INIT_DESC);
 		mv.visitVarInsn(ASTORE, 1);
 		Label l5 = new Label();
 		mv.visitLabel(l5);
 		mv.visitVarInsn(ALOAD, 0);
 		mv.visitVarInsn(ALOAD, 1);
-		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD,
-				DEPLIB_LOCATE_METHOD_DESC);
+		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD, DEPLIB_LOCATE_METHOD_DESC);
 		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
-		mv.visitFieldInsn(PUTFIELD, fieldOwnerType.getInternalName(), field
-				.getName(), field.getDesc());
+		mv.visitFieldInsn(PUTFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
 		mv.visitLabel(l1);
 		mv.visitInsn(RETURN);
 		Label l6 = new Label();
 		mv.visitLabel(l6);
-		mv.visitLocalVariable("this", fieldOwnerType.getDescriptor(), null, l0,
-				l6, 0);
+		mv.visitLocalVariable("this", fieldOwnerType.getDescriptor(), null, l0, l6, 0);
 		mv.visitLocalVariable("key", KEY_DESC, null, l5, l1, 1);
 		mv.visitMaxs(5, 2);
 		mv.visitEnd();
@@ -179,18 +195,15 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	 * @param field
 	 * @param local
 	 */
-	private void generateLoadDependencyIntoLocalBytecode(MethodVisitor mv,
-			DependencyField field, int local) {
+	private void generateLoadDependencyIntoLocalBytecode(MethodVisitor mv, DependencyField field, int local) {
 
 		mv.visitVarInsn(ALOAD, local);
 		Label initialized = new Label();
 		mv.visitJumpInsn(IFNONNULL, initialized);
 
-		mv.visitFieldInsn(GETSTATIC, field.getOwner(), KEY_FIELD_PREFIX
-				+ field.getName(), KEY_DESC);
+		mv.visitFieldInsn(GETSTATIC, field.getOwner(), KEY_FIELD_PREFIX + field.getName(), KEY_DESC);
 
-		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD,
-				DEPLIB_LOCATE_METHOD_DESC);
+		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD, DEPLIB_LOCATE_METHOD_DESC);
 
 		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
 		mv.visitVarInsn(ASTORE, local);
@@ -202,8 +215,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	/**
 	 * @param field
 	 */
-	private void generateThrowIllegalFieldWriteExceptionBytecode(
-			MethodVisitor mv, DependencyField field) {
+	private void generateThrowIllegalFieldWriteExceptionBytecode(MethodVisitor mv, DependencyField field) {
 		Label l0 = new Label();
 		mv.visitLabel(l0);
 		mv.visitTypeInsn(NEW, IFWE_NAME);
@@ -214,39 +226,12 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		mv.visitInsn(ATHROW);
 	}
 
-	private void startClinitMethod() {
-		clinit = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
-		clinit.visitCode();
-
-		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
-			if (InjectionStrategy.INJECT_FIELD.equals(field.getStrategy())) {
-				continue;
-			}
-
-			final String fieldName = KEY_FIELD_PREFIX + field.getName();
-
-			clinit.visitLabel(new Label());
-			clinit.visitTypeInsn(NEW, KEYIMPL_NAME);
-			clinit.visitInsn(DUP);
-			clinit.visitLabel(new Label());
-			clinit.visitLdcInsn(field.getType());
-			clinit.visitLdcInsn(Type.getObjectType(owner));
-			clinit.visitLabel(new Label());
-			clinit.visitLdcInsn(fieldName);
-			clinit.visitLabel(new Label());
-			clinit.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>",
-					KEYIMPL_INIT_DESC);
-			clinit.visitFieldInsn(PUTSTATIC, owner, fieldName, KEY_DESC);
-		}
-	}
-
 	private class MethodInstrumentor extends MethodAdapter implements Opcodes {
 		private LocalVariablesSorter lvs;
 		private Map<DependencyField, Integer> fieldToLocal;
 		private final Collection<DependencyField> referencedFields;
 
-		public MethodInstrumentor(int acc, String name, String desc,
-				MethodVisitor mv) {
+		public MethodInstrumentor(int acc, String name, String desc, MethodVisitor mv) {
 			super(mv);
 			referencedFields = analyzer.getDependenciesInMethod(name, desc);
 		}
@@ -268,8 +253,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		}
 
 		@Override
-		public void visitFieldInsn(final int opcode, final String owner,
-				final String name, final String desc) {
+		public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
 
 			// Keep in mind this instruction is always preceded by ALOAD 0 ;this
 
@@ -302,8 +286,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 				break;
 			case INJECT_FIELD:
 				// ALOAD 0 ;this is already on the stack
-				mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(),
-						FIELDINIT_METHOD_PREFIX + field.getName(), "()V");
+				mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(), FIELDINIT_METHOD_PREFIX + field.getName(), "()V");
 				mv.visitVarInsn(ALOAD, 0);
 				mv.visitFieldInsn(opcode, owner, name, desc);
 				break;
