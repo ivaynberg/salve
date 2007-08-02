@@ -18,7 +18,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	private int nextAttribute = 0;
 
 	public ClassInstrumentor(ClassVisitor cv) {
-		super(new StaticInitMerger("_salvesprinttxn_", cv));
+		super(new StaticInitMerger("_salvespringtxn_", cv));
 	}
 
 	@Override
@@ -117,11 +117,6 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 					final Type type = types[i];
 					clinit.visitInsn(DUP);
 					clinit.push(i);
-
-					// clinit.visitFieldInsn(GETSTATIC, "java/lang/Integer",
-					// "TYPE", "Ljava/lang/Class;");
-					// clinit.visitLdcInsn(type);
-
 					clinit.push(type);
 					clinit.visitInsn(AASTORE);
 				}
