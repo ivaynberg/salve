@@ -80,7 +80,9 @@ public class OMIInstrumentor extends ClassAdapter {
 				Label ok = new Label();
 				loadLocal(flag);
 				ifZCmp(NE, ok);
-				throwIllegalStateException("This method did not invoke super implementation before returning");
+				throwIllegalStateException("Method "
+						+ getMethodDefinitionString(owner)
+						+ " did not invoke super implementation before returning");
 				mark(ok);
 			}
 		}

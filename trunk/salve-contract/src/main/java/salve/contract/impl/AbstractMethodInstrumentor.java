@@ -50,7 +50,16 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter
 	}
 
 	protected String getMethodDefinitionString() {
-		return name + desc;
+		return getMethodDefinitionString(null);
+	}
+
+	protected String getMethodDefinitionString(String owner) {
+		StringBuilder b = new StringBuilder();
+		if (owner != null) {
+			b.append(owner).append(".");
+		}
+		b.append(name).append(desc);
+		return b.toString();
 	}
 
 	protected String getMethodDesc() {
