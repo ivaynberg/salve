@@ -7,6 +7,7 @@ import salve.org.objectweb.asm.MethodVisitor;
 import salve.org.objectweb.asm.Opcodes;
 import salve.org.objectweb.asm.Type;
 import salve.org.objectweb.asm.commons.AdviceAdapter;
+import salve.org.objectweb.asm.commons.StaticInitMerger;
 import salve.util.asm.GeneratorAdapter;
 
 public class ClassInstrumentor extends ClassAdapter implements Opcodes,
@@ -16,10 +17,8 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 
 	private int nextAttribute = 0;
 
-	private GeneratorAdapter clinit;
-
 	public ClassInstrumentor(ClassVisitor cv) {
-		super(cv);
+		super(new StaticInitMerger("_salvesprinttxn_", cv));
 	}
 
 	@Override
@@ -27,9 +26,6 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 			String superName, String[] interfaces) {
 		super.visit(version, access, name, signature, superName, interfaces);
 		owner = name;
-		clinit = new GeneratorAdapter(cv.visitMethod(ACC_STATIC, "<clinit>",
-				"()V", null, null), ACC_STATIC, "<clinit>", "()V");
-		clinit.visitCode();
 	}
 
 	@Override
@@ -50,20 +46,10 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 	}
 
 	@Override
-	public void visitEnd() {
-		clinit.visitInsn(RETURN);
-		clinit.visitMaxs(0, 0);
-		clinit.visitEnd();
-		super.visitEnd();
-	}
-
-	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc,
 			String signature, String[] exceptions) {
 
-		if ("<clinit>".equals(name)) {
-			return new ClinitMerger(clinit);
-		} else if ((access & ACC_STATIC) != 0) {
+		if ((access & ACC_STATIC) != 0) {
 			return cv.visitMethod(access, name, desc, signature, exceptions);
 		}
 
@@ -113,6 +99,10 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 				cv.visitField(ACC_PRIVATE + ACC_STATIC + ACC_FINAL, attrName,
 						TXNATTR_DESC, null, null);
 
+				GeneratorAdapter clinit = new GeneratorAdapter(cv.visitMethod(
+						ACC_STATIC, "<clinit>", "()V", null, null), ACC_STATIC,
+						"<clinit>", "()V");
+				clinit.visitCode();
 				clinit.visitTypeInsn(NEW, TXNATTR_NAME);
 				clinit.visitInsn(DUP);
 				clinit.visitLdcInsn(Type.getObjectType(owner));
@@ -138,6 +128,9 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 				clinit.visitMethodInsn(INVOKESPECIAL, TXNATTR_NAME, "<init>",
 						TXNATTR_INIT_DESC);
 				clinit.visitFieldInsn(PUTSTATIC, owner, attrName, TXNATTR_DESC);
+				clinit.visitInsn(RETURN);
+				clinit.visitMaxs(0, 0);
+				clinit.visitEnd();
 			}
 
 			super.visitCode();
