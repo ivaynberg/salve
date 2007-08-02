@@ -16,22 +16,21 @@
  */
 package salve.contract;
 
-import org.junit.Assert;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import salve.loader.BytecodePool;
-
-public class AbstractContractInstrumentorTest extends Assert {
-	private static final ClassLoader CL = AbstractContractInstrumentorTest.class
-			.getClassLoader();
-	private static final ContractInstrumentor INST = new ContractInstrumentor();
-
-	protected final Object create(String beanName) throws Exception {
-		return instrument(beanName).newInstance();
-	}
-
-	protected final Class<?> instrument(String beanName) throws Exception {
-		return new BytecodePool().addLoaderFor(CL).instrumentIntoClass(
-				getClass().getName().replace(".", "/") + "$" + beanName, INST);
-	}
+/**
+ * Used to annotate a method that, if overridden, must be invoked by the
+ * <code>super</code> invocation in the overriding method.
+ * 
+ * @author ivaynberg
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Target(ElementType.METHOD)
+public @interface OverrideMustInvoke {
 
 }
