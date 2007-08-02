@@ -22,6 +22,7 @@ import salve.InstrumentationException;
 import salve.Instrumentor;
 import salve.contract.impl.NotEmptyInstrumentor;
 import salve.contract.impl.NotNullInstrumentor;
+import salve.contract.impl.NumericalInstrumentor;
 import salve.contract.impl.OMIAnalyzer;
 import salve.contract.impl.OMIInstrumentor;
 import salve.org.objectweb.asm.ClassReader;
@@ -64,6 +65,12 @@ public class ContractInstrumentor implements Instrumentor {
 				ClassReader reader = new ClassReader(bytecode);
 				ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 				reader.accept(new NotEmptyInstrumentor(writer), 0);
+				bytecode = writer.toByteArray();
+			}
+			{
+				ClassReader reader = new ClassReader(bytecode);
+				ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+				reader.accept(new NumericalInstrumentor(writer), 0);
 				bytecode = writer.toByteArray();
 			}
 

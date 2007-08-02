@@ -16,6 +16,10 @@
  */
 package salve.contract.impl;
 
+import salve.contract.GE0;
+import salve.contract.GT0;
+import salve.contract.LE0;
+import salve.contract.LT0;
 import salve.contract.NotEmpty;
 import salve.contract.NotNull;
 import salve.contract.OverrideMustInvoke;
@@ -43,5 +47,10 @@ public interface Constants {
 	static final Method STRING_LENGTH_METHOD = new Method("length", "()I");
 
 	static final Type OMI = Type.getType(OverrideMustInvoke.class);
+
+	static final Type GE0 = Type.getType(GE0.class);
+	static final Type GT0 = Type.getType(GT0.class);
+	static final Type LT0 = Type.getType(LT0.class);
+	static final Type LE0 = Type.getType(LE0.class);
 
 }
