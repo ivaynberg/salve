@@ -1,28 +1,39 @@
 package salve.contract.impl;
 
-import salve.org.objectweb.asm.AnnotationVisitor;
 import salve.org.objectweb.asm.ClassAdapter;
 import salve.org.objectweb.asm.ClassVisitor;
 import salve.org.objectweb.asm.Label;
 import salve.org.objectweb.asm.MethodVisitor;
 import salve.org.objectweb.asm.Type;
 
-public class OMCSInstrumentor extends ClassAdapter {
+public class OMIInstrumentor extends ClassAdapter {
 	private String owner;
+	private final OMIAnalyzer analyzer;
 
-	public OMCSInstrumentor(ClassVisitor cv) {
+	public OMIInstrumentor(ClassVisitor cv, OMIAnalyzer analyzer) {
 		super(cv);
+		this.analyzer = analyzer;
+	}
+
+	@Override
+	public void visit(int version, int access, String name, String signature,
+			String superName, String[] interfaces) {
+		owner = name;
+		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc,
 			String signature, String[] exceptions) {
-		// TODO Auto-generated method stub
-		return super.visitMethod(access, name, desc, signature, exceptions);
+		MethodVisitor mv = super.visitMethod(access, name, desc, signature,
+				exceptions);
+		if (analyzer.shouldInstrument(name, desc)) {
+			return new MethodInstrumentor(mv, access, name, desc);
+		}
+		return mv;
 	}
 
 	private class MethodInstrumentor extends AbstractMethodInstrumentor {
-		private boolean instrument = false;
 		private int flag;
 
 		public MethodInstrumentor(MethodVisitor mv, int access, String name,
@@ -31,38 +42,25 @@ public class OMCSInstrumentor extends ClassAdapter {
 		}
 
 		@Override
-		public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-			if (OMCS.getDescriptor().equals(desc)) {
-				instrument = true;
-				return null;
-			}
-			return super.visitAnnotation(desc, visible);
-		}
-
-		@Override
 		public void visitMethodInsn(int opcode, String owner, String name,
 				String desc) {
-			if (instrument) {
-				if (isSuperCall(opcode, owner, name, desc)) {
-					push(true);
-					storeLocal(flag);
-				}
+			if (isSuperCall(opcode, owner, name, desc)) {
+				push(true);
+				storeLocal(flag);
 			}
 			super.visitMethodInsn(opcode, owner, name, desc);
 		}
 
 		@Override
 		protected void onMethodEnter() {
-			if (instrument) {
-				flag = newLocal(Type.BOOLEAN_TYPE);
-				push(false);
-				storeLocal(flag);
-			}
+			flag = newLocal(Type.BOOLEAN_TYPE);
+			push(false);
+			storeLocal(flag);
 		}
 
 		@Override
 		protected void onMethodExit(int opcode) {
-			if (instrument && opcode != ATHROW) {
+			if (opcode != ATHROW) {
 				Label ok = new Label();
 				loadLocal(flag);
 				ifZCmp(NE, ok);
@@ -75,7 +73,7 @@ public class OMCSInstrumentor extends ClassAdapter {
 				String desc) {
 			return opcode == INVOKESPECIAL && getMethodName().equals(name)
 					&& getMethodDesc().equals(desc)
-					&& !OMCSInstrumentor.this.owner.equals(owner);
+					&& !OMIInstrumentor.this.owner.equals(owner);
 		}
 
 	}
