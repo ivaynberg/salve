@@ -23,37 +23,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to annotate an element that must not be null. Annotated parameters must
- * have non-null values when a method is invoked, and annotated methods must
- * have non-null return values.
+ * Annotates an numerical argument or return value that must be less then or
+ * equal to zero.
  * <p>
- * If a parameter is annotated the following check is added to the beginning of
- * the method
- * 
- * <pre><code>
- * if (param == null) {
- * 	throw new IllegalArgumentException(&quot;Argument `paramname` cannot be null&quot;);
- * }
- * </code></pre>
- * 
- * </p>
- * <p>
- * If a method is annotated the following check is added just before the method
- * returns
- * 
- * <pre><code>
- * if (retvalue == null) {
- * 	throw new IllegalStateException(&quot;Method cannot return null value&quot;);
- * }
- * </code></pre>
- * 
+ * Supported types are {@link Double}, {@link Float}, {@link Long},
+ * {@link Integer}, {@link Short}, and {@link Byte}
  * </p>
  * 
  * @author ivaynberg
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Target( { ElementType.PARAMETER, ElementType.METHOD })
-public @interface LE0 {
+@Retention(RetentionPolicy.RUNTIME) @Documented @Target( { ElementType.PARAMETER, ElementType.METHOD }) public @interface LE0 {
 
 }
