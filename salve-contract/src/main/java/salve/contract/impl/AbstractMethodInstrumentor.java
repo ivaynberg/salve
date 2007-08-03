@@ -21,16 +21,14 @@ import salve.org.objectweb.asm.MethodVisitor;
 import salve.org.objectweb.asm.Type;
 import salve.org.objectweb.asm.commons.AdviceAdapter;
 
-public abstract class AbstractMethodInstrumentor extends AdviceAdapter
-		implements Constants {
+public abstract class AbstractMethodInstrumentor extends AdviceAdapter implements Constants {
 	private final int access;
 	private final String name;
 	private final String desc;
 	private final Type[] paramTypes;
 	private final String[] paramNames;
 
-	public AbstractMethodInstrumentor(MethodVisitor mv, int access,
-			String name, String desc) {
+	public AbstractMethodInstrumentor(MethodVisitor mv, int access, String name, String desc) {
 		super(mv, access, name, desc);
 		this.access = access;
 		this.name = name;
@@ -40,8 +38,7 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter
 	}
 
 	@Override
-	public void visitLocalVariable(String name, String desc, String signature,
-			Label start, Label end, int index) {
+	public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
 		int pindex = index - 1;
 		if (pindex >= 0 && pindex < paramNames.length) {
 			paramNames[pindex] = name;
