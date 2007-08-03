@@ -16,22 +16,31 @@
  */
 package salve.contract;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Assert;
 
 import salve.loader.BytecodePool;
 
 public class AbstractContractInstrumentorTest extends Assert {
-	private static final ClassLoader CL = AbstractContractInstrumentorTest.class
-			.getClassLoader();
+	private static final ClassLoader CL = AbstractContractInstrumentorTest.class.getClassLoader();
 	private static final ContractInstrumentor INST = new ContractInstrumentor();
+
+	private static final Map<String, Class<?>> loaded = new HashMap<String, Class<?>>();
 
 	protected final Object create(String beanName) throws Exception {
 		return instrument(beanName).newInstance();
 	}
 
 	protected final Class<?> instrument(String beanName) throws Exception {
-		return new BytecodePool().addLoaderFor(CL).instrumentIntoClass(
-				getClass().getName().replace(".", "/") + "$" + beanName, INST);
+		final String cn = getClass().getName().replace(".", "/") + "$" + beanName;
+		Class<?> clazz = loaded.get(cn);
+		if (clazz == null) {
+			clazz = new BytecodePool().addLoaderFor(CL).instrumentIntoClass(cn, INST);
+			loaded.put(cn, clazz);
+		}
+		return clazz;
 	}
 
 }

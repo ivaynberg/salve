@@ -38,6 +38,12 @@ public class NumericalInstrumentor extends ClassAdapter {
 		public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 			int mode = descToMode(desc);
 			if (mode > 0) {
+
+				if (!acceptType(getReturnType())) {
+					throw new IllegalAnnotationUseException("Cannot use annotation "
+							+ Type.getType(desc).getClassName() + " on method " + getMethodDefinitionString());
+				}
+
 				if (annot > 0 && annot != mode) {
 					// FIXME message
 					throw new IllegalAnnotationUseException("...");
@@ -64,7 +70,7 @@ public class NumericalInstrumentor extends ClassAdapter {
 						final Label end = new Label();
 						checkValue(mode, type, end);
 						// FIXME message
-						throwIllegalArgumentException(i, "cannot be GT0 GE0 LE0 LT0");
+						throwIllegalArgumentException(i, modeToErrorString(mode));
 						mark(end);
 
 					}
@@ -72,7 +78,8 @@ public class NumericalInstrumentor extends ClassAdapter {
 				goTo(methodStart);
 			}
 
-			if (false && annot > 0) {
+			if (annot > 0) {
+
 				// FIXME message
 				String msg = "Method returned invalid value";
 				Label end = new Label();
@@ -97,6 +104,13 @@ public class NumericalInstrumentor extends ClassAdapter {
 			int mode = descToMode(desc);
 			if (mode > 0) {
 
+				Type paramType = getParamType(parameter);
+				if (!acceptType(paramType)) {
+					throw new IllegalAnnotationUseException("Cannot use annotation "
+							+ Type.getType(desc).getClassName() + " on argument of type " + paramType.getClassName()
+							+ " in method " + getMethodDefinitionString());
+				}
+
 				if (argannots == null) {
 					argannots = new int[getParamCount()];
 				}
@@ -120,31 +134,56 @@ public class NumericalInstrumentor extends ClassAdapter {
 
 		@Override
 		protected void onMethodExit(int opcode) {
-			if (false && annot > 0 && opcode == ARETURN) {
+			if (annot > 0 && opcode != ATHROW) {
 				goTo(returnValueCheck);
 			}
 		}
 
-		private void checkValue(final int mode, final Type type, Label end) {
+		private boolean acceptType(Type type) {
+			return AsmUtil.isDouble(type) || AsmUtil.isFloat(type) || AsmUtil.isLong(type) || AsmUtil.isInteger(type)
+					|| AsmUtil.isShort(type) || AsmUtil.isByte(type);
+		}
+
+		private void checkValue(int mode, final Type type, Label end) {
 			Type primitive = AsmUtil.toPrimitive(type);
-			if (primitive != type) {
+			if (!AsmUtil.isPrimitive(type)) {
 				unbox(primitive);
 			}
+
 			switch (primitive.getSort()) {
 			case Type.DOUBLE:
 				visitInsn(DCONST_0);
+				switch (mode) {
+				case GT:
+				case GE:
+					visitInsn(DCMPG);
+					break;
+				case LT:
+				case LE:
+					visitInsn(DCMPL);
+					break;
+				}
 				break;
 			case Type.FLOAT:
 				visitInsn(FCONST_0);
+				switch (mode) {
+				case GT:
+				case GE:
+					visitInsn(FCMPG);
+					break;
+				case LT:
+				case LE:
+					visitInsn(FCMPL);
+					break;
+				}
 				break;
 			case Type.LONG:
 				visitInsn(LCONST_0);
-				break;
-			default:
-				visitInsn(ICONST_0);
+				visitInsn(LCMP);
 				break;
 			}
-			ifCmp(primitive, mode, end);
+			visitJumpInsn(mode, end);
+
 		}
 
 		private int descToMode(String desc) {
@@ -160,5 +199,19 @@ public class NumericalInstrumentor extends ClassAdapter {
 			return 0;
 		}
 
+		private String modeToErrorString(int mode) {
+			switch (mode) {
+			case GT:
+				return "cannot be less then or equal to zero";
+			case GE:
+				return "cannot be less then zero";
+			case LT:
+				return "cannot be greater then or equal to zero";
+			case LE:
+				return "cannot be greater then zero";
+			default:
+				throw new IllegalStateException("Unknown mode");
+			}
+		}
 	}
 }
