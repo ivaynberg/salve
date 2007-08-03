@@ -19,8 +19,7 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 		super(mv, access, name, desc);
 	}
 
-	@Override
-	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+	@Override public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 		final int mode = descToMode(desc);
 		if (mode > 0) {
 
@@ -40,8 +39,7 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 		}
 	}
 
-	@Override
-	public void visitMaxs(int maxStack, int maxLocals) {
+	@Override public void visitMaxs(int maxStack, int maxLocals) {
 		if (argannots != null) {
 			mark(paramsCheck);
 			for (int i = 0; i < argannots.length; i++) {
@@ -50,6 +48,15 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 					final Type type = getParamType(i);
 					loadArg(i);
 					final Label end = new Label();
+					if (!AsmUtil.isPrimitive(type)) {
+						// null check of non-primitive type before value check
+						dup(type);
+						Label notnull = new Label();
+						ifNonNull(notnull);
+						throwIllegalArgumentException(i, "cannot be null");
+						mark(notnull);
+
+					}
 					checkValue(mode, type, end);
 					// FIXME message
 					throwIllegalArgumentException(i, modeToErrorString(mode));
@@ -66,12 +73,18 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 			// FIXME message
 			String msg = "Method returned invalid value";
 			Label end = new Label();
+			final Type type = getReturnType();
 			mark(returnValueCheck);
-			if (getReturnType().getSize() == 2) {
-				dup2();
-			} else {
-				dup();
+			dup(type);
+			if (!AsmUtil.isPrimitive(type)) {
+				// null check of non-primitive type before value check
+				dup(type);
+				Label notnull = new Label();
+				ifNonNull(notnull);
+				throwIllegalStateException("Method " + getMethodDefinitionString() + " cannot return null");
+				mark(notnull);
 			}
+
 			checkValue(annot, getReturnType(), end);
 			throwIllegalStateException(msg);
 			mark(end);
@@ -81,8 +94,7 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 		mv.visitMaxs(maxStack, maxLocals);
 	}
 
-	@Override
-	public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+	@Override public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
 
 		final int mode = descToMode(desc);
 		if (mode > 0) {
@@ -108,16 +120,14 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 
 	}
 
-	@Override
-	protected void onMethodEnter() {
+	@Override protected void onMethodEnter() {
 		if (argannots != null) {
 			goTo(paramsCheck);
 			mark(methodStart);
 		}
 	}
 
-	@Override
-	protected void onMethodExit(int opcode) {
+	@Override protected void onMethodExit(int opcode) {
 		if (annot > 0 && opcode != ATHROW) {
 			goTo(returnValueCheck);
 		}
@@ -181,6 +191,14 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 			return LE;
 		}
 		return 0;
+	}
+
+	private void dup(Type type) {
+		if (type.getSize() == 2) {
+			dup2();
+		} else {
+			dup();
+		}
 	}
 
 	private String modeToErrorString(int mode) {
