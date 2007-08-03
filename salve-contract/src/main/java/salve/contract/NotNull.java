@@ -51,9 +51,6 @@ import java.lang.annotation.Target;
  * 
  * @author ivaynberg
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Target( { ElementType.PARAMETER, ElementType.METHOD })
-public @interface NotNull {
+@Retention(RetentionPolicy.RUNTIME) @Documented @Target( { ElementType.PARAMETER, ElementType.METHOD }) public @interface NotNull {
 
 }

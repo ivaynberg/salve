@@ -20,8 +20,7 @@ import org.junit.Test;
 
 public class OMIInstrumentorTest extends AbstractContractInstrumentorTest {
 
-	@Test
-	public void testProperImplementation() throws Exception {
+	@Test public void testProperImplementation() throws Exception {
 		final Bean bean = (Bean) create("Bean");
 		final Object token = new Object();
 		assertTrue(token == bean.test1(token));
@@ -46,35 +45,29 @@ public class OMIInstrumentorTest extends AbstractContractInstrumentorTest {
 			return o;
 		}
 
-		@OverrideMustInvoke
-		public Object test2(Object o) {
+		@OverrideMustInvoke public Object test2(Object o) {
 			return o;
 		}
 
-		@OverrideMustInvoke
-		public Object test3(Object o) {
+		@OverrideMustInvoke public Object test3(Object o) {
 			return o;
 		}
 	}
 
 	public static interface BaseInterface {
-		@OverrideMustInvoke
-		public Object test4(Object o);
+		@OverrideMustInvoke public Object test4(Object o);
 	}
 
 	public static class Bean extends BaseBean implements BaseInterface {
-		@Override
-		public Object test1(Object o) {
+		@Override public Object test1(Object o) {
 			return o;
 		}
 
-		@Override
-		public Object test2(Object o) {
+		@Override public Object test2(Object o) {
 			return super.test2(o);
 		}
 
-		@Override
-		public Object test3(Object o) {
+		@Override public Object test3(Object o) {
 			return o;
 		}
 

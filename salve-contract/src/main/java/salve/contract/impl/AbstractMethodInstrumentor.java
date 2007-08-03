@@ -37,8 +37,8 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 		paramNames = new String[paramTypes.length];
 	}
 
-	@Override
-	public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+	@Override public void visitLocalVariable(String name, String desc, String signature, Label start, Label end,
+			int index) {
 		int pindex = index - 1;
 		if (pindex >= 0 && pindex < paramNames.length) {
 			paramNames[pindex] = name;

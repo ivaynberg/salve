@@ -28,9 +28,6 @@ import java.lang.annotation.Target;
  * 
  * @author ivaynberg
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Target(ElementType.METHOD)
-public @interface OverrideMustInvoke {
+@Retention(RetentionPolicy.RUNTIME) @Documented @Target(ElementType.METHOD) public @interface OverrideMustInvoke {
 
 }
