@@ -64,8 +64,6 @@ public class NumericalInstrumentor extends ClassAdapter {
 						final int mode = argannots[i];
 						final Type type = getParamType(i);
 
-						final String md = getMethodDefinitionString();
-
 						loadArg(i);
 						final Label end = new Label();
 						checkValue(mode, type, end);
