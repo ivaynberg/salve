@@ -30,8 +30,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testArgumentTypeErrorChecking() throws Exception {
+	@Test public void testArgumentTypeErrorChecking() throws Exception {
 		try {
 			create("IllegalArgBean");
 			fail();
@@ -42,8 +41,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testDoubleReturnTypes() throws Exception {
+	@Test public void testDoubleReturnTypes() throws Exception {
 		Bean bean = (Bean) create("Bean");
 		assertTrue(1l == bean.test12(1l));
 		assertTrue(new Double(1).equals(bean.test13(1)));
@@ -64,8 +62,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 
 	}
 
-	@Test
-	public void testDoubles() throws Exception {
+	@Test public void testDoubles() throws Exception {
 		Bean bean = (Bean) create("Bean");
 
 		bean.test3(1);
@@ -87,8 +84,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testFloatReturnTypes() throws Exception {
+	@Test public void testFloatReturnTypes() throws Exception {
 		Bean bean = (Bean) create("Bean");
 		assertTrue(1f == bean.test14(1f));
 		assertTrue(new Float(1).equals(bean.test15(1f)));
@@ -109,8 +105,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 
 	}
 
-	@Test
-	public void testFloats() throws Exception {
+	@Test public void testFloats() throws Exception {
 		Bean bean = (Bean) create("Bean");
 
 		bean.test5(1.0f);
@@ -132,8 +127,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testGE0Errors() throws Exception {
+	@Test public void testGE0Errors() throws Exception {
 		Bean bean = (Bean) create("Bean");
 
 		try {
@@ -144,8 +138,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testGT0Errors() throws Exception {
+	@Test public void testGT0Errors() throws Exception {
 		Bean bean = (Bean) create("Bean");
 
 		try {
@@ -162,8 +155,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testIntegerReturnTypes() throws Exception {
+	@Test public void testIntegerReturnTypes() throws Exception {
 		Bean bean = (Bean) create("Bean");
 		assertTrue(1 == bean.test10(1));
 		assertTrue(new Integer(1).equals(bean.test10(1)));
@@ -184,8 +176,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 
 	}
 
-	@Test
-	public void testIntegers() throws Exception {
+	@Test public void testIntegers() throws Exception {
 		Bean bean = (Bean) create("Bean");
 
 		bean.test1(1);
@@ -207,8 +198,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testLE0Errors() throws Exception {
+	@Test public void testLE0Errors() throws Exception {
 		Bean bean = (Bean) create("Bean");
 
 		try {
@@ -219,15 +209,13 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testLogicNoErrors() throws Exception {
+	@Test public void testLogicNoErrors() throws Exception {
 		Bean bean = (Bean) create("Bean");
 		bean.test9(-1, 0, 1, 0);
 		bean.test9(-1, -1, 1, 1);
 	}
 
-	@Test
-	public void testLongReturnTypes() throws Exception {
+	@Test public void testLongReturnTypes() throws Exception {
 		Bean bean = (Bean) create("Bean");
 		assertTrue(1l == bean.test16(1l));
 		assertTrue(new Long(1).equals(bean.test16(1l)));
@@ -248,8 +236,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 
 	}
 
-	@Test
-	public void testLongs() throws Exception {
+	@Test public void testLongs() throws Exception {
 		Bean bean = (Bean) create("Bean");
 
 		bean.test7(1l);
@@ -271,8 +258,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testLT0Errors() throws Exception {
+	@Test public void testLT0Errors() throws Exception {
 		Bean bean = (Bean) create("Bean");
 
 		try {
@@ -289,8 +275,7 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 		}
 	}
 
-	@Test
-	public void testReturnTypeErrorChecking() throws Exception {
+	@Test public void testReturnTypeErrorChecking() throws Exception {
 		try {
 			create("IllegalReturnBean");
 			fail();
@@ -302,95 +287,73 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest 
 	}
 
 	public static class Bean {
-		void test1(@GE0
-		int b) {
+		void test1(@GE0 int b) {
 		}
 
-		@GT0
-		int test10(int a) {
+		@GT0 int test10(int a) {
 			return a;
 		}
 
-		@GT0
-		Integer test11(int a) {
+		@GT0 Integer test11(int a) {
 			return a;
 		}
 
-		@GT0
-		double test12(double a) {
+		@GT0 double test12(double a) {
 			return a;
 		}
 
-		@GT0
-		Double test13(double a) {
+		@GT0 Double test13(double a) {
 			return a;
 		}
 
-		@GT0
-		float test14(float a) {
+		@GT0 float test14(float a) {
 			return a;
 		}
 
-		@GT0
-		Float test15(float a) {
+		@GT0 Float test15(float a) {
 			return a;
 		}
 
-		@GT0
-		long test16(long a) {
+		@GT0 long test16(long a) {
 			return a;
 		}
 
-		@GT0
-		Long test17(long a) {
+		@GT0 Long test17(long a) {
 			return a;
 		}
 
-		void test2(@GE0
-		Integer b) {
+		void test2(@GE0 Integer b) {
 		}
 
-		void test3(@GE0
-		double b) {
+		void test3(@GE0 double b) {
 		}
 
-		void test4(@GE0
-		Double b) {
+		void test4(@GE0 Double b) {
 		}
 
-		void test5(@GE0
-		float b) {
+		void test5(@GE0 float b) {
 		}
 
-		void test6(@GE0
-		Float b) {
+		void test6(@GE0 Float b) {
 		}
 
-		void test7(@GE0
-		long b) {
+		void test7(@GE0 long b) {
 		}
 
-		void test8(@GE0
-		Long b) {
+		void test8(@GE0 Long b) {
 		}
 
-		void test9(@LT0
-		int a, @LE0
-		int b, @GT0
-		int c, @GE0
-		int d) {
+		void test9(@LT0 int a, @LE0 int b, @GT0 int c, @GE0 int d) {
 		}
 	}
 
 	class IllegalArgBean {
-		void test(@GT0
-		Object fii) {
+		void test(@GT0 Object fii) {
 		}
 	}
 
 	class IllegalReturnBean {
-		@GT0
-		Object test() {
+		@GT0 Object test() {
 			return null;
 		}
 	}

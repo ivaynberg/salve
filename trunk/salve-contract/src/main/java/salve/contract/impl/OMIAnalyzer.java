@@ -29,8 +29,7 @@ import salve.util.asm.ClassVisitorAdapter;
 import salve.util.asm.MethodVisitorAdapter;
 
 public class OMIAnalyzer {
-	private static final int QUICK_MODE = ClassReader.SKIP_CODE
-			+ ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
+	private static final int QUICK_MODE = ClassReader.SKIP_CODE + ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES;
 
 	private static final String OBJECT = "java/lang/Object";
 
@@ -63,8 +62,7 @@ public class OMIAnalyzer {
 		return omiMethods.contains(name + desc);
 	}
 
-	private void visitInterface(String iface, Set<String> methods,
-			Set<String> visitedInterfaces, BytecodeLoader loader) {
+	private void visitInterface(String iface, Set<String> methods, Set<String> visitedInterfaces, BytecodeLoader loader) {
 		if (!visitedInterfaces.contains(iface)) {
 			visitedInterfaces.add(iface);
 			ClassReader reader = new ClassReader(loader.loadBytecode(iface));
@@ -82,9 +80,8 @@ public class OMIAnalyzer {
 			this.methods = methods;
 		}
 
-		@Override
-		public MethodVisitor visitMethod(int access, String name, String desc,
-				String signature, String[] exceptions) {
+		@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature,
+				String[] exceptions) {
 			if (!"<init>".equals(name) && !"<clinit>".equals(name)) {
 				methods.add(name + desc);
 			}
@@ -92,23 +89,19 @@ public class OMIAnalyzer {
 		}
 	}
 
-	public class OMIMethodIdentifier extends ClassVisitorAdapter implements
-			Constants {
+	public class OMIMethodIdentifier extends ClassVisitorAdapter implements Constants {
 		private final Set<String> allowedMethods;
 
 		public OMIMethodIdentifier(Set<String> allowedMethods) {
 			this.allowedMethods = allowedMethods;
 		}
 
-		@Override
-		public MethodVisitor visitMethod(int access, String name, String desc,
-				String signature, String[] exceptions) {
+		@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature,
+				String[] exceptions) {
 			final String method = name + desc;
 			if (allowedMethods.contains(method)) {
 				return new MethodVisitorAdapter() {
-					@Override
-					public AnnotationVisitor visitAnnotation(String desc,
-							boolean visible) {
+					@Override public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 						if (OMI.getDescriptor().equals(desc)) {
 							allowedMethods.remove(method);
 							omiMethods.add(method);
