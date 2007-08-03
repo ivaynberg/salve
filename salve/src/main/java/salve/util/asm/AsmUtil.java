@@ -4,6 +4,7 @@ import salve.org.objectweb.asm.Type;
 
 public class AsmUtil {
 	private static final String DOUBLEDESC = "Ljava/lang/Double;";
+
 	private static final String FLOATDESC = "Ljava/lang/Float;";
 	private static final String LONGDESC = "Ljava/lang/Long;";
 	private static final String INTEGERDESC = "Ljava/lang/Integer;";
@@ -14,6 +15,14 @@ public class AsmUtil {
 
 	private AsmUtil() {
 
+	}
+
+	public static class Types {
+		public static Type CLASS = Type.getType(Class.class);
+
+		private Types() {
+
+		}
 	}
 
 	public static boolean isByte(Type type) {
