@@ -16,11 +16,11 @@
  */
 package salve.contract.impl;
 
+import salve.asmlib.AnnotationVisitor;
+import salve.asmlib.Label;
+import salve.asmlib.MethodVisitor;
+import salve.asmlib.Type;
 import salve.contract.IllegalAnnotationUseException;
-import salve.org.objectweb.asm.AnnotationVisitor;
-import salve.org.objectweb.asm.Label;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Type;
 import salve.util.asm.AsmUtil;
 
 public class NotNullInstrumentor extends AbstractMethodInstrumentor implements Constants {

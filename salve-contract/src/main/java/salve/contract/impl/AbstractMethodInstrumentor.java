@@ -16,10 +16,10 @@
  */
 package salve.contract.impl;
 
-import salve.org.objectweb.asm.Label;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Type;
-import salve.org.objectweb.asm.commons.AdviceAdapter;
+import salve.asmlib.AdviceAdapter;
+import salve.asmlib.Label;
+import salve.asmlib.MethodVisitor;
+import salve.asmlib.Type;
 
 public abstract class AbstractMethodInstrumentor extends AdviceAdapter implements Constants {
 	private final int access;
