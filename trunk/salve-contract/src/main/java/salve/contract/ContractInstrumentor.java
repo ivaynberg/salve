@@ -75,8 +75,8 @@ public class ContractInstrumentor implements Instrumentor {
 			super(cv);
 		}
 
-		@Override
-		public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+		@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature,
+				String[] exceptions) {
 			MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
 			mv = new NotNullInstrumentor(mv, access, name, desc);
 			mv = new NotEmptyInstrumentor(mv, access, name, desc);

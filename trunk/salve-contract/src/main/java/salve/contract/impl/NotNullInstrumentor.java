@@ -36,8 +36,7 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 		super(mv, access, name, desc);
 	}
 
-	@Override
-	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+	@Override public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 		if (NOTNULL.getDescriptor().equals(desc)) {
 			final Type ret = getReturnType();
 			if (!checkType(ret)) {
@@ -50,8 +49,7 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 		return super.visitAnnotation(desc, visible);
 	}
 
-	@Override
-	public void visitMaxs(int maxStack, int maxLocals) {
+	@Override public void visitMaxs(int maxStack, int maxLocals) {
 		if (annotatedParams != null) {
 			mark(paramsCheck);
 			for (int i = 0; i < annotatedParams.length; i++) {
@@ -83,8 +81,7 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 		super.visitMaxs(maxStack, maxLocals);
 	}
 
-	@Override
-	public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+	@Override public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
 		if (NOTNULL.getDescriptor().equals(desc)) {
 			if (!checkType(getParamType(parameter))) {
 				throw new IllegalAnnotationUseException("Annotation " + NOTNULL.getClassName()
@@ -99,16 +96,14 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 		return super.visitParameterAnnotation(parameter, desc, visible);
 	}
 
-	@Override
-	protected void onMethodEnter() {
+	@Override protected void onMethodEnter() {
 		if (annotatedParams != null) {
 			goTo(paramsCheck);
 			mark(methodStart);
 		}
 	}
 
-	@Override
-	protected void onMethodExit(int opcode) {
+	@Override protected void onMethodExit(int opcode) {
 		if (notNull && opcode == ARETURN) {
 			goTo(returnValueCheck);
 		}
