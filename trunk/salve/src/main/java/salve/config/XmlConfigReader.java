@@ -38,15 +38,14 @@ public class XmlConfigReader {
 			this.config = config;
 		}
 
-		@Override
-		public void endElement(String uri, String localName, String name) throws SAXException {
+		@Override public void endElement(String uri, String localName, String name) throws SAXException {
 			if ("package".equals(name)) {
 				onEndPackage();
 			}
 		}
 
-		@Override
-		public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
+		@Override public void startElement(String uri, String localName, String name, Attributes attributes)
+				throws SAXException {
 			if ("package".equals(name)) {
 				String packageName = attributes.getValue("name");
 				onStartPackage(packageName);
@@ -72,7 +71,8 @@ public class XmlConfigReader {
 			try {
 				instClass = instrumentorLoader.loadClass(instClassName);
 			} catch (ClassNotFoundException e) {
-				throw new RTConfigException("Could not load instrumentor class " + instClassName);
+				throw new RTConfigException("Could not load instrumentor class " + instClassName
+						+ ", make sure it is available on the classpath at the time of instrumentation");
 			}
 
 			Object inst;
