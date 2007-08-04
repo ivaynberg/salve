@@ -47,7 +47,7 @@
 				<configuration>
 					<archive>
 						<manifestFile>
-							src/main/resources/META-INF/MANIFEST.MF
+							META-INF/MANIFEST.MF
 						</manifestFile>
 					</archive>
 				</configuration>
