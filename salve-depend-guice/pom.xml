@@ -23,8 +23,8 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>salve</groupId>
-	<artifactId>salve-guice</artifactId>
-	<name>Salve Guice Integration</name>
+	<artifactId>salve-depend-guice</artifactId>
+	<name>Salve Dependencies Guice Integration</name>
 
 	<dependencies>
 		<dependency>

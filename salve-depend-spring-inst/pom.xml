@@ -23,8 +23,8 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>salve</groupId>
-	<artifactId>salve-spring-inst</artifactId>
-	<name>Salve Spring Transactional Instrumentor</name>
+	<artifactId>salve-depend-spring-inst</artifactId>
+	<name>Salve Dependencies Spring Instrumentor</name>
 
 	<dependencies>
 		<dependency>

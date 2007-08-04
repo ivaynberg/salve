@@ -23,8 +23,8 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>salve</groupId>
-	<artifactId>salve-spring</artifactId>
-	<name>Salve Spring Integration</name>
+	<artifactId>salve-depend-spring</artifactId>
+	<name>Salve Dependencies Spring Integration</name>
 
 	<dependencies>
 		<dependency>
