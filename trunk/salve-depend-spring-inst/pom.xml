@@ -40,7 +40,7 @@
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
-			<artifactId>salve-spring</artifactId>
+			<artifactId>salve-depend-spring</artifactId>
 			<version>${salve.version}</version>
 			<scope>test</scope>
 		</dependency>

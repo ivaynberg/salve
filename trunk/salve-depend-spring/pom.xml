@@ -41,12 +41,12 @@
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
-			<artifactId>salve-dep</artifactId>
+			<artifactId>salve-depend</artifactId>
 			<version>${salve.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
-			<artifactId>salve-dep-inst</artifactId>
+			<artifactId>salve-depend-inst</artifactId>
 			<version>${salve.version}</version>
 			<scope>test</scope>
 		</dependency>
