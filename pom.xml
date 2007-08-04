@@ -42,11 +42,15 @@
 
 	<modules>
 		<module>salve</module>
+		<module>salve-dep</module>
+		<module>salve-dep-inst</module>
 		<module>salve-agent</module>
 		<module>salve-maven2</module>
 		<module>salve-spring</module>
+		<module>salve-spring-inst</module>
 		<module>salve-guice</module>
-                <module>salve-contract</module>
+        <module>salve-contract</module>
+        <module>salve-contract-inst</module>
 	</modules>
 
 
