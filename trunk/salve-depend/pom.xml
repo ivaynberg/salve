@@ -27,7 +27,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>salve-dep</artifactId>
+	<artifactId>salve-depend</artifactId>
 	<name>Salve Dependencies</name>
 
 </project>
