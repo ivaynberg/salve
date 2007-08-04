@@ -1,8 +1,8 @@
 <projectDescription>
-  <name>salve-dep-inst</name>
+  <name>salve-depend-inst</name>
   <comment/>
   <projects>
-    <project>salve-dep</project>
+    <project>salve-depend</project>
     <project>salve</project>
   </projects>
   <buildSpec>
