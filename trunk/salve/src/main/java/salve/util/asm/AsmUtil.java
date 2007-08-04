@@ -1,6 +1,6 @@
 package salve.util.asm;
 
-import salve.org.objectweb.asm.Type;
+import salve.asmlib.Type;
 
 public class AsmUtil {
 	private static final String DOUBLEDESC = "Ljava/lang/Double;";

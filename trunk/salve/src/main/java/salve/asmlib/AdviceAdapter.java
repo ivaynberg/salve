@@ -27,18 +27,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package salve.org.objectweb.asm.commons;
+package salve.asmlib;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import salve.org.objectweb.asm.Label;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Opcodes;
-import salve.org.objectweb.asm.Type;
-
 /**
- * A {@link salve.org.objectweb.asm.MethodAdapter} to insert before, after and
+ * A {@link salve.asmlib.MethodAdapter} to insert before, after and
  * around advices in methods and constructors.
  * <p>
  * The behavior for constructors is like this:

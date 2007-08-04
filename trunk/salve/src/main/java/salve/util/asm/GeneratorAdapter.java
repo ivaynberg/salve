@@ -1,10 +1,10 @@
 package salve.util.asm;
 
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Opcodes;
-import salve.org.objectweb.asm.Type;
+import salve.asmlib.MethodVisitor;
+import salve.asmlib.Opcodes;
+import salve.asmlib.Type;
 
-public class GeneratorAdapter extends salve.org.objectweb.asm.commons.GeneratorAdapter implements Opcodes {
+public class GeneratorAdapter extends salve.asmlib.GeneratorAdapter implements Opcodes {
 
 	public GeneratorAdapter(MethodVisitor mv, int access, String name, String desc) {
 		super(mv, access, name, desc);

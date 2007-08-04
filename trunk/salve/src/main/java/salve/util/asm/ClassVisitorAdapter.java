@@ -1,10 +1,10 @@
 package salve.util.asm;
 
-import salve.org.objectweb.asm.AnnotationVisitor;
-import salve.org.objectweb.asm.Attribute;
-import salve.org.objectweb.asm.ClassVisitor;
-import salve.org.objectweb.asm.FieldVisitor;
-import salve.org.objectweb.asm.MethodVisitor;
+import salve.asmlib.AnnotationVisitor;
+import salve.asmlib.Attribute;
+import salve.asmlib.ClassVisitor;
+import salve.asmlib.FieldVisitor;
+import salve.asmlib.MethodVisitor;
 
 public class ClassVisitorAdapter implements ClassVisitor {
 

@@ -3,8 +3,8 @@
  */
 package salve.dependency.impl;
 
+import salve.asmlib.Type;
 import salve.dependency.InjectionStrategy;
-import salve.org.objectweb.asm.Type;
 
 class DependencyField {
 	String name;

@@ -27,20 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package salve.org.objectweb.asm.commons;
+package salve.asmlib;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import salve.org.objectweb.asm.ClassVisitor;
-import salve.org.objectweb.asm.Label;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Opcodes;
-import salve.org.objectweb.asm.Type;
-
 /**
- * A {@link salve.org.objectweb.asm.MethodAdapter} with convenient methods to generate
+ * A {@link salve.asmlib.MethodAdapter} with convenient methods to generate
  * code. For example, using this adapter, the class below
  * 
  * <pre>
