@@ -20,10 +20,8 @@ import org.junit.Test;
 
 import salve.InstrumentationException;
 
-public class NotEmptyContractInstrumentorTest extends
-		AbstractContractInstrumentorTest {
-	@Test
-	public void testArgumentTypeErrorChecking() throws Exception {
+public class NotEmptyContractInstrumentorTest extends AbstractContractInstrumentorTest {
+	@Test public void testArgumentTypeErrorChecking() throws Exception {
 		try {
 			create("NonStringParameterBean");
 			fail("Expected error instrumenting non-string notempty argument");
@@ -34,8 +32,7 @@ public class NotEmptyContractInstrumentorTest extends
 		}
 	}
 
-	@Test
-	public void testNotEmpty() throws Exception {
+	@Test public void testNotEmpty() throws Exception {
 		Bean bean = (Bean) create("Bean");
 		final String token = new String("foo");
 
@@ -68,8 +65,7 @@ public class NotEmptyContractInstrumentorTest extends
 
 	}
 
-	@Test
-	public void testReturnTypeErrorChecking() throws Exception {
+	@Test public void testReturnTypeErrorChecking() throws Exception {
 
 		try {
 			create("VoidReturnBean");
@@ -89,23 +85,19 @@ public class NotEmptyContractInstrumentorTest extends
 			return arg1;
 		}
 
-		@NotEmpty
-		public String test(Object arg1, @NotEmpty
-		String arg2, Object arg3) {
+		@NotEmpty public String test(Object arg1, @NotEmpty String arg2, Object arg3) {
 			return arg2 == NULL ? null : arg2;
 		}
 	}
 
 	public static class NonStringParameterBean {
-		public void testEmptyNull(@NotEmpty
-		int a) {
+		public void testEmptyNull(@NotEmpty int a) {
 
 		}
 	}
 
 	public static class VoidReturnBean {
-		@NotEmpty
-		public void test() {
+		@NotEmpty public void test() {
 		}
 	}
 
