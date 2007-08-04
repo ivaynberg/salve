@@ -1,13 +1,13 @@
 package salve.spring.txn;
 
-import salve.org.objectweb.asm.AnnotationVisitor;
-import salve.org.objectweb.asm.ClassAdapter;
-import salve.org.objectweb.asm.ClassVisitor;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Opcodes;
-import salve.org.objectweb.asm.Type;
-import salve.org.objectweb.asm.commons.AdviceAdapter;
-import salve.org.objectweb.asm.commons.StaticInitMerger;
+import salve.asmlib.AdviceAdapter;
+import salve.asmlib.AnnotationVisitor;
+import salve.asmlib.ClassAdapter;
+import salve.asmlib.ClassVisitor;
+import salve.asmlib.MethodVisitor;
+import salve.asmlib.Opcodes;
+import salve.asmlib.StaticInitMerger;
+import salve.asmlib.Type;
 import salve.util.asm.GeneratorAdapter;
 
 public class ClassInstrumentor extends ClassAdapter implements Opcodes,
