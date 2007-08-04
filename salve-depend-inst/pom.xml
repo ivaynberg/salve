@@ -38,7 +38,7 @@
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
-			<artifactId>salve-dep</artifactId>
+			<artifactId>salve-depend</artifactId>
 			<version>${salve.version}</version>
 			<scope>test</scope>
 		</dependency>
