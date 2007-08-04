@@ -33,9 +33,9 @@ import salve.config.ConfigException;
 import salve.config.PackageConfig;
 import salve.config.XmlConfigReader;
 import salve.maven2.util.ClassFileVisitor;
-import salve.maven2.util.ClassLoaderAdapter;
 import salve.maven2.util.Directory;
 import salve.maven2.util.ProjectBytecodeLoader;
+import salve.util.FallbackBytecodeClassLoader;
 
 /**
  * Salve maven2 plugin. This plugin instruments class files before the project
@@ -63,17 +63,20 @@ public class SalveMojo extends AbstractMojo {
 	 * @see org.apache.maven.plugin.AbstractMojo#execute()
 	 */
 	public void execute() throws MojoExecutionException {
-		final File classesDir = new File(project.getBuild().getOutputDirectory());
+		final File classesDir = new File(project.getBuild()
+				.getOutputDirectory());
 
 		// make sure target/classes has been created
 		if (!classesDir.exists()) {
-			throw new IllegalStateException("target/classes directory does not exist");
+			throw new IllegalStateException(
+					"target/classes directory does not exist");
 		}
 
 		try {
 			loader = new ProjectBytecodeLoader(project);
 		} catch (DependencyResolutionRequiredException e) {
-			throw new MojoExecutionException("Could not configure bytecode loader", e);
+			throw new MojoExecutionException(
+					"Could not configure bytecode loader", e);
 		}
 
 		loadConfig(classesDir);
@@ -82,13 +85,14 @@ public class SalveMojo extends AbstractMojo {
 		Directory dir = new Directory(classesDir);
 		dir.visitFiles(new ClassFileVisitor(dir) {
 
-			@Override
-			protected void onClassFile(File file, String className) {
+			@Override protected void onClassFile(File file, String className) {
 				instrumentClassFile(className, file);
 			}
 		});
 
-		getLog().info(String.format("Salve: classes scanned: %d, instrumented: %d", scanned, instrumented));
+		getLog().info(
+				String.format("Salve: classes scanned: %d, instrumented: %d",
+						scanned, instrumented));
 
 	}
 
@@ -108,9 +112,12 @@ public class SalveMojo extends AbstractMojo {
 			if (conf != null) {
 				for (Instrumentor inst : conf.getInstrumentors()) {
 					getLog().debug(
-							"Instrumenting " + className + " with " + inst.getClass().getName() + " instrumentor");
+							"Instrumenting " + className + " with "
+									+ inst.getClass().getName()
+									+ " instrumentor");
 
-					byte[] bytecode = inst.instrument(className.replace(".", "/"), loader);
+					byte[] bytecode = inst.instrument(className.replace(".",
+							"/"), loader);
 					FileOutputStream fos = new FileOutputStream(file);
 					fos.write(bytecode);
 					fos.close();
@@ -128,18 +135,24 @@ public class SalveMojo extends AbstractMojo {
 	 */
 	private void loadConfig(final File classes) throws MojoExecutionException {
 
-		final File salvexml = new File(classes, "META-INF" + File.separator + "salve.xml");
+		final File salvexml = new File(classes, "META-INF" + File.separator
+				+ "salve.xml");
 		if (!salvexml.exists()) {
-			throw new MojoExecutionException("Could not locate salve config file: " + salvexml);
+			throw new MojoExecutionException(
+					"Could not locate salve config file: " + salvexml);
 		}
 
-		XmlConfigReader reader = new XmlConfigReader(new ClassLoaderAdapter(SalveMojo.class.getClassLoader(), loader));
+		XmlConfigReader reader = new XmlConfigReader(
+				new FallbackBytecodeClassLoader(SalveMojo.class
+						.getClassLoader(), loader));
 		try {
 			reader.read(new FileInputStream(salvexml), config);
 		} catch (FileNotFoundException e) {
-			throw new MojoExecutionException("Could not open " + salvexml + " for reading");
+			throw new MojoExecutionException("Could not open " + salvexml
+					+ " for reading");
 		} catch (ConfigException e) {
-			throw new MojoExecutionException("Could not configure salve instrumentation", e);
+			throw new MojoExecutionException(
+					"Could not configure salve instrumentation", e);
 		}
 	}
 
