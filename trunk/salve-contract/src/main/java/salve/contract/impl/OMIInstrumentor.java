@@ -16,11 +16,11 @@
  */
 package salve.contract.impl;
 
-import salve.org.objectweb.asm.ClassAdapter;
-import salve.org.objectweb.asm.ClassVisitor;
-import salve.org.objectweb.asm.Label;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Type;
+import salve.asmlib.ClassAdapter;
+import salve.asmlib.ClassVisitor;
+import salve.asmlib.Label;
+import salve.asmlib.MethodVisitor;
+import salve.asmlib.Type;
 
 public class OMIInstrumentor extends ClassAdapter {
 	private String owner;

@@ -16,6 +16,8 @@
  */
 package salve.contract.impl;
 
+import salve.asmlib.Method;
+import salve.asmlib.Type;
 import salve.contract.GE0;
 import salve.contract.GT0;
 import salve.contract.LE0;
@@ -23,8 +25,6 @@ import salve.contract.LT0;
 import salve.contract.NotEmpty;
 import salve.contract.NotNull;
 import salve.contract.OverrideMustInvoke;
-import salve.org.objectweb.asm.Type;
-import salve.org.objectweb.asm.commons.Method;
 
 public interface Constants {
 	static final Type NOTNULL = Type.getType(NotNull.class);

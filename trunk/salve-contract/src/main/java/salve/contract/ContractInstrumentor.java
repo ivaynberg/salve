@@ -20,16 +20,16 @@ import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationException;
 import salve.Instrumentor;
+import salve.asmlib.ClassAdapter;
+import salve.asmlib.ClassReader;
+import salve.asmlib.ClassVisitor;
+import salve.asmlib.ClassWriter;
+import salve.asmlib.MethodVisitor;
 import salve.contract.impl.NotEmptyInstrumentor;
 import salve.contract.impl.NotNullInstrumentor;
 import salve.contract.impl.NumericalInstrumentor;
 import salve.contract.impl.OMIAnalyzer;
 import salve.contract.impl.OMIInstrumentor;
-import salve.org.objectweb.asm.ClassAdapter;
-import salve.org.objectweb.asm.ClassReader;
-import salve.org.objectweb.asm.ClassVisitor;
-import salve.org.objectweb.asm.ClassWriter;
-import salve.org.objectweb.asm.MethodVisitor;
 
 public class ContractInstrumentor implements Instrumentor {
 

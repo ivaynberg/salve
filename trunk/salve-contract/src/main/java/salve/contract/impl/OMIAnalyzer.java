@@ -22,9 +22,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import salve.BytecodeLoader;
-import salve.org.objectweb.asm.AnnotationVisitor;
-import salve.org.objectweb.asm.ClassReader;
-import salve.org.objectweb.asm.MethodVisitor;
+import salve.asmlib.AnnotationVisitor;
+import salve.asmlib.ClassReader;
+import salve.asmlib.MethodVisitor;
 import salve.util.asm.ClassVisitorAdapter;
 import salve.util.asm.MethodVisitorAdapter;
 
