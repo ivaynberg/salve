@@ -27,12 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package salve.org.objectweb.asm.commons;
+package salve.asmlib;
 
-import salve.org.objectweb.asm.ClassAdapter;
-import salve.org.objectweb.asm.ClassVisitor;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Opcodes;
 
 /**
  * A {@link ClassAdapter} that merges clinit methods into a single one.

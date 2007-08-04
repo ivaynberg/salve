@@ -1,8 +1,8 @@
 package salve.dependency.impl;
 
-import salve.org.objectweb.asm.MethodAdapter;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Opcodes;
+import salve.asmlib.MethodAdapter;
+import salve.asmlib.MethodVisitor;
+import salve.asmlib.Opcodes;
 
 class ClinitMerger extends MethodAdapter implements Opcodes {
 

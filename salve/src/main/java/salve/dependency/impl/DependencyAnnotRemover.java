@@ -1,10 +1,10 @@
 package salve.dependency.impl;
 
+import salve.asmlib.AnnotationVisitor;
+import salve.asmlib.Attribute;
+import salve.asmlib.FieldVisitor;
+import salve.asmlib.Type;
 import salve.dependency.Dependency;
-import salve.org.objectweb.asm.AnnotationVisitor;
-import salve.org.objectweb.asm.Attribute;
-import salve.org.objectweb.asm.FieldVisitor;
-import salve.org.objectweb.asm.Type;
 
 public class DependencyAnnotRemover implements FieldVisitor {
 	private static final String DESC = Type.getDescriptor(Dependency.class);

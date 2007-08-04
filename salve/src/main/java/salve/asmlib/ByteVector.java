@@ -27,7 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package salve.org.objectweb.asm;
+package salve.asmlib;
+
 
 /**
  * A dynamically extensible vector of bytes. This class is roughly equivalent to

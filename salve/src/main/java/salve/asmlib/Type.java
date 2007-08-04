@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package salve.org.objectweb.asm;
+package salve.asmlib;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

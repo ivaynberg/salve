@@ -27,7 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package salve.org.objectweb.asm;
+package salve.asmlib;
+
 
 /**
  * A visitor to visit a Java method. The methods of this interface must be

@@ -7,17 +7,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import salve.asmlib.ClassAdapter;
+import salve.asmlib.ClassVisitor;
+import salve.asmlib.FieldVisitor;
+import salve.asmlib.Label;
+import salve.asmlib.LocalVariablesSorter;
+import salve.asmlib.MethodAdapter;
+import salve.asmlib.MethodVisitor;
+import salve.asmlib.Opcodes;
+import salve.asmlib.StaticInitMerger;
+import salve.asmlib.Type;
 import salve.dependency.InjectionStrategy;
-import salve.org.objectweb.asm.ClassAdapter;
-import salve.org.objectweb.asm.ClassVisitor;
-import salve.org.objectweb.asm.FieldVisitor;
-import salve.org.objectweb.asm.Label;
-import salve.org.objectweb.asm.MethodAdapter;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Opcodes;
-import salve.org.objectweb.asm.Type;
-import salve.org.objectweb.asm.commons.LocalVariablesSorter;
-import salve.org.objectweb.asm.commons.StaticInitMerger;
 
 public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	private final ClassAnalyzer analyzer;

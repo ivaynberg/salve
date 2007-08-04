@@ -27,13 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package salve.org.objectweb.asm.commons;
+package salve.asmlib;
 
-import salve.org.objectweb.asm.Label;
-import salve.org.objectweb.asm.MethodAdapter;
-import salve.org.objectweb.asm.MethodVisitor;
-import salve.org.objectweb.asm.Opcodes;
-import salve.org.objectweb.asm.Type;
 
 /**
  * A {@link MethodAdapter} that renumbers local variables in their order of

@@ -27,9 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package salve.org.objectweb.asm.commons;
+package salve.asmlib;
 
-import salve.org.objectweb.asm.Label;
 
 /**
  * A code generator for switch statements.

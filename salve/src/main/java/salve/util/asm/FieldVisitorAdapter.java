@@ -1,8 +1,8 @@
 package salve.util.asm;
 
-import salve.org.objectweb.asm.AnnotationVisitor;
-import salve.org.objectweb.asm.Attribute;
-import salve.org.objectweb.asm.FieldVisitor;
+import salve.asmlib.AnnotationVisitor;
+import salve.asmlib.Attribute;
+import salve.asmlib.FieldVisitor;
 
 public class FieldVisitorAdapter implements FieldVisitor {
 

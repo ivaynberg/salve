@@ -4,10 +4,10 @@ import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationException;
 import salve.Instrumentor;
+import salve.asmlib.ClassReader;
+import salve.asmlib.ClassWriter;
 import salve.dependency.impl.ClassAnalyzer;
 import salve.dependency.impl.ClassInstrumentor;
-import salve.org.objectweb.asm.ClassReader;
-import salve.org.objectweb.asm.ClassWriter;
 
 public class DependencyInstrumentor implements Instrumentor {
 
