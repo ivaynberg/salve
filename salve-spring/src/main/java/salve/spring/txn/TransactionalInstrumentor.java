@@ -3,8 +3,8 @@ package salve.spring.txn;
 import salve.BytecodeLoader;
 import salve.InstrumentationException;
 import salve.Instrumentor;
-import salve.org.objectweb.asm.ClassReader;
-import salve.org.objectweb.asm.ClassWriter;
+import salve.asmlib.ClassReader;
+import salve.asmlib.ClassWriter;
 
 public class TransactionalInstrumentor implements Instrumentor {
 
