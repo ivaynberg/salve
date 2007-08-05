@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 /**
  * Exception thrown when dependency cannot be located

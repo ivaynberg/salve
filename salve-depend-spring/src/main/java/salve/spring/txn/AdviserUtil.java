@@ -7,8 +7,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.interceptor.TransactionAttributeSourceAdvisor;
 
-import salve.dependency.DependencyLibrary;
-import salve.dependency.Key;
+import salve.depend.DependencyLibrary;
+import salve.depend.Key;
 
 public class AdviserUtil {
 	private AdviserUtil() {

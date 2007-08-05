@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
@@ -6,8 +6,8 @@ import salve.InstrumentationException;
 import salve.Instrumentor;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassWriter;
-import salve.dependency.impl.ClassAnalyzer;
-import salve.dependency.impl.ClassInstrumentor;
+import salve.depend.impl.ClassAnalyzer;
+import salve.depend.impl.ClassInstrumentor;
 
 public class DependencyInstrumentor implements Instrumentor {
 

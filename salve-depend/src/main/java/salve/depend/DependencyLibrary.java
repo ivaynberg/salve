@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
