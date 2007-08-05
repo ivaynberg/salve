@@ -47,10 +47,12 @@ public class SalveBuilder extends AbstractBuilder {
 	 * @see org.eclipse.core.internal.events.InternalBuilder#build(int,
 	 *      java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
 
 		removeMarks(getProject());
+		BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject());
 
 		// find config resource
 		final IResource configResource = findConfig();
@@ -63,14 +65,11 @@ public class SalveBuilder extends AbstractBuilder {
 		removeMarks(configResource);
 
 		// load config
-		BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject());
 		ClassLoader cloader = new FallbackBytecodeClassLoader(getClass()
 				.getClassLoader(), bloader);
-
-		final Config config = new Config();
-		XmlConfigReader reader = new XmlConfigReader(cloader);
+		Config config = null;
 		try {
-			reader.read(((IFile) configResource).getContents(), config);
+			config = loadConfig(configResource, cloader);
 		} catch (ConfigException e) {
 			markError(configResource, "Could not configure Salve: "
 					+ e.getMessage());
@@ -79,29 +78,12 @@ public class SalveBuilder extends AbstractBuilder {
 
 		// check if we need to upgrade the build to full
 		if (kind != FULL_BUILD) {
-			final boolean[] modified = new boolean[] { false };
-			getDelta(getProject()).accept(new IResourceDeltaVisitor() {
-
-				public boolean visit(IResourceDelta delta) throws CoreException {
-					if (delta.getResource().equals(configResource)) {
-						switch (delta.getKind()) {
-						case IResourceDelta.ADDED:
-						case IResourceDelta.CHANGED:
-							modified[0] = true;
-							break;
-						case IResourceDelta.REMOVED:
-							break;
-
-						}
-						return false;
-					}
-					return true;
-				}
-			});
-
-			if (modified[0]) {
+			switch (findResourceDeltaKind(configResource)) {
+			case IResourceDelta.ADDED:
+			case IResourceDelta.CHANGED:
 				// config file was modified, upgrade build to full
 				kind = FULL_BUILD;
+				break;
 			}
 		}
 
@@ -121,8 +103,40 @@ public class SalveBuilder extends AbstractBuilder {
 		return null;
 	}
 
-	private IJavaProject getJavaProject() {
-		return JavaCore.create(getProject());
+	private void build(IResource resource, Config config, BytecodeLoader bloader)
+			throws CoreException {
+		if (!(resource instanceof IFile)
+				|| !resource.getName().endsWith(".class")) {
+			return;
+		}
+
+		final IFile file = (IFile) resource;
+
+		removeMarks(resource);
+		try {
+			ClassReader reader = new ClassReader(file.getContents());
+			final String cn = reader.getClassName();
+			PackageConfig conf = config.getPackageConfig(cn.replace("/", "."));
+			if (conf != null) {
+				for (Instrumentor inst : conf.getInstrumentors()) {
+					System.out.println("instrumenting: " + cn + " with: "
+							+ inst.getClass().getName());
+					CompoundLoader cl = new CompoundLoader();
+					cl.addLoader(new FileBytecodeLoader(file));
+					cl.addLoader(bloader);
+					byte[] bytecode = inst.instrument(cn, cl);
+					file.setContents(new ByteArrayInputStream(bytecode), true,
+							false, null);
+				}
+			}
+		} catch (InstrumentationException e) {
+			markError(resource, "Instrumentation error: " + e.getMessage());
+		} catch (IOException e) {
+			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+					"Unable to parse class file: " + file.getName(), e);
+			throw new CoreException(status);
+		}
+
 	}
 
 	private IResource findConfig() throws CoreException {
@@ -138,6 +152,47 @@ public class SalveBuilder extends AbstractBuilder {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * @param configResource
+	 * @param modified
+	 * @throws CoreException
+	 */
+	private int findResourceDeltaKind(final IResource configResource)
+			throws CoreException {
+
+		final int[] kind = new int[] { 0 };
+		getDelta(getProject()).accept(new IResourceDeltaVisitor() {
+
+			public boolean visit(IResourceDelta delta) throws CoreException {
+				if (delta.getResource().equals(configResource)) {
+					kind[0] = delta.getKind();
+					return false;
+				} else {
+					return true;
+				}
+			}
+		});
+		return kind[0];
+	}
+
+	private IJavaProject getJavaProject() {
+		return JavaCore.create(getProject());
+	}
+
+	/**
+	 * @param configResource
+	 * @param cloader
+	 * @throws ConfigException
+	 * @throws CoreException
+	 */
+	private Config loadConfig(final IResource configResource,
+			ClassLoader cloader) throws ConfigException, CoreException {
+		final Config config = new Config();
+		XmlConfigReader reader = new XmlConfigReader(cloader);
+		reader.read(((IFile) configResource).getContents(), config);
+		return config;
 	}
 
 	class ResourceBuilder implements IResourceVisitor, IResourceDeltaVisitor {
@@ -166,43 +221,5 @@ public class SalveBuilder extends AbstractBuilder {
 			}
 			return true;
 		}
-	}
-
-	public void build(IResource resource, Config config, BytecodeLoader bloader)
-			throws CoreException {
-		if (!(resource instanceof IFile)
-				|| !resource.getName().endsWith(".class")) {
-			return;
-		}
-
-		final IFile file = (IFile) resource;
-
-		removeMarks(resource);
-		try {
-
-			ClassReader reader;
-			reader = new ClassReader(file.getContents());
-			final String cn = reader.getClassName();
-			PackageConfig conf = config.getPackageConfig(cn.replace("/", "."));
-			if (conf != null) {
-				for (Instrumentor inst : conf.getInstrumentors()) {
-					System.out.println("instrumenting: " + cn + " with: "
-							+ inst.getClass().getName());
-					CompoundLoader cl = new CompoundLoader();
-					cl.addLoader(new FileBytecodeLoader(file));
-					cl.addLoader(bloader);
-					byte[] bytecode = inst.instrument(cn, cl);
-					file.setContents(new ByteArrayInputStream(bytecode), true,
-							false, null);
-				}
-			}
-		} catch (InstrumentationException e) {
-			markError(resource, "Instrumentation error: " + e.getMessage());
-		} catch (IOException e) {
-			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-					"Unable to parse class file: " + file.getName(), e);
-			throw new CoreException(status);
-		}
-
 	}
 }
