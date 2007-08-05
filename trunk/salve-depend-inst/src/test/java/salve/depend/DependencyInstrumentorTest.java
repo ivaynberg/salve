@@ -10,30 +10,23 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.depend.DependencyInstrumentor;
-import salve.depend.DependencyLibrary;
-import salve.depend.IllegalFieldWriteException;
-import salve.depend.KeyImpl;
-import salve.depend.Locator;
 import salve.depend.impl.Constants;
 import salve.loader.BytecodePool;
 import salve.loader.ClassLoaderLoader;
 
 public class DependencyInstrumentorTest extends Assert implements Constants {
-	private static String BEAN_NAME = "salve/dependency/Bean";
+	private static String BEAN_NAME = "salve/depend/Bean";
 	private static Class<?> beanClass;
 
 	private static BlueDependency blue;
 	private static RedDependency red;
 	private static Locator locator;
 
-	@Before
-	public void resetMocks() {
+	@Before public void resetMocks() {
 		EasyMock.reset(blue, red, locator);
 	}
 
-	@Test
-	public void testAnnotations() throws Exception {
+	@Test public void testAnnotations() throws Exception {
 		Annotation[] annots = beanClass.getDeclaredField(KEY_FIELD_PREFIX + "red").getAnnotations();
 		assertEquals(2, annots.length);
 		final Class<?> a1 = annots[0].annotationType();
@@ -50,15 +43,12 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 	}
 
-	@SuppressWarnings("static-access")
-	@Test
-	public void testClinitMerge() throws Exception {
+	@SuppressWarnings("static-access") @Test public void testClinitMerge() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 		assertTrue(bean.FORCE_CLINIT != 0);
 	}
 
-	@Test
-	public void testFieldAccessInConstructor() throws Exception {
+	@Test public void testFieldAccessInConstructor() throws Exception {
 
 		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
 				.andReturn(red);
@@ -72,8 +62,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 		EasyMock.verify(locator, blue, red);
 	}
 
-	@Test
-	public void testFieldRead() throws Exception {
+	@Test public void testFieldRead() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 
 		/*
@@ -101,8 +90,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 		EasyMock.verify(locator, blue, red);
 	}
 
-	@Test
-	public void testFieldReadOnReturn() throws Exception {
+	@Test public void testFieldReadOnReturn() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
 				.andReturn(red);
@@ -114,8 +102,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 		EasyMock.verify(locator, blue, red);
 	}
 
-	@Test
-	public void testFieldRemoval() throws Exception {
+	@Test public void testFieldRemoval() throws Exception {
 		try {
 			beanClass.getDeclaredField("red");
 			fail("Field `red` should have been removed");
@@ -124,8 +111,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 		}
 	}
 
-	@Test
-	public void testFieldWrite() throws Exception {
+	@Test public void testFieldWrite() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 
 		try {
@@ -152,8 +138,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 		assertTrue(Bean.getStaticBlack() == black);
 	}
 
-	@Test
-	public void testInnerClassFieldRead() throws Exception {
+	@Test public void testInnerClassFieldRead() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 
 		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
@@ -168,8 +153,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 		EasyMock.verify(locator, blue, red);
 	}
 
-	@BeforeClass
-	public static void initClass() throws Exception {
+	@BeforeClass public static void initClass() throws Exception {
 		loadBeans();
 		initDependencyLibrary();
 	}
