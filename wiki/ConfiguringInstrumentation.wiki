@@ -10,7 +10,7 @@ You need a small configuration file telling salve which instrumentors to run. Th
 {{{
 <config>
 	<package name="<base.package>">
-		<instrumentor class="salve.dependency.DependencyInstrumentor"/>
+		<instrumentor class="salve.depend.DependencyInstrumentor"/>
 	</package>
 </config>
 }}}
@@ -65,3 +65,6 @@ Maven 2.0.x does not offer a good build-phase hook for processing class files af
 
 == Ant Build ==
 Coming soon
+
+== Eclipse ==
+Salve has an eclipse builder plugin which can incrementally instrument files as you are editing them. See salve-eclipse module in svn.
