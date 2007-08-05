@@ -5,9 +5,9 @@ import junit.framework.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.dependency.DependencyInstrumentor;
-import salve.dependency.DependencyLibrary;
-import salve.dependency.Locator;
+import salve.depend.DependencyInstrumentor;
+import salve.depend.DependencyLibrary;
+import salve.depend.Locator;
 import salve.guice.model.Blue;
 import salve.guice.model.Injected;
 import salve.guice.model.MockService;

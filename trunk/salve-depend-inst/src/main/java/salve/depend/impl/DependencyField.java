@@ -1,7 +1,7 @@
 /**
  * 
  */
-package salve.dependency.impl;
+package salve.depend.impl;
 
 import salve.asmlib.Type;
 

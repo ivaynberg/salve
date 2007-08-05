@@ -1,4 +1,4 @@
-package salve.dependency.impl;
+package salve.depend.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;

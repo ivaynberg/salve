@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

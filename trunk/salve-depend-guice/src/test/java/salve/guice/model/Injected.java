@@ -1,6 +1,6 @@
 package salve.guice.model;
 
-import salve.dependency.Dependency;
+import salve.depend.Dependency;
 
 public class Injected {
 	// tests lookup by type

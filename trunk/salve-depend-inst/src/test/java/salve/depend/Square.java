@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Circle {
+public @interface Square {
 
 }

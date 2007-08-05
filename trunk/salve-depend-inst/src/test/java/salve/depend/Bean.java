@@ -1,4 +1,6 @@
-package salve.dependency;
+package salve.depend;
+
+import salve.depend.InjectionStrategy;
 
 public class Bean extends AbstractBean {
 

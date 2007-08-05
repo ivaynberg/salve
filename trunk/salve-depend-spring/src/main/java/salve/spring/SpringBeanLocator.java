@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
 
-import salve.dependency.Key;
-import salve.dependency.Locator;
+import salve.depend.Key;
+import salve.depend.Locator;
 
 public class SpringBeanLocator implements Locator {
 	private final ApplicationContext context;

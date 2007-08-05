@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 public class AbstractBean {
 	public AbstractBean() {

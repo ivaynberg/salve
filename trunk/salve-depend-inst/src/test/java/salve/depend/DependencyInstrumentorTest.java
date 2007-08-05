@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -10,7 +10,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.dependency.impl.Constants;
+import salve.depend.DependencyInstrumentor;
+import salve.depend.DependencyLibrary;
+import salve.depend.IllegalFieldWriteException;
+import salve.depend.KeyImpl;
+import salve.depend.Locator;
+import salve.depend.impl.Constants;
 import salve.loader.BytecodePool;
 import salve.loader.ClassLoaderLoader;
 

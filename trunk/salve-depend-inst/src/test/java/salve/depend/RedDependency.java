@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 public interface RedDependency {
 	public void method1();

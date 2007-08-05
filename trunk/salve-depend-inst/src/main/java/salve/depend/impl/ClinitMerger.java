@@ -1,4 +1,4 @@
-package salve.dependency.impl;
+package salve.depend.impl;
 
 import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;

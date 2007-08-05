@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;

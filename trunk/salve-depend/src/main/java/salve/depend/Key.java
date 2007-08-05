@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;

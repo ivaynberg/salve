@@ -4,7 +4,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import salve.dependency.DependencyLibrary;
+import salve.depend.DependencyLibrary;
 
 public class SalveConfigurator implements ApplicationContextAware {
 	public void setApplicationContext(ApplicationContext context)

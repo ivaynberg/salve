@@ -1,4 +1,4 @@
-package salve.dependency.impl;
+package salve.depend.impl;
 
 public interface Constants {
 	public static final String NS = "_salve";

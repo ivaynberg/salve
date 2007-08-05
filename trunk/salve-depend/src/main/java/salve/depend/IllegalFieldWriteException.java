@@ -1,4 +1,4 @@
-package salve.dependency;
+package salve.depend;
 
 public class IllegalFieldWriteException extends RuntimeException {
 	public IllegalFieldWriteException(String clazz, String field) {
