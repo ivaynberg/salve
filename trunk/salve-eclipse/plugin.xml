@@ -28,19 +28,47 @@
    </extension>
    <extension
          point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            adaptable="true"
+
+     <objectContribution
             objectClass="org.eclipse.core.resources.IProject"
-            nameFilter="*"
+            adaptable="true"
             id="salve.eclipse.contribution1">
-         <action
-               label="Add/Remove Sample Nature"
+         <visibility>
+             <not>
+                 <objectState
+                       name="nature"
+                       value="salve.eclipse.nature">
+                 </objectState>
+             </not>
+         </visibility>
+          <action
+               label="Add Salve Nature"
                class="salve.eclipse.ToggleNatureAction"
                menubarPath="additions"
                enablesFor="+"
                id="salve.eclipse.addRemoveNatureAction">
          </action>
       </objectContribution>
+
+     <objectContribution
+            objectClass="org.eclipse.core.resources.IProject"
+            adaptable="true"
+            id="salve.eclipse.contribution1">
+         <visibility>
+                 <objectState
+                       name="nature"
+                       value="salve.eclipse.nature">
+                 </objectState>
+         </visibility>
+          <action
+               label="Remove Salve Nature"
+               class="salve.eclipse.ToggleNatureAction"
+               menubarPath="additions"
+               enablesFor="+"
+               id="salve.eclipse.addRemoveNatureAction">
+         </action>
+      </objectContribution>
+
    </extension>
    <extension
          id="salve.eclipse.marker.error.instrument"
