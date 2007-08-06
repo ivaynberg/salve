@@ -47,12 +47,10 @@ public class SalveBuilder extends AbstractBuilder {
 	 * @see org.eclipse.core.internal.events.InternalBuilder#build(int,
 	 *      java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	@Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
 
 		removeMarks(getProject());
-		BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject());
 
 		// find config resource
 		final IResource configResource = findConfig();
@@ -61,34 +59,57 @@ public class SalveBuilder extends AbstractBuilder {
 					"Could not find META-INF/salve.xml in any source folder");
 			return null;
 		}
-
+		checkCancel(monitor);
 		removeMarks(configResource);
 
 		// load config
+		BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject());
 		ClassLoader cloader = new FallbackBytecodeClassLoader(getClass()
 				.getClassLoader(), bloader);
-		Config config = null;
+
+		final Config config = new Config();
+		XmlConfigReader reader = new XmlConfigReader(cloader);
 		try {
-			config = loadConfig(configResource, cloader);
+			reader.read(((IFile) configResource).getContents(), config);
 		} catch (ConfigException e) {
 			markError(configResource, "Could not configure Salve: "
 					+ e.getMessage());
 			return null;
 		}
 
+		checkCancel(monitor);
+
 		// check if we need to upgrade the build to full
 		if (kind != FULL_BUILD) {
-			switch (findResourceDeltaKind(configResource)) {
-			case IResourceDelta.ADDED:
-			case IResourceDelta.CHANGED:
+			final boolean[] modified = new boolean[] { false };
+			getDelta(getProject()).accept(new IResourceDeltaVisitor() {
+
+				public boolean visit(IResourceDelta delta) throws CoreException {
+					if (delta.getResource().equals(configResource)) {
+						switch (delta.getKind()) {
+						case IResourceDelta.ADDED:
+						case IResourceDelta.CHANGED:
+							modified[0] = true;
+							break;
+						case IResourceDelta.REMOVED:
+
+							break;
+
+						}
+						return false;
+					}
+					return true;
+				}
+			});
+
+			if (modified[0]) {
 				// config file was modified, upgrade build to full
 				kind = FULL_BUILD;
-				break;
 			}
 		}
 
 		// build
-		ResourceBuilder builder = new ResourceBuilder(config, bloader);
+		ResourceBuilder builder = new ResourceBuilder(config, bloader, monitor);
 		if (kind == FULL_BUILD) {
 			getProject().accept(builder);
 		} else {
@@ -103,8 +124,62 @@ public class SalveBuilder extends AbstractBuilder {
 		return null;
 	}
 
-	private void build(IResource resource, Config config, BytecodeLoader bloader)
+	private IJavaProject getJavaProject() {
+		return JavaCore.create(getProject());
+	}
+
+	private IResource findConfig() throws CoreException {
+		for (IClasspathEntry cpe : getJavaProject().getResolvedClasspath(true)) {
+			if (cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+				IPath path = cpe.getPath();
+				path = path.addTrailingSeparator().append("META-INF/salve.xml");
+				IResource res = getProject().getWorkspace().getRoot()
+						.findMember(path);
+				if (res != null && res.exists()) {
+					return res;
+				}
+			}
+		}
+		return null;
+	}
+
+	class ResourceBuilder implements IResourceVisitor, IResourceDeltaVisitor {
+		private final Config config;
+		private final BytecodeLoader bloader;
+		private final IProgressMonitor monitor;
+
+		public ResourceBuilder(Config config, BytecodeLoader bloader,
+				IProgressMonitor monitor) {
+			super();
+			this.config = config;
+			this.bloader = bloader;
+			this.monitor = monitor;
+		}
+
+		public boolean visit(IResource resource) throws CoreException {
+			build(resource, config, bloader, monitor);
+			return true;
+		}
+
+		public boolean visit(IResourceDelta delta) throws CoreException {
+			switch (delta.getKind()) {
+			case IResourceDelta.ADDED:
+			case IResourceDelta.CHANGED:
+				build(delta.getResource(), config, bloader, monitor);
+				break;
+			case IResourceDelta.REMOVED:
+				break;
+			}
+			return true;
+		}
+	}
+
+	public void build(IResource resource, Config config,
+			BytecodeLoader bloader, IProgressMonitor monitor)
 			throws CoreException {
+
+		checkCancel(monitor);
+
 		if (!(resource instanceof IFile)
 				|| !resource.getName().endsWith(".class")) {
 			return;
@@ -114,7 +189,9 @@ public class SalveBuilder extends AbstractBuilder {
 
 		removeMarks(resource);
 		try {
-			ClassReader reader = new ClassReader(file.getContents());
+
+			ClassReader reader;
+			reader = new ClassReader(file.getContents());
 			final String cn = reader.getClassName();
 			PackageConfig conf = config.getPackageConfig(cn.replace("/", "."));
 			if (conf != null) {
@@ -137,89 +214,5 @@ public class SalveBuilder extends AbstractBuilder {
 			throw new CoreException(status);
 		}
 
-	}
-
-	private IResource findConfig() throws CoreException {
-		for (IClasspathEntry cpe : getJavaProject().getResolvedClasspath(true)) {
-			if (cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-				IPath path = cpe.getPath();
-				path = path.addTrailingSeparator().append("META-INF/salve.xml");
-				IResource res = getProject().getWorkspace().getRoot()
-						.findMember(path);
-				if (res != null && res.exists()) {
-					return res;
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * @param configResource
-	 * @param modified
-	 * @throws CoreException
-	 */
-	private int findResourceDeltaKind(final IResource configResource)
-			throws CoreException {
-
-		final int[] kind = new int[] { 0 };
-		getDelta(getProject()).accept(new IResourceDeltaVisitor() {
-
-			public boolean visit(IResourceDelta delta) throws CoreException {
-				if (delta.getResource().equals(configResource)) {
-					kind[0] = delta.getKind();
-					return false;
-				} else {
-					return true;
-				}
-			}
-		});
-		return kind[0];
-	}
-
-	private IJavaProject getJavaProject() {
-		return JavaCore.create(getProject());
-	}
-
-	/**
-	 * @param configResource
-	 * @param cloader
-	 * @throws ConfigException
-	 * @throws CoreException
-	 */
-	private Config loadConfig(final IResource configResource,
-			ClassLoader cloader) throws ConfigException, CoreException {
-		final Config config = new Config();
-		XmlConfigReader reader = new XmlConfigReader(cloader);
-		reader.read(((IFile) configResource).getContents(), config);
-		return config;
-	}
-
-	class ResourceBuilder implements IResourceVisitor, IResourceDeltaVisitor {
-		private final Config config;
-		private final BytecodeLoader bloader;
-
-		public ResourceBuilder(Config config, BytecodeLoader bloader) {
-			super();
-			this.config = config;
-			this.bloader = bloader;
-		}
-
-		public boolean visit(IResource resource) throws CoreException {
-			build(resource, config, bloader);
-			return true;
-		}
-
-		public boolean visit(IResourceDelta delta) throws CoreException {
-			switch (delta.getKind()) {
-			case IResourceDelta.ADDED:
-			case IResourceDelta.CHANGED:
-				build(delta.getResource(), config, bloader);
-				break;
-			case IResourceDelta.REMOVED:
-				break;
-			}
-			return true;
-		}
 	}
 }

@@ -4,6 +4,8 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 
 public abstract class AbstractBuilder extends IncrementalProjectBuilder {
 
@@ -11,6 +13,12 @@ public abstract class AbstractBuilder extends IncrementalProjectBuilder {
 
 	public AbstractBuilder(String markerType) {
 		this.markerType = markerType;
+	}
+
+	protected void checkCancel(IProgressMonitor monitor) {
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
 	}
 
 	protected void markError(IResource resource, String message) {
