@@ -47,4 +47,8 @@
 			<version>${salve.version}</version>
 		</dependency>
 	</dependencies>
+	<properties>
+		<salve.version>0.6-SNAPSHOT</salve.version>
+	</properties>
+
 </project>
