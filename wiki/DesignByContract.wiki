@@ -1,4 +1,5 @@
 #summary Design by Contract Module Explanation
+#labels Featured
 
 === Introduction ===
 
