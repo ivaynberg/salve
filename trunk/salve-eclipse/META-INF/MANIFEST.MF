@@ -7,6 +7,6 @@ Bundle-Activator: salve.eclipse.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
- salve;bundle-version="0.5.0",
+ salve_inst;bundle-version="0.5.0",
  org.eclipse.jdt.core
 Eclipse-LazyStart: true

@@ -27,7 +27,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>salve</artifactId>
+	<artifactId>salve-inst</artifactId>
 	<name>Salve Instrumentor</name>
 
 	<dependencies>

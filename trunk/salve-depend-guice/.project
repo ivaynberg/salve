@@ -2,9 +2,9 @@
   <name>salve-depend-guice</name>
   <comment/>
   <projects>
-    <project>salve</project>
     <project>salve-depend</project>
     <project>salve-depend-inst</project>
+    <project>salve-inst</project>
   </projects>
   <buildSpec>
     <buildCommand>
