@@ -1,5 +1,6 @@
 package salve.spring.txn;
 
+import salve.InstrumentorMonitor;
 import salve.asmlib.AdviceAdapter;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
@@ -14,11 +15,12 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		Constants {
 	private boolean annotated = false;
 	private String owner;
-
+	private final InstrumentorMonitor monitor;
 	private int nextAttribute = 0;
 
-	public ClassInstrumentor(ClassVisitor cv) {
+	public ClassInstrumentor(ClassVisitor cv, InstrumentorMonitor monitor) {
 		super(new StaticInitMerger("_salvespringtxn_", cv));
+		this.monitor = monitor;
 	}
 
 	@Override
@@ -63,6 +65,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 
 		private final String methodName;
 		private final String methodDesc;
+		private final int methodAccess;
 
 		private String attrName;
 		private boolean annotated = false;
@@ -74,6 +77,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 			super(mv, access, name, desc);
 			methodName = name;
 			methodDesc = desc;
+			methodAccess = access;
 		}
 
 		@Override
@@ -95,6 +99,9 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		@Override
 		public void visitCode() {
 			if (shouldInstrument()) {
+				monitor.methodModified(owner, methodAccess, methodName,
+						methodDesc);
+
 				attrName = "_salvestxn$attr" + nextAttribute++;
 				cv.visitField(ACC_PRIVATE + ACC_STATIC + ACC_FINAL, attrName,
 						TXNATTR_DESC, null, null);
