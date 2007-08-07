@@ -26,7 +26,7 @@
 	<version>0.6-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Salve Base POM</name>
+	<name>Salve</name>
 	<inceptionYear>2007</inceptionYear>
 	<url>http://code.google.com/p/salve/</url>
 
