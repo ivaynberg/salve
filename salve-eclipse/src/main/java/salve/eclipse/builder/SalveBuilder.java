@@ -30,6 +30,7 @@ import salve.config.XmlConfigReader;
 import salve.eclipse.Activator;
 import salve.eclipse.JavaProjectBytecodeLoader;
 import salve.loader.CompoundLoader;
+import salve.monitor.NoopMonitor;
 import salve.util.FallbackBytecodeClassLoader;
 
 public class SalveBuilder extends AbstractBuilder {
@@ -201,7 +202,8 @@ public class SalveBuilder extends AbstractBuilder {
 					CompoundLoader cl = new CompoundLoader();
 					cl.addLoader(new FileBytecodeLoader(file));
 					cl.addLoader(bloader);
-					byte[] bytecode = inst.instrument(cn, cl);
+					byte[] bytecode = inst.instrument(cn, cl,
+							NoopMonitor.INSTANCE);
 					file.setContents(new ByteArrayInputStream(bytecode), true,
 							false, null);
 				}
