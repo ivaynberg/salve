@@ -41,7 +41,7 @@
 	</scm>
 
 	<modules>
-		<module>salve</module>
+		<module>salve-inst</module>
 		<module>salve-agent</module>
 		<module>salve-maven2</module>
         <module>salve-contract</module>
