@@ -17,7 +17,7 @@ Salve's `DependencyLibrary` object allows registration of multiple locators whic
 Configuring Salve to use Spring for dependency lookups is trivial. Simply make sure salve-spring.jar is available on the classpath and add the following line into Spring's application context xml file:
 
 {{{
-<bean class="salve.spring.SalveConfigurator" />
+<bean class="salve.depend.spring.SalveConfigurator" />
 }}}
 
 Lookups will be performed in the following fashion:
