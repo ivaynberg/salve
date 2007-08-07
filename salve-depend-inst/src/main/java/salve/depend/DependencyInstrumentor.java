@@ -4,6 +4,7 @@ import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationException;
 import salve.Instrumentor;
+import salve.InstrumentorMonitor;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassWriter;
 import salve.depend.impl.ClassAnalyzer;
@@ -11,7 +12,8 @@ import salve.depend.impl.ClassInstrumentor;
 
 public class DependencyInstrumentor implements Instrumentor {
 
-	public byte[] instrument(String className, BytecodeLoader loader) throws InstrumentationException {
+	public byte[] instrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
+			throws InstrumentationException {
 		if (loader == null) {
 			throw new IllegalArgumentException("Argument `loader` cannot be null");
 		}
@@ -34,7 +36,7 @@ public class DependencyInstrumentor implements Instrumentor {
 			ClassAnalyzer analyzer = new ClassAnalyzer(loader);
 			ClassReader reader = new ClassReader(bytecode);
 			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-			ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer);
+			ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, monitor);
 			reader.accept(inst, 0);
 
 			return writer.toByteArray();

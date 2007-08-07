@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import salve.InstrumentorMonitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.FieldVisitor;
@@ -21,10 +22,12 @@ import salve.asmlib.Type;
 public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	private final ClassAnalyzer analyzer;
 	private String owner = null;
+	private final InstrumentorMonitor monitor;
 
-	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer) {
+	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer, InstrumentorMonitor monitor) {
 		super(new StaticInitMerger(DEPNS + "_clinit", cv));
 		this.analyzer = analyzer;
+		this.monitor = monitor;
 	}
 
 	@Override public void visit(int version, int access, String name, String signature, String superName,
@@ -54,6 +57,8 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 				final String n = KEY_FIELD_PREFIX + name;
 				final String d = KEY_DESC;
 				fv = cv.visitField(a, n, d, null, null);
+				monitor.fieldRemoved(owner, access, name, desc);
+				monitor.fieldAdded(owner, a, n, d);
 			} else {
 				fv = cv.visitField(access, name, desc, signature, value);
 			}
@@ -70,6 +75,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 		boolean instrument = analyzer.getDependenciesInMethod(name, desc) != null;
 
 		if (instrument) {
+			monitor.methodModified(owner, access, name, desc);
 			MethodInstrumentor inst = new MethodInstrumentor(access, name, desc, mv);
 			inst.lvs = new LocalVariablesSorter(access, desc, inst);
 			return inst.lvs;
@@ -90,7 +96,11 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 			return;
 		}
 
-		MethodVisitor clinit = cv.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+		final int acc = ACC_STATIC;
+		final String name = "<clinit>";
+		final String desc = "()V";
+		MethodVisitor clinit = cv.visitMethod(acc, name, desc, null, null);
+		monitor.methodModified(owner, acc, name, desc);
 		clinit.visitCode();
 
 		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
@@ -135,7 +145,12 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 	private void generateFieldInitializerMethod(DependencyField field) {
 		Type fieldOwnerType = Type.getObjectType(field.getOwner());
 
-		MethodVisitor mv = cv.visitMethod(ACC_PRIVATE, FIELDINIT_METHOD_PREFIX + field.getName(), "()V", null, null);
+		final int acc = ACC_PRIVATE;
+		final String name = FIELDINIT_METHOD_PREFIX + field.getName();
+		final String desc = "()V";
+		MethodVisitor mv = cv.visitMethod(acc, name, desc, null, null);
+		monitor.methodAdded(owner, acc, name, desc);
+
 		mv.visitCode();
 		Label l0 = new Label();
 		mv.visitLabel(l0);
@@ -192,8 +207,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 	 * @param field
 	 * @param local
 	 */
-	private void generateLoadDependencyIntoLocalBytecode(MethodVisitor mv, DependencyField field, int local) {
-
+	private void loadDependencyIntoLocal(MethodVisitor mv, DependencyField field, int local) {
 		mv.visitVarInsn(ALOAD, local);
 		Label initialized = new Label();
 		mv.visitJumpInsn(IFNONNULL, initialized);
@@ -212,7 +226,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 	/**
 	 * @param field
 	 */
-	private void generateThrowIllegalFieldWriteExceptionBytecode(MethodVisitor mv, DependencyField field) {
+	private void throwIllegalFieldWriteException(MethodVisitor mv, DependencyField field) {
 		Label l0 = new Label();
 		mv.visitLabel(l0);
 		mv.visitTypeInsn(NEW, IFWE_NAME);
@@ -269,14 +283,14 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 
 			if (opcode == PUTFIELD) {
 				mv.visitInsn(POP); // Pop off ALOAD 0 ;this
-				generateThrowIllegalFieldWriteExceptionBytecode(mv, field);
+				throwIllegalFieldWriteException(mv, field);
 				return;
 			}
 
 			if (STRAT_REMOVE.equals(field.getStrategy())) {
 				final int local = getLocalForField(field);
 				visitInsn(POP);// Pop off ALOAD 0 ;this
-				generateLoadDependencyIntoLocalBytecode(mv, field, local);
+				loadDependencyIntoLocal(mv, field, local);
 			} else if (STRAT_INJECT.equals(field.getStrategy())) {
 				// ALOAD 0 ;this is already on the stack
 				mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(), FIELDINIT_METHOD_PREFIX + field.getName(), "()V");
