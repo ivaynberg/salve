@@ -20,6 +20,7 @@ import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationException;
 import salve.Instrumentor;
+import salve.InstrumentorMonitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassVisitor;
@@ -33,7 +34,8 @@ import salve.contract.impl.OMIInstrumentor;
 
 public class ContractInstrumentor implements Instrumentor {
 
-	public byte[] instrument(String className, BytecodeLoader loader) throws InstrumentationException {
+	public byte[] instrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
+			throws InstrumentationException {
 		// FIXME factor out these arg checks into an abstract instrumentor
 		if (loader == null) {
 			throw new IllegalArgumentException("Argument `loader` cannot be null");
@@ -59,7 +61,9 @@ public class ContractInstrumentor implements Instrumentor {
 
 			ClassReader reader = new ClassReader(bytecode);
 			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-			reader.accept(new ConditionalChecksInstrumentor(new OMIInstrumentor(writer, analyzer)), 0);
+			reader
+					.accept(new ConditionalChecksInstrumentor(new OMIInstrumentor(writer, analyzer, monitor), monitor),
+							0);
 			bytecode = writer.toByteArray();
 			return bytecode;
 
@@ -70,20 +74,28 @@ public class ContractInstrumentor implements Instrumentor {
 	}
 
 	public class ConditionalChecksInstrumentor extends ClassAdapter {
+		private String owner;
+		private final InstrumentorMonitor monitor;
 
-		public ConditionalChecksInstrumentor(ClassVisitor cv) {
+		public ConditionalChecksInstrumentor(ClassVisitor cv, InstrumentorMonitor monitor) {
 			super(cv);
+			this.monitor = monitor;
 		}
 
-		@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature,
-				String[] exceptions) {
+		@Override
+		public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+			owner = name;
+			super.visit(version, access, name, signature, superName, interfaces);
+		}
+
+		@Override
+		public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 			MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
-			mv = new NotNullInstrumentor(mv, access, name, desc);
-			mv = new NotEmptyInstrumentor(mv, access, name, desc);
-			mv = new NumericalInstrumentor(mv, access, name, desc);
+			mv = new NotNullInstrumentor(mv, monitor, owner, access, name, desc);
+			mv = new NotEmptyInstrumentor(mv, monitor, owner, access, name, desc);
+			mv = new NumericalInstrumentor(mv, monitor, owner, access, name, desc);
 			return mv;
 		}
-
 	}
 
 }

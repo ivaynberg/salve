@@ -16,6 +16,7 @@
  */
 package salve.contract.impl;
 
+import salve.InstrumentorMonitor;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
@@ -32,11 +33,13 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 	private final Label returnValueCheck = new Label();
 	private boolean[] annotatedParams;
 
-	public NotNullInstrumentor(MethodVisitor mv, int access, String name, String desc) {
-		super(mv, access, name, desc);
+	public NotNullInstrumentor(MethodVisitor mv, InstrumentorMonitor monitor, String owner, int access, String name,
+			String desc) {
+		super(mv, monitor, owner, access, name, desc);
 	}
 
-	@Override public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+	@Override
+	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 		if (NOTNULL.getDescriptor().equals(desc)) {
 			final Type ret = getReturnType();
 			if (!checkType(ret)) {
@@ -49,7 +52,11 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 		return super.visitAnnotation(desc, visible);
 	}
 
-	@Override public void visitMaxs(int maxStack, int maxLocals) {
+	@Override
+	public void visitMaxs(int maxStack, int maxLocals) {
+		if (annotatedParams != null || notNull) {
+			getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
+		}
 		if (annotatedParams != null) {
 			mark(paramsCheck);
 			for (int i = 0; i < annotatedParams.length; i++) {
@@ -81,7 +88,8 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 		super.visitMaxs(maxStack, maxLocals);
 	}
 
-	@Override public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+	@Override
+	public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
 		if (NOTNULL.getDescriptor().equals(desc)) {
 			if (!checkType(getParamType(parameter))) {
 				throw new IllegalAnnotationUseException("Annotation " + NOTNULL.getClassName()
@@ -96,14 +104,16 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 		return super.visitParameterAnnotation(parameter, desc, visible);
 	}
 
-	@Override protected void onMethodEnter() {
+	@Override
+	protected void onMethodEnter() {
 		if (annotatedParams != null) {
 			goTo(paramsCheck);
 			mark(methodStart);
 		}
 	}
 
-	@Override protected void onMethodExit(int opcode) {
+	@Override
+	protected void onMethodExit(int opcode) {
 		if (notNull && opcode == ARETURN) {
 			goTo(returnValueCheck);
 		}

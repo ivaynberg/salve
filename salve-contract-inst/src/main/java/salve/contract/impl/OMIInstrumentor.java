@@ -16,6 +16,7 @@
  */
 package salve.contract.impl;
 
+import salve.InstrumentorMonitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.Label;
@@ -25,22 +26,25 @@ import salve.asmlib.Type;
 public class OMIInstrumentor extends ClassAdapter {
 	private String owner;
 	private final OMIAnalyzer analyzer;
+	private final InstrumentorMonitor monitor;
 
-	public OMIInstrumentor(ClassVisitor cv, OMIAnalyzer analyzer) {
+	public OMIInstrumentor(ClassVisitor cv, OMIAnalyzer analyzer, InstrumentorMonitor monitor) {
 		super(cv);
 		this.analyzer = analyzer;
+		this.monitor = monitor;
 	}
 
-	@Override public void visit(int version, int access, String name, String signature, String superName,
-			String[] interfaces) {
+	@Override
+	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		owner = name;
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
-	@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature,
-			String[] exceptions) {
+	@Override
+	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 		MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 		if (analyzer.shouldInstrument(name, desc)) {
+			monitor.methodModified(owner, access, name, desc);
 			return new MethodInstrumentor(mv, access, name, desc);
 		}
 		return mv;
@@ -50,10 +54,11 @@ public class OMIInstrumentor extends ClassAdapter {
 		private int flag;
 
 		public MethodInstrumentor(MethodVisitor mv, int access, String name, String desc) {
-			super(mv, access, name, desc);
+			super(mv, monitor, owner, access, name, desc);
 		}
 
-		@Override public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+		@Override
+		public void visitMethodInsn(int opcode, String owner, String name, String desc) {
 			if (isSuperCall(opcode, owner, name, desc)) {
 				push(true);
 				storeLocal(flag);
@@ -61,13 +66,15 @@ public class OMIInstrumentor extends ClassAdapter {
 			super.visitMethodInsn(opcode, owner, name, desc);
 		}
 
-		@Override protected void onMethodEnter() {
+		@Override
+		protected void onMethodEnter() {
 			flag = newLocal(Type.BOOLEAN_TYPE);
 			push(false);
 			storeLocal(flag);
 		}
 
-		@Override protected void onMethodExit(int opcode) {
+		@Override
+		protected void onMethodExit(int opcode) {
 			if (opcode != ATHROW) {
 				Label ok = new Label();
 				loadLocal(flag);
