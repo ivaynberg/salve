@@ -115,6 +115,6 @@
 	</build>
 
 	<properties>
-		<salve.version>0.0.1-SNAPSHOT</salve.version>
+		<salve.version>0.5</salve.version>
 	</properties>
 </project>
