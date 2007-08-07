@@ -17,7 +17,9 @@
 package salve.maven2.util;
 
 import java.io.File;
+import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
 
@@ -27,14 +29,25 @@ import salve.loader.FilePathLoader;
 
 public class ProjectBytecodeLoader extends CompoundLoader {
 
-	public ProjectBytecodeLoader(MavenProject project) throws DependencyResolutionRequiredException {
+	public ProjectBytecodeLoader(MavenProject project)
+			throws DependencyResolutionRequiredException {
 
 		// add target/classes folder
-		addLoader(new FilePathLoader(new File(project.getBuild().getOutputDirectory())));
+		addLoader(new FilePathLoader(new File(project.getBuild()
+				.getOutputDirectory())));
 
-		// append project jars
+		// append project class path entries
 		for (Object path : project.getCompileClasspathElements()) {
 			addLoader(new FilePathLoader(new File((String) path)));
+		}
+
+		// merge provided artifacts into the classpath because instrumentor jars
+		// should be scoped provided
+		Set<Artifact> artifacts = project.getDependencyArtifacts();
+		for (Artifact artifact : artifacts) {
+			if ("provided".equalsIgnoreCase(artifact.getScope())) {
+				addLoader(new FilePathLoader(artifact.getFile()));
+			}
 		}
 
 		// append system classpath
