@@ -3,6 +3,7 @@ package salve.loader;
 import java.util.concurrent.ConcurrentHashMap;
 
 import salve.Instrumentor;
+import salve.monitor.NoopMonitor;
 import salve.util.ClassesUtil;
 
 public class BytecodePool extends CompoundLoader {
@@ -22,7 +23,7 @@ public class BytecodePool extends CompoundLoader {
 	}
 
 	public byte[] instrumentIntoBytecode(String className, Instrumentor inst) throws Exception {
-		byte[] bytecode = inst.instrument(className, this);
+		byte[] bytecode = inst.instrument(className, this, NoopMonitor.INSTANCE);
 		save(className, bytecode);
 		return bytecode;
 	}
@@ -32,8 +33,7 @@ public class BytecodePool extends CompoundLoader {
 		return loadClass(className);
 	}
 
-	@Override
-	public byte[] loadBytecode(String className) {
+	@Override public byte[] loadBytecode(String className) {
 		byte[] bytecode = cache.get(className);
 		if (bytecode == null) {
 			bytecode = super.loadBytecode(className);

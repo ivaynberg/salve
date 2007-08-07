@@ -18,5 +18,6 @@ public interface Instrumentor {
 	 * @throws Exception
 	 *             if instrumentation fails
 	 */
-	byte[] instrument(String className, BytecodeLoader loader) throws InstrumentationException;
+	byte[] instrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
+			throws InstrumentationException;
 }
