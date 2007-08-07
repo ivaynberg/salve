@@ -1,0 +1,17 @@
+<projectDescription>
+  <name>salve-depend-spring-inst</name>
+  <comment/>
+  <projects>
+    <project>salve</project>
+    <project>salve-depend</project>
+    <project>salve-depend-spring</project>
+  </projects>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
+</projectDescription>
