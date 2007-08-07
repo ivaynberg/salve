@@ -7,7 +7,7 @@ Salve has very basic design by contract support that is designed to remove some 
 For example:
 
 {{{
-class Array {
+class MyArray {
   /** delete object located somewhere between two indices */
   public void deleteBetween(Object obj, int start, int end) {
     if (o==null) {
@@ -31,7 +31,7 @@ The first nine lines of the example are noisy, but they are necessary so we can 
 With Salve's contract module the above can be rewritten as:
 
 {{{
-class Array {
+class MyArray {
   /** delete object located somewhere between two indices */
   public void deleteBetween(@NotNull Object obj, @GE0 int start, @GE0 int end) {
     if (end<start) {
