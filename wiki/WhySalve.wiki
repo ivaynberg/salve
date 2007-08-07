@@ -16,7 +16,8 @@ The ideal solution would allow domain layer objects to be lightweight, contain b
 @javax.persistence.Entity public class Acount {
 
   // this is a dependency we wish Salve to instrument
-  @javax.persistence.Transient @salve.Dependency
+  @javax.persistence.Transient
+  @salve.Dependency
   private EmailService email;
 
   // this is database id of this account
@@ -44,7 +45,7 @@ When the bytecode of Account class is processed by Salve, it will look like this
 @javax.persistence.Entity public class Acount {
 
   // added by salve to facilitate lookup of email service dependency
-  public static final salve.Key __key$email=new salve.Key(...);
+  public static final salve.depend.Key _key_email=new salve.depend.Key(...);
 
   // email field is removed
 
@@ -61,10 +62,10 @@ When the bytecode of Account class is processed by Salve, it will look like this
   public void withdraw(float amount) {
     // dependencies are looked up only when referenced in the method
     // dependencies are looked up lazily
-    EmailService __local$email=salve.DependencyLibrary.lookup(__key$email);
+    EmailService _email=salve.depend.DependencyLibrary.lookup(_key_email);
 
     if (amount>balance) {
-      __local$email.sendOverdrawMessage(this);
+      _email.sendOverdrawMessage(this);
     }
     balance-=amount;
   }
