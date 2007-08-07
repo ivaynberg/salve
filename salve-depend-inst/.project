@@ -2,8 +2,8 @@
   <name>salve-depend-inst</name>
   <comment/>
   <projects>
+    <project>salve-inst</project>
     <project>salve-depend</project>
-    <project>salve</project>
   </projects>
   <buildSpec>
     <buildCommand>

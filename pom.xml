@@ -22,7 +22,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>salve</groupId>
-	<artifactId>salve-base</artifactId>
+	<artifactId>salve</artifactId>
 	<version>0.6-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
