@@ -44,7 +44,7 @@ class MyArray {
 
 As you can see, we were able to remove some noise from the code.
 
-=== Available annotations ===
+=== Available Annotations ===
 ||annotation||target||description||
 ||@NotNull||method or method arguments||checks whether or not the specified argument or return value is null, throws IllegalArgumentException for arguments and IllegalStateException for method return value||
 ||@NotEmpty||String method or method arguments||Implies NotNull, additionally performs isEmpty() check||
