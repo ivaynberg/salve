@@ -35,6 +35,7 @@ import salve.config.XmlConfigReader;
 import salve.maven2.util.ClassFileVisitor;
 import salve.maven2.util.Directory;
 import salve.maven2.util.ProjectBytecodeLoader;
+import salve.monitor.ModificationMonitor;
 import salve.util.FallbackBytecodeClassLoader;
 
 /**
@@ -110,6 +111,7 @@ public class SalveMojo extends AbstractMojo {
 		try {
 			PackageConfig conf = config.getPackageConfig(className);
 			if (conf != null) {
+				ModificationMonitor monitor = new ModificationMonitor();
 				for (Instrumentor inst : conf.getInstrumentors()) {
 					getLog().debug(
 							"Instrumenting " + className + " with "
@@ -117,12 +119,14 @@ public class SalveMojo extends AbstractMojo {
 									+ " instrumentor");
 
 					byte[] bytecode = inst.instrument(className.replace(".",
-							"/"), loader);
+							"/"), loader, monitor);
 					FileOutputStream fos = new FileOutputStream(file);
 					fos.write(bytecode);
 					fos.close();
 				}
-				instrumented++;
+				if (monitor.isModified()) {
+					instrumented++;
+				}
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Could not instrument " + className, e);
