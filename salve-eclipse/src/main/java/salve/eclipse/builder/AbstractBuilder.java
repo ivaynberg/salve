@@ -22,8 +22,6 @@ public abstract class AbstractBuilder extends IncrementalProjectBuilder {
 	}
 
 	protected void markError(IResource resource, String message) {
-		System.out.println("marking error on: " + resource + " with message: "
-				+ message);
 		mark(resource, message, -1, IMarker.SEVERITY_ERROR);
 	}
 

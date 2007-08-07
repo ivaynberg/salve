@@ -197,8 +197,8 @@ public class SalveBuilder extends AbstractBuilder {
 			PackageConfig conf = config.getPackageConfig(cn.replace("/", "."));
 			if (conf != null) {
 				for (Instrumentor inst : conf.getInstrumentors()) {
-					System.out.println("instrumenting: " + cn + " with: "
-							+ inst.getClass().getName());
+					// System.out.println("instrumenting: " + cn + " with: "
+					// + inst.getClass().getName());
 					CompoundLoader cl = new CompoundLoader();
 					cl.addLoader(new FileBytecodeLoader(file));
 					cl.addLoader(bloader);
