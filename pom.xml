@@ -23,7 +23,7 @@
 
 	<groupId>salve</groupId>
 	<artifactId>salve-base</artifactId>
-	<version>${salve.version}</version>
+	<version>0.6-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Salve Base POM</name>
@@ -120,7 +120,4 @@
 		</pluginManagement>
 	</build>
 
-	<properties>
-		<salve.version>0.6-SNAPSHOT</salve.version>
-	</properties>
 </project>
