@@ -40,6 +40,23 @@ Best option when the project is using maven2 for builds and no java command line
 Add the following lines to pom.xml
 
 {{{
+<dependencies>
+  <dependency>
+    <!-- salve dependency injection -->
+    <groupId>salve</groupId>
+    <artifactId>salve-depend</artifactId>
+    <version>0.6-SNAPSHOT</version>
+   </dependency>
+  <dependency>
+    <!-- salve dependency instrumentor -->
+    <groupId>salve</groupId>
+    <artifactId>salve-depend-inst</artifactId>
+    <version>0.6-SNAPSHOT</version>
+    <!-- no need to include this in final packaging -->
+    <scope>provided</scope>
+  </dependency>
+</dependencies>
+
 <build>
   <plugins>
     <plugin>
