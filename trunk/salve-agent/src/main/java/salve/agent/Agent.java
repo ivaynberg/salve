@@ -16,17 +16,10 @@ import salve.config.XmlConfigReader;
 import salve.loader.ClassLoaderLoader;
 import salve.loader.CompoundLoader;
 import salve.loader.MemoryLoader;
+import salve.monitor.NoopMonitor;
 
 public class Agent {
 	private static Instrumentation INSTRUMENTATION;
-
-	public static void premain(String agentArgs, Instrumentation inst) {
-		// ignore double agents
-		if (INSTRUMENTATION == null) {
-			INSTRUMENTATION = inst;
-			inst.addTransformer(new Transformer());
-		}
-	}
 
 	private static class Transformer implements ClassFileTransformer {
 		private final Set<ClassLoader> seenLoaders = new HashSet<ClassLoader>();
@@ -67,7 +60,8 @@ public class Agent {
 						CompoundLoader bl = new CompoundLoader();
 						bl.addLoader(new MemoryLoader(className, bytecode));
 						bl.addLoader(new ClassLoaderLoader(loader));
-						bytecode = inst.instrument(className, bl);
+						bytecode = inst.instrument(className, bl,
+								NoopMonitor.INSTANCE);
 					}
 					return bytecode;
 				}
@@ -77,6 +71,14 @@ public class Agent {
 				throw new RuntimeException(e);
 			}
 			return classfileBuffer;
+		}
+	}
+
+	public static void premain(String agentArgs, Instrumentation inst) {
+		// ignore double agents
+		if (INSTRUMENTATION == null) {
+			INSTRUMENTATION = inst;
+			inst.addTransformer(new Transformer());
 		}
 	}
 
