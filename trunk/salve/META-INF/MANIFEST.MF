@@ -7,5 +7,6 @@ Export-Package: salve,
  salve.asmlib,
  salve.config,
  salve.loader,
+ salve.monitor,
  salve.util,
  salve.util.asm
