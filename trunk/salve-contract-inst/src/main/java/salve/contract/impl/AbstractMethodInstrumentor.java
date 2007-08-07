@@ -16,6 +16,7 @@
  */
 package salve.contract.impl;
 
+import salve.InstrumentorMonitor;
 import salve.asmlib.AdviceAdapter;
 import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
@@ -27,23 +28,40 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 	private final String desc;
 	private final Type[] paramTypes;
 	private final String[] paramNames;
+	private final String owner;
+	private final InstrumentorMonitor monitor;
 
-	public AbstractMethodInstrumentor(MethodVisitor mv, int access, String name, String desc) {
+	public AbstractMethodInstrumentor(MethodVisitor mv, InstrumentorMonitor monitor, String owner, int access,
+			String name, String desc) {
 		super(mv, access, name, desc);
 		this.access = access;
 		this.name = name;
 		this.desc = desc;
 		paramTypes = Type.getArgumentTypes(desc);
 		paramNames = new String[paramTypes.length];
+		this.owner = owner;
+		this.monitor = monitor;
 	}
 
-	@Override public void visitLocalVariable(String name, String desc, String signature, Label start, Label end,
-			int index) {
+	public InstrumentorMonitor getMonitor() {
+		return monitor;
+	}
+
+	public String getOwner() {
+		return owner;
+	}
+
+	@Override
+	public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
 		int pindex = index - 1;
 		if (pindex >= 0 && pindex < paramNames.length) {
 			paramNames[pindex] = name;
 		}
 		super.visitLocalVariable(name, desc, signature, start, end, index);
+	}
+
+	protected int getMethodAccess() {
+		return access;
 	}
 
 	protected String getMethodDefinitionString() {

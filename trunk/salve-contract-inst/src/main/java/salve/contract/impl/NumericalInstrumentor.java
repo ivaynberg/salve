@@ -1,5 +1,6 @@
 package salve.contract.impl;
 
+import salve.InstrumentorMonitor;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
@@ -15,11 +16,13 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 	private int[] argannots = null;
 	private int annot;
 
-	public NumericalInstrumentor(MethodVisitor mv, int access, String name, String desc) {
-		super(mv, access, name, desc);
+	public NumericalInstrumentor(MethodVisitor mv, InstrumentorMonitor monitor, String owner, int access, String name,
+			String desc) {
+		super(mv, monitor, owner, access, name, desc);
 	}
 
-	@Override public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+	@Override
+	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 		final int mode = descToMode(desc);
 		if (mode > 0) {
 
@@ -39,7 +42,11 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 		}
 	}
 
-	@Override public void visitMaxs(int maxStack, int maxLocals) {
+	@Override
+	public void visitMaxs(int maxStack, int maxLocals) {
+		if (argannots != null || annot > 0) {
+			getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
+		}
 		if (argannots != null) {
 			mark(paramsCheck);
 			for (int i = 0; i < argannots.length; i++) {
@@ -94,7 +101,8 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 		mv.visitMaxs(maxStack, maxLocals);
 	}
 
-	@Override public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+	@Override
+	public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
 
 		final int mode = descToMode(desc);
 		if (mode > 0) {
@@ -120,14 +128,16 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 
 	}
 
-	@Override protected void onMethodEnter() {
+	@Override
+	protected void onMethodEnter() {
 		if (argannots != null) {
 			goTo(paramsCheck);
 			mark(methodStart);
 		}
 	}
 
-	@Override protected void onMethodExit(int opcode) {
+	@Override
+	protected void onMethodExit(int opcode) {
 		if (annot > 0 && opcode != ATHROW) {
 			goTo(returnValueCheck);
 		}
@@ -145,36 +155,36 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 		}
 
 		switch (primitive.getSort()) {
-		case Type.DOUBLE:
-			visitInsn(DCONST_0);
-			switch (mode) {
-			case GT:
-			case GE:
-				visitInsn(DCMPG);
+			case Type.DOUBLE:
+				visitInsn(DCONST_0);
+				switch (mode) {
+					case GT:
+					case GE:
+						visitInsn(DCMPG);
+						break;
+					case LT:
+					case LE:
+						visitInsn(DCMPL);
+						break;
+				}
 				break;
-			case LT:
-			case LE:
-				visitInsn(DCMPL);
+			case Type.FLOAT:
+				visitInsn(FCONST_0);
+				switch (mode) {
+					case GT:
+					case GE:
+						visitInsn(FCMPG);
+						break;
+					case LT:
+					case LE:
+						visitInsn(FCMPL);
+						break;
+				}
 				break;
-			}
-			break;
-		case Type.FLOAT:
-			visitInsn(FCONST_0);
-			switch (mode) {
-			case GT:
-			case GE:
-				visitInsn(FCMPG);
+			case Type.LONG:
+				visitInsn(LCONST_0);
+				visitInsn(LCMP);
 				break;
-			case LT:
-			case LE:
-				visitInsn(FCMPL);
-				break;
-			}
-			break;
-		case Type.LONG:
-			visitInsn(LCONST_0);
-			visitInsn(LCMP);
-			break;
 		}
 		visitJumpInsn(mode, end);
 
@@ -203,16 +213,16 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 
 	private String modeToErrorString(int mode) {
 		switch (mode) {
-		case GT:
-			return "cannot be less then or equal to zero";
-		case GE:
-			return "cannot be less then zero";
-		case LT:
-			return "cannot be greater then or equal to zero";
-		case LE:
-			return "cannot be greater then zero";
-		default:
-			throw new IllegalStateException("Unknown mode");
+			case GT:
+				return "cannot be less then or equal to zero";
+			case GE:
+				return "cannot be less then zero";
+			case LT:
+				return "cannot be greater then or equal to zero";
+			case LE:
+				return "cannot be greater then zero";
+			default:
+				throw new IllegalStateException("Unknown mode");
 		}
 	}
 }
