@@ -22,7 +22,7 @@
 
 	<parent>
 		<groupId>salve</groupId>
-		<artifactId>salve-base</artifactId>
+		<artifactId>salve</artifactId>
 		<version>0.6-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
