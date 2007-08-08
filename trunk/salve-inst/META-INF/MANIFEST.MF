@@ -2,9 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: salve
 Bundle-SymbolicName: salve_inst
-Bundle-Version: 0.5.0
+Bundle-Version: 0.6.0
 Export-Package: salve,
- salve.asmlib,
  salve.config,
  salve.loader,
  salve.monitor,

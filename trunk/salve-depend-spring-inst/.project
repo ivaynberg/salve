@@ -2,9 +2,10 @@
   <name>salve-depend-spring-inst</name>
   <comment/>
   <projects>
+    <project>salve-depend</project>
     <project>salve-depend-spring</project>
     <project>salve-inst</project>
-    <project>salve-depend</project>
+    <project>salve-asm</project>
   </projects>
   <buildSpec>
     <buildCommand>

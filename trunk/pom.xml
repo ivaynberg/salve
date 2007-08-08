@@ -41,6 +41,7 @@
 	</scm>
 
 	<modules>
+		<module>salve-asm</module>
 		<module>salve-inst</module>
 		<module>salve-agent</module>
 		<module>salve-maven2</module>
