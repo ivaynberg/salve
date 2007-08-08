@@ -53,7 +53,7 @@ public class Agent {
 		private final Set<ClassLoader> seenLoaders = new HashSet<ClassLoader>();
 
 		/** set urls from which a salve config was already loaded */
-		private final Set<URL> seenUrls = new HashSet<URL>();
+		private final Set<String> seenUrls = new HashSet<String>();
 
 		/** salve configuration */
 		private final XmlConfig config = new XmlConfig();
@@ -145,9 +145,10 @@ public class Agent {
 
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();
-				if (!seenUrls.contains(url)) {
+				final String location = url.toString();
+				if (!seenUrls.contains(location)) {
 					mergeConfig(loader, url);
-					seenUrls.add(url);
+					seenUrls.add(location);
 				}
 			}
 		}

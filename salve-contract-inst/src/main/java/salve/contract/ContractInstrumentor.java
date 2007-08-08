@@ -53,7 +53,7 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 		return bytecode;
 	}
 
-	public class ConditionalChecksInstrumentor extends ClassAdapter {
+	public static class ConditionalChecksInstrumentor extends ClassAdapter {
 		private String owner;
 		private final InstrumentorMonitor monitor;
 

@@ -107,7 +107,7 @@ public class XmlConfigReader {
 		 * @param instClassName
 		 */
 		private void onInstrumentor(String instClassName) {
-			Class instClass = null;
+			Class<?> instClass = null;
 			try {
 				instClass = instrumentorLoader.loadClass(instClassName);
 			} catch (ClassNotFoundException e) {

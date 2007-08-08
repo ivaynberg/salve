@@ -34,11 +34,12 @@ public class ExtensionFileFilter implements FileFilter {
 	 * @param extension
 	 *            extension to filter on
 	 */
-	public ExtensionFileFilter(String extension) {
+	public ExtensionFileFilter(final String extension) {
 		super();
-		this.extension = extension;
 		if (!extension.startsWith(".")) {
-			extension = "." + extension;
+			this.extension = "." + extension;
+		} else {
+			this.extension = extension;
 		}
 	}
 
