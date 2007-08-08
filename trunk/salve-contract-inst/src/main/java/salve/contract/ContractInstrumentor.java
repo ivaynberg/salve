@@ -16,10 +16,10 @@
  */
 package salve.contract;
 
+import salve.AbstractInstrumentor;
 import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationException;
-import salve.Instrumentor;
 import salve.InstrumentorMonitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassReader;
@@ -32,45 +32,25 @@ import salve.contract.impl.NumericalInstrumentor;
 import salve.contract.impl.OMIAnalyzer;
 import salve.contract.impl.OMIInstrumentor;
 
-public class ContractInstrumentor implements Instrumentor {
+public class ContractInstrumentor extends AbstractInstrumentor {
 
-	public byte[] instrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
+	@Override
+	protected byte[] internalInstrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
 			throws InstrumentationException {
-		// FIXME factor out these arg checks into an abstract instrumentor
-		if (loader == null) {
-			throw new IllegalArgumentException("Argument `loader` cannot be null");
-		}
-		if (className == null) {
-			throw new IllegalArgumentException("Argument `className` cannot be null");
+
+		byte[] bytecode = loader.loadBytecode(className);
+		if (bytecode == null) {
+			throw new CannotLoadBytecodeException(className);
 		}
 
-		className = className.trim();
+		OMIAnalyzer analyzer = new OMIAnalyzer();
+		analyzer.analyze(bytecode, loader);
 
-		if (className.length() == 0) {
-			throw new IllegalArgumentException("Argument `className` cannot be an empty");
-		}
-
-		try {
-			byte[] bytecode = loader.loadBytecode(className);
-			if (bytecode == null) {
-				throw new CannotLoadBytecodeException(className);
-			}
-
-			OMIAnalyzer analyzer = new OMIAnalyzer();
-			analyzer.analyze(bytecode, loader);
-
-			ClassReader reader = new ClassReader(bytecode);
-			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-			reader
-					.accept(new ConditionalChecksInstrumentor(new OMIInstrumentor(writer, analyzer, monitor), monitor),
-							0);
-			bytecode = writer.toByteArray();
-			return bytecode;
-
-		} catch (Exception e) {
-			// TODO message
-			throw new InstrumentationException(e);
-		}
+		ClassReader reader = new ClassReader(bytecode);
+		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		reader.accept(new ConditionalChecksInstrumentor(new OMIInstrumentor(writer, analyzer, monitor), monitor), 0);
+		bytecode = writer.toByteArray();
+		return bytecode;
 	}
 
 	public class ConditionalChecksInstrumentor extends ClassAdapter {
