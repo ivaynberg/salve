@@ -19,6 +19,12 @@ package salve.util;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+/**
+ * Utility class for dealing with classes
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class ClassesUtil {
 	private static final String CLASS_LOADER_REFLECT_CLASS_NAME = "java.lang.ClassLoader";
 	private static final String DEFINE_CLASS_METHOD_NAME = "defineClass";
@@ -29,6 +35,12 @@ public class ClassesUtil {
 
 	}
 
+	/**
+	 * Checks class name argument
+	 * 
+	 * @param className
+	 *            class name
+	 */
 	public static void checkClassNameArg(String className) {
 		if (className == null) {
 			throw new IllegalArgumentException("Argument `className` cannot be null");
@@ -41,6 +53,15 @@ public class ClassesUtil {
 		}
 	}
 
+	/**
+	 * Loads bytecode into a {@link Class} object
+	 * 
+	 * @param className
+	 *            binary class name
+	 * @param bytecode
+	 *            bytecode
+	 * @return created {@link Class} object
+	 */
 	public static Class<?> loadClass(final String className, byte[] bytecode) {
 		checkClassNameArg(className);
 		if (bytecode == null) {

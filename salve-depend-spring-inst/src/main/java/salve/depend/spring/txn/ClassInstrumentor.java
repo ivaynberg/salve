@@ -1,20 +1,19 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. The ASF
+ * licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law
+ * or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
  */
 package salve.depend.spring.txn;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import salve.InstrumentorMonitor;
 import salve.asmlib.AdviceAdapter;
@@ -27,18 +26,36 @@ import salve.asmlib.StaticInitMerger;
 import salve.asmlib.Type;
 import salve.util.asm.GeneratorAdapter;
 
-public class ClassInstrumentor extends ClassAdapter implements Opcodes,
-		Constants {
+/**
+ * INTERNAL
+ * <p>
+ * Instrumentor for classes and methods annotated with {@link Transactional}
+ * </p>
+ * 
+ * @author ivaynberg
+ */
+class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	private boolean annotated = false;
 	private String owner;
 	private final InstrumentorMonitor monitor;
 	private int nextAttribute = 0;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param cv
+	 *            class visitor
+	 * @param monitor
+	 *            instrumentor monitor
+	 */
 	public ClassInstrumentor(ClassVisitor cv, InstrumentorMonitor monitor) {
 		super(new StaticInitMerger("_salvespringtxn_", cv));
 		this.monitor = monitor;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void visit(int version, int access, String name, String signature,
 			String superName, String[] interfaces) {
@@ -46,6 +63,9 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		owner = name;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public AnnotationVisitor visitAnnotation(final String desc,
 			final boolean visible) {
@@ -63,6 +83,9 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc,
 			String signature, String[] exceptions) {
@@ -76,6 +99,11 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		return new MethodInstrumentor(mv, access, name, desc);
 	}
 
+	/**
+	 * Method instrumentor
+	 * 
+	 * @author ivaynberg
+	 */
 	public class MethodInstrumentor extends AdviceAdapter implements Opcodes,
 			Constants {
 
@@ -88,6 +116,18 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 		private int ptm;
 		private int status;
 
+		/**
+		 * Constructor
+		 * 
+		 * @param mv
+		 *            method visitor
+		 * @param access
+		 *            method access flags
+		 * @param name
+		 *            method name
+		 * @param desc
+		 *            method descriptor
+		 */
 		public MethodInstrumentor(MethodVisitor mv, int access, String name,
 				String desc) {
 			super(mv, access, name, desc);
@@ -96,6 +136,9 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 			methodAccess = access;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 			// rewrite @Transactional as @SpringTransactional
@@ -112,6 +155,9 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 			}
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void visitCode() {
 			if (shouldInstrument()) {
@@ -154,6 +200,9 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 			super.visitCode();
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		protected void onMethodEnter() {
 			if (shouldInstrument()) {
@@ -176,6 +225,9 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 			}
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		protected void onMethodExit(int opcode) {
 			if (shouldInstrument()) {
@@ -199,6 +251,10 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes,
 			}
 		}
 
+		/**
+		 * @return true if the method should be instrumented (is transactional),
+		 *         false otherwise
+		 */
 		private boolean shouldInstrument() {
 			return annotated || ClassInstrumentor.this.annotated;
 		}

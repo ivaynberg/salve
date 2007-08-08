@@ -21,6 +21,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface Dependency {
-	public InjectionStrategy strategy() default InjectionStrategy.REMOVE_FIELD;
+/**
+ * Annotates a field that holds a dependency. Fields with this annotation are
+ * instrumented.
+ * 
+ * @see InstrumentationStrategy
+ * @see DependencyLibrary
+ * 
+ * @author ivaynberg
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface Dependency {
+	public InstrumentationStrategy strategy() default InstrumentationStrategy.REMOVE_FIELD;
 }

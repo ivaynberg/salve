@@ -26,7 +26,7 @@ public class Bean extends AbstractBean {
 
 	@Square @Dependency @Circle private RedDependency red;
 
-	@Dependency(strategy = InjectionStrategy.INJECT_FIELD) private BlueDependency blue;
+	@Dependency(strategy = InstrumentationStrategy.INJECT_FIELD) private BlueDependency blue;
 
 	@Circle private BlackDependency black;
 

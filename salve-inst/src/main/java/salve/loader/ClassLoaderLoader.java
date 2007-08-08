@@ -22,9 +22,21 @@ import java.io.InputStream;
 
 import salve.BytecodeLoader;
 
+/**
+ * {@link BytecodeLoader} that loads bytecode using
+ * {@link ClassLoader#getResource(String)}
+ * 
+ * @author ivaynberg
+ */
 public class ClassLoaderLoader implements BytecodeLoader {
 	private final ClassLoader loader;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param loader
+	 *            class loader to use
+	 */
 	public ClassLoaderLoader(ClassLoader loader) {
 		if (loader == null) {
 			throw new IllegalArgumentException("Argument `loader` cannot be null");
@@ -32,6 +44,9 @@ public class ClassLoaderLoader implements BytecodeLoader {
 		this.loader = loader;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public byte[] loadBytecode(String className) {
 		InputStream is = loader.getResourceAsStream(className + ".class");
 		if (is == null) {

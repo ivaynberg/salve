@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package salve.depend.impl;
+package salve.depend;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,31 +35,61 @@ import salve.asmlib.Opcodes;
 import salve.asmlib.StaticInitMerger;
 import salve.asmlib.Type;
 
-public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
+/**
+ * INTERNAL
+ * <p>
+ * Instruments class to implement {@link Dependency} field resolution
+ * </p>
+ * 
+ * @author ivaynberg
+ * 
+ */
+class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	private final ClassAnalyzer analyzer;
 	private String owner = null;
 	private final InstrumentorMonitor monitor;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param cv
+	 *            class visitor
+	 * @param analyzer
+	 *            analyzer
+	 * @param monitor
+	 *            instrumentor monitor
+	 */
 	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer, InstrumentorMonitor monitor) {
 		super(new StaticInitMerger(DEPNS + "_clinit", cv));
 		this.analyzer = analyzer;
 		this.monitor = monitor;
 	}
 
-	@Override public void visit(int version, int access, String name, String signature, String superName,
-			String[] interfaces) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		owner = name;
 		cv.visit(version, access, name, signature, superName, interfaces);
 		generateFieldInitiazerMethods();
 	}
 
-	@Override public void visitEnd() {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void visitEnd() {
 		addClinit();
 		super.visitEnd();
 	}
 
-	@Override public FieldVisitor visitField(final int access, final String name, final String desc,
-			final String signature, final Object value) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
+			final Object value) {
 		final DependencyField field = analyzer.getDependency(owner, name);
 		if (field != null) {
 			FieldVisitor fv = null;
@@ -76,7 +106,7 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 				monitor.fieldRemoved(owner, access, name, desc);
 				monitor.fieldAdded(owner, a, n, d);
 			} else {
-				fv = cv.visitField(access, name, desc, signature, value);
+				fv = cv.visitField(access + ACC_TRANSIENT, name, desc, signature, value);
 			}
 			return new DependencyAnnotRemover(fv);
 		} else {
@@ -84,11 +114,14 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 		}
 	}
 
-	@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature,
-			String[] exceptions) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 		MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
 
-		boolean instrument = analyzer.getDependenciesInMethod(name, desc) != null;
+		boolean instrument = analyzer.getDependenciesInMethod(owner, name, desc) != null;
 
 		if (instrument) {
 			monitor.methodModified(owner, access, name, desc);
@@ -100,6 +133,9 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 		}
 	}
 
+	/**
+	 * Adds clinit method used to initialze any added static fields
+	 */
 	private void addClinit() {
 		boolean hasRemoveFieldDependencies = false;
 		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
@@ -240,7 +276,11 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 	}
 
 	/**
+	 * generates bytecode to throw an {@link IllegalFieldWriteException}
+	 * exception
+	 * 
 	 * @param field
+	 *            field for which the exception needs to be thrown
 	 */
 	private void throwIllegalFieldWriteException(MethodVisitor mv, DependencyField field) {
 		Label l0 = new Label();
@@ -253,17 +293,38 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 		mv.visitInsn(ATHROW);
 	}
 
+	/**
+	 * Method instrumentor
+	 * 
+	 * @author ivaynberg
+	 */
 	private class MethodInstrumentor extends MethodAdapter implements Opcodes {
 		private LocalVariablesSorter lvs;
 		private Map<DependencyField, Integer> fieldToLocal;
 		private final Collection<DependencyField> referencedFields;
 
+		/**
+		 * Constructor
+		 * 
+		 * @param acc
+		 *            method access flags
+		 * @param name
+		 *            method name
+		 * @param desc
+		 *            method descriptor
+		 * @param mv
+		 *            method visitor
+		 */
 		public MethodInstrumentor(int acc, String name, String desc, MethodVisitor mv) {
 			super(mv);
-			referencedFields = analyzer.getDependenciesInMethod(name, desc);
+			referencedFields = analyzer.getDependenciesInMethod(owner, name, desc);
 		}
 
-		@Override public void visitCode() {
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void visitCode() {
 			super.visitCode();
 			if (referencedFields != null) {
 				for (DependencyField field : referencedFields) {
@@ -278,9 +339,13 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 			}
 		}
 
-		@Override public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
 
-			// Keep in mind this instruction is always preceded by ALOAD 0 ;this
+			// Keep in mind this instruction is always preceded by ALOAD 0
 
 			boolean instrument = false;
 			DependencyField field = null;
@@ -316,10 +381,24 @@ public class ClassInstrumentor extends ClassAdapter implements Opcodes, Constant
 
 		}
 
+		/**
+		 * Looks up index of local variable that replaces access to depenedncy
+		 * field
+		 * 
+		 * @param field
+		 * @return index of local var
+		 */
 		private int getLocalForField(DependencyField field) {
 			return fieldToLocal.get(field);
 		}
 
+		/**
+		 * Sets index of local variable that will replace access to dependenc
+		 * field
+		 * 
+		 * @param field
+		 * @param local
+		 */
 		private void setLocalForField(DependencyField field, int local) {
 			if (fieldToLocal == null) {
 				fieldToLocal = new HashMap<DependencyField, Integer>();

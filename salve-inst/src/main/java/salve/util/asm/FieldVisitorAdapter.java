@@ -20,17 +20,32 @@ import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Attribute;
 import salve.asmlib.FieldVisitor;
 
+/**
+ * Simple adapter for field visitors
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class FieldVisitorAdapter implements FieldVisitor {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitAttribute(Attribute attr) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitEnd() {
 
 	}

@@ -16,6 +16,13 @@
  */
 package salve;
 
+/**
+ * Interface for defining objects that can monitor actions performed during
+ * instrumentation process
+ * 
+ * @author ivaynberg
+ * 
+ */
 public interface InstrumentorMonitor {
 
 	// these ACC constants parallel asm so we can simply pass in an int from asm
@@ -39,16 +46,92 @@ public interface InstrumentorMonitor {
 	static int ACC_ANNOTATION = 0x2000; // class
 	static int ACC_ENUM = 0x4000; // class(?) field inner
 
+	/**
+	 * Called when a field is added to a class
+	 * 
+	 * @param className
+	 *            binary class name
+	 * @param fieldAccess
+	 *            field access flags
+	 * @param fieldName
+	 *            field name
+	 * @param fieldDesc
+	 *            field descriptor
+	 */
 	void fieldAdded(String className, int fieldAccess, String fieldName, String fieldDesc);
 
+	/**
+	 * Called when a field is modified. Modifications can include ,but are not
+	 * limited to, name changes, access changes, type changes, added/removed
+	 * annotations, etc
+	 * 
+	 * @param className
+	 *            binary class name
+	 * @param fieldAccess
+	 *            field access flags
+	 * @param fieldName
+	 *            field name
+	 * @param fieldDesc
+	 *            field descriptor
+	 */
 	void fieldModified(String className, int fieldAccess, String fieldName, String fieldDesc);
 
+	/**
+	 * Called when a field is removed from a class
+	 * 
+	 * @param className
+	 *            binary class name
+	 * @param fieldAccess
+	 *            field access flags
+	 * @param fieldName
+	 *            field name
+	 * @param fieldDesc
+	 *            field descriptor
+	 */
 	void fieldRemoved(String className, int fieldAccess, String fieldName, String fieldDesc);
 
+	/**
+	 * Called when a method is added to a class
+	 * 
+	 * @param className
+	 *            binary class name
+	 * @param methodAccess
+	 *            method access flags
+	 * @param methodName
+	 *            method name
+	 * @param methodDesc
+	 *            method descriptor
+	 */
 	void methodAdded(String className, int methodAccess, String methodName, String methodDesc);
 
+	/**
+	 * Called when a method is modified. Modifications can include ,but are not
+	 * limited to, name changes, access changes, type changes, added/removed
+	 * annotations, etc
+	 * 
+	 * @param className
+	 *            binary class name
+	 * @param methodAccess
+	 *            method access flags
+	 * @param methodName
+	 *            method name
+	 * @param methodDesc
+	 *            method descriptor
+	 */
 	void methodModified(String className, int methodAccess, String methodName, String methodDesc);
 
+	/**
+	 * Called when a method is removed from a class
+	 * 
+	 * @param className
+	 *            binary class name
+	 * @param methodAccess
+	 *            method access flags
+	 * @param methodName
+	 *            method name
+	 * @param methodDesc
+	 *            method descriptor
+	 */
 	void methodRemoved(String className, int methodAccess, String methodName, String methodDesc);
 
 }

@@ -14,20 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package salve.depend.impl;
+package salve.depend;
 
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Attribute;
 import salve.asmlib.FieldVisitor;
 
-public class DependencyAnnotRemover implements FieldVisitor {
+/**
+ * Field visitor that strips any {@link Dependency} annotations
+ * 
+ * @author ivaynberg
+ * 
+ */
+class DependencyAnnotRemover implements FieldVisitor {
 	private final FieldVisitor delegate;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param delegate
+	 *            field visitor to delegate to
+	 */
 	public DependencyAnnotRemover(FieldVisitor delegate) {
 		super();
 		this.delegate = delegate;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 		if (Constants.DEP_DESC.equals(desc)) {
 			return null;
@@ -36,10 +51,16 @@ public class DependencyAnnotRemover implements FieldVisitor {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitAttribute(Attribute attr) {
 		delegate.visitAttribute(attr);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitEnd() {
 		delegate.visitEnd();
 	}

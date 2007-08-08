@@ -25,16 +25,39 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import salve.ConfigException;
 import salve.Instrumentor;
 
+/**
+ * Reads config data from an xml file into a {@link XmlConfig} object
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class XmlConfigReader {
 	private final ClassLoader instrumentorLoader;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param instrumentorLoader
+	 *            class loader that can be used to load instrumentor classes
+	 *            specified in the xml config
+	 */
 	public XmlConfigReader(ClassLoader instrumentorLoader) {
 		this.instrumentorLoader = instrumentorLoader;
 	}
 
-	public void read(InputStream is, Config config) throws ConfigException {
+	/**
+	 * Reads xml config into the specified config object
+	 * 
+	 * @param is
+	 *            input stream to configuration xml
+	 * @param config
+	 *            config object
+	 * @throws ConfigException
+	 */
+	public void read(InputStream is, XmlConfig config) throws ConfigException {
 		try {
 			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 			parser.parse(is, new Handler(config));
@@ -46,22 +69,23 @@ public class XmlConfigReader {
 	}
 
 	private class Handler extends DefaultHandler {
-		private final Config config;
-		private PackageConfig pconfig;
+		private final XmlConfig config;
+		private XmlPackageConfig pconfig;
 
-		public Handler(Config config) {
+		public Handler(XmlConfig config) {
 			super();
 			this.config = config;
 		}
 
-		@Override public void endElement(String uri, String localName, String name) throws SAXException {
+		@Override
+		public void endElement(String uri, String localName, String name) throws SAXException {
 			if ("package".equals(name)) {
 				onEndPackage();
 			}
 		}
 
-		@Override public void startElement(String uri, String localName, String name, Attributes attributes)
-				throws SAXException {
+		@Override
+		public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
 			if ("package".equals(name)) {
 				String packageName = attributes.getValue("name");
 				onStartPackage(packageName);
@@ -112,7 +136,7 @@ public class XmlConfigReader {
 		 * @param packageName
 		 */
 		private void onStartPackage(String packageName) {
-			pconfig = new PackageConfig();
+			pconfig = new XmlPackageConfig();
 			pconfig.setPackageName(packageName);
 		}
 	}

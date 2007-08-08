@@ -21,7 +21,8 @@ import org.junit.Test;
 import salve.InstrumentationException;
 
 public class NotNullContractInstrumentorTest extends AbstractContractInstrumentorTest {
-	@Test public void testArgumentTypeErrorChecking() throws Exception {
+	@Test
+	public void testArgumentTypeErrorChecking() throws Exception {
 		try {
 			create("NotNullPrimitiveArgumentBean");
 			fail("Expected error instrumenting primitive notnull argument");
@@ -33,7 +34,8 @@ public class NotNullContractInstrumentorTest extends AbstractContractInstrumento
 		}
 	}
 
-	@Test public void testNotNull() throws Exception {
+	@Test
+	public void testNotNull() throws Exception {
 		NotNullBean bean = (NotNullBean) create("NotNullBean");
 		final Object token = new Object();
 
@@ -58,7 +60,8 @@ public class NotNullContractInstrumentorTest extends AbstractContractInstrumento
 
 	}
 
-	@Test public void testReturnTypeErrorChecking() throws Exception {
+	@Test
+	public void testReturnTypeErrorChecking() throws Exception {
 		try {
 			create("NotNullPrimitiveReturnBean");
 			fail("Expected error instrumenting notnull method with primitive return type");
@@ -88,7 +91,8 @@ public class NotNullContractInstrumentorTest extends AbstractContractInstrumento
 			return arg1;
 		}
 
-		@NotNull public Object testNotNull(Object arg1, @NotNull Object arg2, Object arg3) {
+		@NotNull
+		public Object testNotNull(Object arg1, @NotNull Object arg2, Object arg3) {
 			return arg2 == NULL ? null : arg2;
 		}
 	}
@@ -99,13 +103,15 @@ public class NotNullContractInstrumentorTest extends AbstractContractInstrumento
 	}
 
 	public static class NotNullPrimitiveReturnBean {
-		@NotNull public int testNotNull() {
+		@NotNull
+		public int testNotNull() {
 			return 0;
 		}
 	}
 
 	public static class NotNullVoidReturnBean {
-		@NotNull public void testNotNull() {
+		@NotNull
+		public void testNotNull() {
 		}
 	}
 

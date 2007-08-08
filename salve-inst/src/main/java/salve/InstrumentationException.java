@@ -16,12 +16,25 @@
  */
 package salve;
 
+/**
+ * Exception that represents a problem during the instrumentation process
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class InstrumentationException extends Exception {
+	private static final long serialVersionUID = 1L;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public InstrumentationException(Exception e) {
 		super(e);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public InstrumentationException(String string, Exception e) {
 		super(string, e);
 	}

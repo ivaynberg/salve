@@ -16,6 +16,13 @@
  */
 package salve;
 
+/**
+ * Interface for a bytecode loader. A bytecode loader can load bytecode of a
+ * class given that class' binary name
+ * 
+ * @author ivaynberg
+ * 
+ */
 public interface BytecodeLoader {
 	byte[] loadBytecode(String className);
 }

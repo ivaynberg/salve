@@ -18,6 +18,7 @@ package salve.depend.guice;
 
 import java.lang.annotation.Annotation;
 
+import salve.depend.DependencyLibrary;
 import salve.depend.Key;
 import salve.depend.Locator;
 
@@ -25,12 +26,14 @@ import com.google.inject.BindingAnnotation;
 import com.google.inject.Injector;
 
 /**
- * Salve locator that can connect dependency library to guice injector.
- * 
+ * Salve locator that can connect {@link DependencyLibrary} to guice
+ * {@link Injector}.
+ * <p>
  * NOTE It is recommended to install this locator as the last in the chain
  * because of guice's implicit-binding concept which makes it difficult to
  * properly return null from {@link #locate(Key)} when no binding for specified
  * type has been created
+ * </p>
  * 
  * @author ivaynberg
  * 
@@ -38,13 +41,17 @@ import com.google.inject.Injector;
 public class GuiceBeanLocator implements Locator {
 	private final Injector injector;
 
+	/**
+	 * @param injector
+	 *            guice injector
+	 */
 	public GuiceBeanLocator(final Injector injector) {
 		super();
 		this.injector = injector;
 	}
 
 	/**
-	 * @see salve.depend.Locator#locate(salve.depend.Key)
+	 * {@inheritDoc}
 	 */
 	@SuppressWarnings("unchecked")
 	public Object locate(Key key) {
@@ -68,6 +75,9 @@ public class GuiceBeanLocator implements Locator {
 		// XXX investigate properly returning null, see javadoc note
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return String.format("[%s injector=%s]", getClass().getName(), injector

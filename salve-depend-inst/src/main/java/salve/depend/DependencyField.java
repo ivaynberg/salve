@@ -14,16 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package salve.depend.impl;
+package salve.depend;
 
 import salve.asmlib.Type;
 
+/**
+ * Class that represents a field annotated with {@link Dependency} annotation
+ * 
+ * @author ivaynberg
+ * 
+ */
 class DependencyField {
 	String name;
 	String desc;
 	String owner;
+	// XXX change this into some int equivalent
 	String strategy = Constants.STRAT_REMOVE;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param owner
+	 *            binary class name of the class that contains this field
+	 * @param name
+	 *            field name
+	 * @param desc
+	 *            field descriptor
+	 */
 	public DependencyField(String owner, String name, String desc) {
 		super();
 		this.name = name;
@@ -31,7 +48,11 @@ class DependencyField {
 		this.owner = owner;
 	}
 
-	@Override public boolean equals(Object obj) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -59,27 +80,48 @@ class DependencyField {
 		return true;
 	}
 
+	/**
+	 * @return field descriptor
+	 */
 	public String getDesc() {
 		return desc;
 	}
 
+	/**
+	 * @return field name
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * 
+	 * @return binary name of the class that contains this field
+	 */
 	public String getOwner() {
 		return owner;
 	}
 
+	/**
+	 * @see InstrumentationStrategy
+	 * @return instrumentation strategy name
+	 */
 	public String getStrategy() {
 		return strategy;
 	}
 
+	/**
+	 * @return type of this field
+	 */
 	public Type getType() {
 		return Type.getType(desc);
 	}
 
-	@Override public int hashCode() {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (name == null ? 0 : name.hashCode());
@@ -87,6 +129,13 @@ class DependencyField {
 		return result;
 	}
 
+	/**
+	 * Sets instrumentation strategy name
+	 * 
+	 * @see InstrumentationStrategy
+	 * @param strat
+	 *            strategy name
+	 */
 	public void setStrategy(String strat) {
 		if (!Constants.STRAT_REMOVE.equals(strat) && !Constants.STRAT_INJECT.equals(strat)) {
 			throw new IllegalStateException("Invalid strategy value: " + strat);

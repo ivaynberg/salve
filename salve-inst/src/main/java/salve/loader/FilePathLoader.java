@@ -23,9 +23,21 @@ import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * Bytecode loader that can load bytecode from specified file path. The file
+ * path can point to a directory, a zip, or a jar
+ * 
+ * @author ivaynberg
+ */
 public class FilePathLoader extends AbstractUrlLoader {
 	private final File path;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param path
+	 *            file path
+	 */
 	public FilePathLoader(File path) {
 		if (path == null) {
 			throw new IllegalArgumentException("Argument `path` cannot be null");
@@ -33,7 +45,11 @@ public class FilePathLoader extends AbstractUrlLoader {
 		this.path = path;
 	}
 
-	@Override protected URL getBytecodeUrl(String className) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected URL getBytecodeUrl(String className) {
 		final String pathName = path.getAbsolutePath();
 		final String fileName = className + ".class";
 		if (pathName.endsWith(".jar") || pathName.endsWith(".zip")) {

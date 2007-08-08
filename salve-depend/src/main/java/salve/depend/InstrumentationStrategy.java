@@ -16,6 +16,32 @@
  */
 package salve.depend;
 
-public enum InjectionStrategy {
-	INJECT_FIELD, REMOVE_FIELD;
+/**
+ * Strategy for instrumenting dependency fields.
+ * 
+ * @see Dependency
+ * @see DependencyLibrary
+ * 
+ * @author ivaynberg
+ * 
+ */
+public enum InstrumentationStrategy {
+	/**
+	 * The field is made transient and is injected on first read access. Write
+	 * access to this field is forbidden and a
+	 * {@link IllegalFieldWriteException} exception is thrown when field is
+	 * written to.
+	 */
+	INJECT_FIELD,
+
+	/**
+	 * The field is removed. Methods accessing this field will have a local
+	 * variable added that will hold the looked up dependency. Removing the
+	 * field improves the memory footprint of the class, and since dependency
+	 * lookups are cached there should be no significant performance
+	 * degradation.
+	 * 
+	 * This is the default strategy
+	 */
+	REMOVE_FIELD;
 }

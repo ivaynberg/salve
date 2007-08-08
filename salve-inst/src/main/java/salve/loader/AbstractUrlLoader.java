@@ -23,8 +23,18 @@ import java.net.URL;
 
 import salve.BytecodeLoader;
 
+/**
+ * Base for {@link BytecodeLoader} implementations that load bytecode through a
+ * {@link URL}
+ * 
+ * @author ivaynberg
+ * 
+ */
 public abstract class AbstractUrlLoader implements BytecodeLoader {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public final byte[] loadBytecode(String className) {
 		URL url = getBytecodeUrl(className);
 		if (url == null) {
@@ -48,6 +58,13 @@ public abstract class AbstractUrlLoader implements BytecodeLoader {
 		}
 	}
 
+	/**
+	 * Converts class name into a {@link URL} that contains the class bytecode
+	 * 
+	 * @param className
+	 *            binary class name
+	 * @return {@link URL} that points to class' bytecode
+	 */
 	protected abstract URL getBytecodeUrl(String className);
 
 }

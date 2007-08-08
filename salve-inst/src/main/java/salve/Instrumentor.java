@@ -26,12 +26,15 @@ public interface Instrumentor {
 	 * Instruments bytecode
 	 * 
 	 * @param className
-	 *            fully qualified class name (salve/asm/BytecodeLoader)
+	 *            binary class name (eg salve/asm/BytecodeLoader)
 	 * @param loader
 	 *            bytecodeLoader that can be used to load bytecode for specified
 	 *            class and any referenced classes
 	 * @return instrumented bytecode
-	 * @throws Exception
+	 * 
+	 * @see BytecodeLoader
+	 * 
+	 * @throws InstrumentationException
 	 *             if instrumentation fails
 	 */
 	byte[] instrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
