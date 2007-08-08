@@ -22,6 +22,8 @@ package salve.depend;
  * @author ivaynberg
  */
 public class DependencyNotFoundException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
+
 	public DependencyNotFoundException(Key key) {
 		// TODO better error message pointing to class.field
 		super("Could not find dependency for key: " + key.toString());

@@ -22,39 +22,72 @@ import salve.asmlib.ClassVisitor;
 import salve.asmlib.FieldVisitor;
 import salve.asmlib.MethodVisitor;
 
+/**
+ * Simple adapter for class visitors
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class ClassVisitorAdapter implements ClassVisitor {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitAttribute(Attribute attr) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitEnd() {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitInnerClass(String name, String outerName, String innerName, int access) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitOuterClass(String owner, String name, String desc) {
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitSource(String source, String debug) {
 	}
 

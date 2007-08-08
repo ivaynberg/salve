@@ -20,13 +20,38 @@ import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
 
+/**
+ * A patched version of {@link salve.asmlib.GeneratorAdapter}. This version
+ * fixes {@link #push(Type)} when type is primitive.
+ * 
+ * see
+ * http://forge.objectweb.org/tracker/?func=detail&aid=307378&group_id=23&atid=350023
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class GeneratorAdapter extends salve.asmlib.GeneratorAdapter implements Opcodes {
-
+	/**
+	 * Constructor
+	 * 
+	 * @param mv
+	 *            method visitor
+	 * @param access
+	 *            method access flags
+	 * @param name
+	 *            method name
+	 * @param desc
+	 *            method descriptor
+	 */
 	public GeneratorAdapter(MethodVisitor mv, int access, String name, String desc) {
 		super(mv, access, name, desc);
 	}
 
-	@Override public void push(Type value) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void push(Type value) {
 		if (value == null) {
 			mv.visitInsn(Opcodes.ACONST_NULL);
 		} else {

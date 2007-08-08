@@ -29,12 +29,11 @@ import salve.loader.FilePathLoader;
 
 public class ProjectBytecodeLoader extends CompoundLoader {
 
-	public ProjectBytecodeLoader(MavenProject project)
-			throws DependencyResolutionRequiredException {
+	@SuppressWarnings("unchecked")
+	public ProjectBytecodeLoader(MavenProject project) throws DependencyResolutionRequiredException {
 
 		// add target/classes folder
-		addLoader(new FilePathLoader(new File(project.getBuild()
-				.getOutputDirectory())));
+		addLoader(new FilePathLoader(new File(project.getBuild().getOutputDirectory())));
 
 		// append project class path entries
 		for (Object path : project.getCompileClasspathElements()) {

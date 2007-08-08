@@ -14,31 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package salve.depend.impl;
+package salve;
 
-import salve.asmlib.MethodAdapter;
-import salve.asmlib.MethodVisitor;
-import salve.asmlib.Opcodes;
+/**
+ * Exception that represents a configuration problem
+ * 
+ * @author ivaynberg
+ * 
+ */
+public class ConfigException extends Exception {
 
-class ClinitMerger extends MethodAdapter implements Opcodes {
+	private static final long serialVersionUID = 1L;
 
-	public ClinitMerger(MethodVisitor mv) {
-		super(mv);
+	/**
+	 * {@inheritDoc}
+	 */
+	public ConfigException(String message) {
+		super(message);
 	}
 
-	@Override public void visitCode() {
+	/**
+	 * {@inheritDoc}
+	 */
+	public ConfigException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	@Override public void visitEnd() {
-	}
-
-	@Override public void visitInsn(int opcode) {
-		if (opcode != RETURN) {
-			mv.visitInsn(opcode);
-		}
-	}
-
-	@Override public void visitMaxs(int maxStack, int maxLocals) {
-
-	}
 }

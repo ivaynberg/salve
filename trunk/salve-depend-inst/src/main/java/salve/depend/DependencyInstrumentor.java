@@ -23,42 +23,35 @@ import salve.InstrumentationException;
 import salve.InstrumentorMonitor;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassWriter;
-import salve.depend.impl.ClassAnalyzer;
-import salve.depend.impl.ClassInstrumentor;
 
+/**
+ * Instrumentor that instruments {@link Dependency} fields.
+ * 
+ * @see Dependency
+ * @see DependencyLibrary
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class DependencyInstrumentor extends AbstractInstrumentor {
 
-	@Override protected byte[] internalInstrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected byte[] internalInstrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
 			throws InstrumentationException {
-		if (loader == null) {
-			throw new IllegalArgumentException("Argument `loader` cannot be null");
-		}
-		if (className == null) {
-			throw new IllegalArgumentException("Argument `className` cannot be null");
+		byte[] bytecode = loader.loadBytecode(className);
+		if (bytecode == null) {
+			throw new CannotLoadBytecodeException(className);
 		}
 
-		className = className.trim();
+		ClassAnalyzer analyzer = new ClassAnalyzer(loader);
+		ClassReader reader = new ClassReader(bytecode);
+		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, monitor);
+		reader.accept(inst, 0);
 
-		if (className.length() == 0) {
-			throw new IllegalArgumentException("Argument `className` cannot be an empty");
-		}
-
-		try {
-			byte[] bytecode = loader.loadBytecode(className);
-			if (bytecode == null) {
-				throw new CannotLoadBytecodeException(className);
-			}
-
-			ClassAnalyzer analyzer = new ClassAnalyzer(loader);
-			ClassReader reader = new ClassReader(bytecode);
-			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-			ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, monitor);
-			reader.accept(inst, 0);
-
-			return writer.toByteArray();
-		} catch (Exception e) {
-			// TODO message
-			throw new InstrumentationException(e);
-		}
+		return writer.toByteArray();
 	}
 }

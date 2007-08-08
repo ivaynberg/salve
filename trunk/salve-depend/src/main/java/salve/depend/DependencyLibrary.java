@@ -19,17 +19,42 @@ package salve.depend;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Dependency library is a singleton that holds all registered locators. Users
+ * use this singleton to register their locators, and Salve uses it to retrieve
+ * dependencies from those locators.
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class DependencyLibrary {
 	private static final List<Locator> locators = new CopyOnWriteArrayList<Locator>();
 
+	/**
+	 * Registers a locator
+	 * 
+	 * @param locator
+	 */
 	public static final void addLocator(Locator locator) {
 		locators.add(locator);
 	}
 
+	/**
+	 * Clears all registered locators
+	 */
 	public static final void clear() {
 		locators.clear();
 	}
 
+	/**
+	 * Attempts to find a dependency using registered locators and the specified
+	 * dependency key
+	 * 
+	 * @param key
+	 * @return located dependency
+	 * @throws DependencyNotFoundException
+	 *             when dependency is not found in any registered locator
+	 */
 	public static final Object locate(Key key) throws DependencyNotFoundException {
 		for (Locator locator : locators) {
 			Object dependency = locator.locate(key);
@@ -41,9 +66,19 @@ public class DependencyLibrary {
 		throw new DependencyNotFoundException(key);
 	}
 
+	/**
+	 * Checks the type of located dependency against the type specified by the
+	 * key
+	 * 
+	 * @param dependency
+	 * @param key
+	 * @param locator
+	 * @throws IllegalStateException
+	 *             if types do not match
+	 */
 	private static void checkType(Object dependency, Key key, Locator locator) {
-		final Class locatedType = dependency.getClass();
-		final Class requiredType = key.getType();
+		final Class<?> locatedType = dependency.getClass();
+		final Class<?> requiredType = key.getType();
 		if (!requiredType.isAssignableFrom(locatedType)) {
 			throw new IllegalStateException(String.format("Locator returned dependency of invalid type. "
 					+ "Located type: %s. Required type: %s. " + "Key: %s. Locator: %s", locatedType, requiredType, key,

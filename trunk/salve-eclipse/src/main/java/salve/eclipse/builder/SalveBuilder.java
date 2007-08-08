@@ -36,12 +36,12 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
 import salve.BytecodeLoader;
+import salve.Config;
+import salve.ConfigException;
 import salve.InstrumentationException;
 import salve.Instrumentor;
 import salve.asmlib.ClassReader;
-import salve.config.Config;
-import salve.config.ConfigException;
-import salve.config.PackageConfig;
+import salve.config.XmlConfig;
 import salve.config.XmlConfigReader;
 import salve.eclipse.Activator;
 import salve.eclipse.JavaProjectBytecodeLoader;
@@ -84,7 +84,7 @@ public class SalveBuilder extends AbstractBuilder {
 		ClassLoader cloader = new FallbackBytecodeClassLoader(getClass()
 				.getClassLoader(), bloader);
 
-		final Config config = new Config();
+		final XmlConfig config = new XmlConfig();
 		XmlConfigReader reader = new XmlConfigReader(cloader);
 		try {
 			reader.read(((IFile) configResource).getContents(), config);
@@ -210,19 +210,15 @@ public class SalveBuilder extends AbstractBuilder {
 			ClassReader reader;
 			reader = new ClassReader(file.getContents());
 			final String cn = reader.getClassName();
-			PackageConfig conf = config.getPackageConfig(cn.replace("/", "."));
-			if (conf != null) {
-				for (Instrumentor inst : conf.getInstrumentors()) {
-					// System.out.println("instrumenting: " + cn + " with: "
-					// + inst.getClass().getName());
-					CompoundLoader cl = new CompoundLoader();
-					cl.addLoader(new FileBytecodeLoader(file));
-					cl.addLoader(bloader);
-					byte[] bytecode = inst.instrument(cn, cl,
-							NoopMonitor.INSTANCE);
-					file.setContents(new ByteArrayInputStream(bytecode), true,
-							false, null);
-				}
+			for (Instrumentor inst : config.getInstrumentors(cn)) {
+				// System.out.println("instrumenting: " + cn + " with: "
+				// + inst.getClass().getName());
+				CompoundLoader cl = new CompoundLoader();
+				cl.addLoader(new FileBytecodeLoader(file));
+				cl.addLoader(bloader);
+				byte[] bytecode = inst.instrument(cn, cl, NoopMonitor.INSTANCE);
+				file.setContents(new ByteArrayInputStream(bytecode), true,
+						false, null);
 			}
 		} catch (InstrumentationException e) {
 			markError(resource, "Instrumentation error: " + e.getMessage());

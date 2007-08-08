@@ -18,10 +18,24 @@ package salve.util;
 
 import salve.BytecodeLoader;
 
+/**
+ * A class loader that first tries to load a class using provided
+ * {@link ClassLoader} and if that fails tries to load it from bytecode using
+ * provided {@link BytecodeLoader}
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class FallbackBytecodeClassLoader extends ClassLoader {
 	private final BytecodeLoader bl;
 	private final ClassLoader classLoader;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param classLoader
+	 * @param bytecodeLoader
+	 */
 	public FallbackBytecodeClassLoader(ClassLoader classLoader, BytecodeLoader bytecodeLoader) {
 		if (classLoader == null) {
 			throw new IllegalArgumentException("Argument `delegate` cannot be null");
@@ -33,7 +47,11 @@ public class FallbackBytecodeClassLoader extends ClassLoader {
 		this.classLoader = classLoader;
 	}
 
-	@Override public Class<?> loadClass(String name) throws ClassNotFoundException {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Class<?> loadClass(String name) throws ClassNotFoundException {
 		try {
 			return classLoader.loadClass(name);
 		} catch (ClassNotFoundException e) {
@@ -41,7 +59,11 @@ public class FallbackBytecodeClassLoader extends ClassLoader {
 		}
 	}
 
-	@Override protected Class<?> findClass(String name) throws ClassNotFoundException {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected Class<?> findClass(String name) throws ClassNotFoundException {
 		final String className = name.replace(".", "/");
 		byte[] bytecode = bl.loadBytecode(className);
 		if (bytecode == null) {

@@ -16,6 +16,21 @@
  */
 package salve.depend;
 
+/**
+ * Defines interface used by {@link DependencyLibrary} to locate dependencies.
+ * 
+ * @see DependencyLibrary
+ * @see Key
+ * 
+ * @author ivaynberg
+ */
 public interface Locator {
+	/**
+	 * Locate depedency specified by key
+	 * 
+	 * @param key
+	 *            dependency key
+	 * @return found dependency or null
+	 */
 	Object locate(Key key);
 }

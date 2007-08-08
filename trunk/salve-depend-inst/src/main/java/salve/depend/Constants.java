@@ -14,9 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package salve.depend.impl;
+package salve.depend;
 
-public interface Constants {
+/**
+ * INTERNAL
+ * <p>
+ * Constants used by {@link ClassInstrumentor}
+ * </p>
+ * 
+ * @author ivaynberg
+ * 
+ */
+interface Constants {
 	public static final String NS = "_salve";
 	public static final String DEPNS = NS + "dep";
 	public static final String KEY_FIELD_PREFIX = DEPNS + "key$";
@@ -34,7 +43,6 @@ public interface Constants {
 	public static final String IFWE_INIT_DESC = "(Ljava/lang/String;Ljava/lang/String;)V";
 
 	public static final String DEP_DESC = "Lsalve/depend/Dependency;";
-	// import salve.dependency.InjectionStrategy;
 
 	public static final String STRAT_REMOVE = "REMOVE_FIELD";
 	public static final String STRAT_INJECT = "INJECT_FIELD";

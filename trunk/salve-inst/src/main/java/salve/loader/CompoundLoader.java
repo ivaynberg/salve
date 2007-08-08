@@ -21,9 +21,22 @@ import java.util.List;
 
 import salve.BytecodeLoader;
 
+/**
+ * A compound implementation of {@link BytecodeLoader}
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class CompoundLoader implements BytecodeLoader {
 	private final List<BytecodeLoader> delegates = new ArrayList<BytecodeLoader>();
 
+	/**
+	 * Adds a {@link BytecodeLoader}
+	 * 
+	 * @param loader
+	 *            bytecode loader
+	 * @return this for chaining
+	 */
 	public CompoundLoader addLoader(BytecodeLoader loader) {
 		if (loader == null) {
 			throw new IllegalArgumentException("Argument `loader` cannot be null");
@@ -32,6 +45,9 @@ public class CompoundLoader implements BytecodeLoader {
 		return this;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public byte[] loadBytecode(String className) {
 		for (BytecodeLoader loader : delegates) {
 			byte[] bytecode = loader.loadBytecode(className);

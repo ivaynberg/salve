@@ -19,28 +19,49 @@ package salve.config;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Config {
-	List<PackageConfig> packageConfigs = new ArrayList<PackageConfig>();
+import salve.Instrumentor;
 
-	public Config() {
-		super();
+/**
+ * A package-scoped cofiguration
+ * 
+ * @author ivaynberg
+ */
+public class XmlPackageConfig {
+	private String packageName;
+	private final List<Instrumentor> instrumentors = new ArrayList<Instrumentor>();
+
+	/**
+	 * Adds instrumentor to this package configuration
+	 * 
+	 * @param instrumentor
+	 */
+	public void add(Instrumentor instrumentor) {
+		instrumentors.add(instrumentor);
 	}
 
-	public void add(PackageConfig config) {
-		packageConfigs.add(config);
+	/**
+	 * @return list of instrumentors in this config
+	 */
+	public List<Instrumentor> getInstrumentors() {
+		return instrumentors;
 	}
 
-	public PackageConfig getPackageConfig(String name) {
-		for (PackageConfig config : packageConfigs) {
-			if (name.startsWith(config.getPackageName() + ".") || name.equals(config.getPackageName())) {
-				return config;
-			}
-		}
-		return null;
+	/**
+	 * 
+	 * @return package name of this config
+	 */
+	public String getPackageName() {
+		return packageName;
 	}
 
-	public List<PackageConfig> getPackageConfigs() {
-		return packageConfigs;
+	/**
+	 * Sets package name of this config
+	 * 
+	 * @param packageName
+	 *            package name
+	 */
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
 	}
 
 }

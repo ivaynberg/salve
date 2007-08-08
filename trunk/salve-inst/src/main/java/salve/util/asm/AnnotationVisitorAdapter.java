@@ -18,23 +18,43 @@ package salve.util.asm;
 
 import salve.asmlib.AnnotationVisitor;
 
+/**
+ * A simple adapter for AnnotationVisitor interface
+ * 
+ * @author ivaynberg
+ */
 public class AnnotationVisitorAdapter implements AnnotationVisitor {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visit(String name, Object value) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public AnnotationVisitor visitAnnotation(String name, String desc) {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public AnnotationVisitor visitArray(String name) {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitEnd() {
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void visitEnum(String name, String desc, String value) {
 	}
 

@@ -18,6 +18,11 @@ package salve.monitor;
 
 import salve.InstrumentorMonitor;
 
+/**
+ * A NOOP implementation of instrumentor monitor
+ * 
+ * @author ivaynberg
+ */
 public class NoopMonitor implements InstrumentorMonitor {
 	public static final InstrumentorMonitor INSTANCE = new NoopMonitor();
 
@@ -25,26 +30,44 @@ public class NoopMonitor implements InstrumentorMonitor {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void fieldAdded(String className, int fieldAccess, String fieldName, String fieldDesc) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void fieldModified(String className, int fieldAccess, String fieldName, String fieldDesc) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void fieldRemoved(String className, int fieldAccess, String fieldName, String fieldDesc) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void methodAdded(String className, int methodAccess, String methodName, String methodDesc) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void methodModified(String className, int methodAccess, String methodName, String methodDesc) {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void methodRemoved(String className, int methodAccess, String methodName, String methodDesc) {
 
 	}

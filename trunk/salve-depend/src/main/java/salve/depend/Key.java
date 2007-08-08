@@ -19,8 +19,26 @@ package salve.depend;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
+/**
+ * A key that can uniquely identify a dependency
+ * 
+ * @see Locator
+ * @see DependencyLibrary
+ * 
+ * @author ivaynberg
+ */
 public interface Key extends Serializable {
+	/**
+	 * Annotations that identify the dependency
+	 * 
+	 * @return
+	 */
 	Annotation[] getAnnotations();
 
+	/**
+	 * Dependency type
+	 * 
+	 * @return
+	 */
 	Class<?> getType();
 }

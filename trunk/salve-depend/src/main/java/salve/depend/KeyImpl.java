@@ -20,6 +20,14 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
+/**
+ * Default {@link Key} implementation used by Salve instrumentors
+ * 
+ * This key implementation works by reading all the necessary information from a
+ * special key field created by the Salve's DependencyInstrumentor
+ * 
+ * @author ivaynberg
+ */
 public class KeyImpl implements Key {
 	private static final long serialVersionUID = 1L;
 	private static final Annotation[] EMPTY = new Annotation[0];
@@ -27,18 +35,42 @@ public class KeyImpl implements Key {
 
 	private final Annotation[] annots;
 
+	/**
+	 * Constructor for dependencies that can be identified by their type only
+	 * 
+	 * @param type
+	 */
 	public KeyImpl(Class<?> type) {
 		super();
 		this.type = type;
 		annots = EMPTY;
 	}
 
+	/**
+	 * Constructor for dependencies that can be identified by their type and
+	 * some additional annotations
+	 * 
+	 * @param type
+	 * @param annots
+	 */
 	public KeyImpl(Class<?> type, Annotation[] annots) {
 		super();
 		this.type = type;
 		this.annots = annots;
 	}
 
+	/**
+	 * INTERNAL
+	 * 
+	 * Constructor used by DependencyInstrumentor
+	 * 
+	 * @param dependencyType
+	 *            type of dependency
+	 * @param keyOwner
+	 *            type that holds the instrumented key field
+	 * @param keyFieldName
+	 *            name of instrumented key field
+	 */
 	public KeyImpl(Class<?> dependencyType, Class<?> keyOwner, String keyFieldName) {
 
 		this.type = dependencyType;
@@ -51,7 +83,11 @@ public class KeyImpl implements Key {
 		}
 	}
 
-	@Override public boolean equals(Object obj) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
 		} else if (obj == null) {
@@ -64,19 +100,33 @@ public class KeyImpl implements Key {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public Annotation[] getAnnotations() {
 		return annots;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public Class<?> getType() {
 		return type;
 	}
 
-	@Override public int hashCode() {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
 		return type.hashCode() + 37 * annots.hashCode();
 	}
 
-	@Override public String toString() {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
 		return String.format("[%s type=%s annots=%s]", getClass().getName(), type.getName(), annots);
 	}
 }

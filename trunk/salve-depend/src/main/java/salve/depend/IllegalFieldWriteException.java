@@ -16,7 +16,16 @@
  */
 package salve.depend;
 
+/**
+ * Thrown when a user tries to write into the dependency field that has been
+ * instrumented.
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class IllegalFieldWriteException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
+
 	public IllegalFieldWriteException(String clazz, String field) {
 		super("Attempted to write to field `" + field + "` that has been removed from class `" + clazz
 				+ "` by salve's dependency instrumentor");

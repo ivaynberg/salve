@@ -28,8 +28,7 @@ import java.util.Set;
 
 import salve.InstrumentationException;
 import salve.Instrumentor;
-import salve.config.Config;
-import salve.config.PackageConfig;
+import salve.config.XmlConfig;
 import salve.config.XmlConfigReader;
 import salve.loader.ClassLoaderLoader;
 import salve.loader.CompoundLoader;
@@ -57,7 +56,7 @@ public class Agent {
 		private final Set<URL> seenUrls = new HashSet<URL>();
 
 		/** salve configuration */
-		private final Config config = new Config();
+		private final XmlConfig config = new XmlConfig();
 
 		/**
 		 * {@inheritDoc}
@@ -92,16 +91,12 @@ public class Agent {
 		private byte[] instrument(ClassLoader loader, String className,
 				byte[] bytecode) {
 			try {
-				final String name = className.replace("/", ".");
-				PackageConfig conf = config.getPackageConfig(name);
-				if (conf != null) {
-					for (Instrumentor inst : conf.getInstrumentors()) {
-						CompoundLoader bl = new CompoundLoader();
-						bl.addLoader(new MemoryLoader(className, bytecode));
-						bl.addLoader(new ClassLoaderLoader(loader));
-						bytecode = inst.instrument(className, bl,
-								NoopMonitor.INSTANCE);
-					}
+				for (Instrumentor inst : config.getInstrumentors(className)) {
+					CompoundLoader bl = new CompoundLoader();
+					bl.addLoader(new MemoryLoader(className, bytecode));
+					bl.addLoader(new ClassLoaderLoader(loader));
+					bytecode = inst.instrument(className, bl,
+							NoopMonitor.INSTANCE);
 				}
 				return bytecode;
 			} catch (InstrumentationException e) {

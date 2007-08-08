@@ -16,11 +16,32 @@
  */
 package salve;
 
+/**
+ * Exception thrown when an instrumentor cannot load bytecode of a class
+ * 
+ * @author ivaynberg
+ */
 public class CannotLoadBytecodeException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param className
+	 *            binary name of class for which bytecode could not be loaded
+	 */
 	public CannotLoadBytecodeException(String className) {
 		super("Cannot load bytecode for class " + className);
 	}
 
+	/**
+	 * Constructor
+	 * 
+	 * @param className
+	 *            binary name of class for which bytecode could not be loaded
+	 * @param e
+	 *            cause of the exception
+	 */
 	public CannotLoadBytecodeException(String className, Throwable e) {
 		super("Cannot load bytecode for class " + className, e);
 	}

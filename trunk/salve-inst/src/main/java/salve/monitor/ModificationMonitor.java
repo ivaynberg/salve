@@ -18,33 +18,62 @@ package salve.monitor;
 
 import salve.InstrumentorMonitor;
 
+/**
+ * Instrumentor monitor that can report whether or not the class has been
+ * modified
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class ModificationMonitor implements InstrumentorMonitor {
 	private boolean modified = false;
+
+	/**
+	 * {@inheritDoc}
+	 */
 
 	public void fieldAdded(String className, int fieldAccess, String fieldName, String fieldDesc) {
 		modified = true;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void fieldModified(String className, int fieldAccess, String fieldName, String fieldDesc) {
 		modified = true;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void fieldRemoved(String className, int fieldAccess, String fieldName, String fieldDesc) {
 		modified = true;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public boolean isModified() {
 		return modified;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void methodAdded(String className, int methodAccess, String methodName, String methodDesc) {
 		modified = true;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void methodModified(String className, int methodAccess, String methodName, String methodDesc) {
 		modified = true;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void methodRemoved(String className, int methodAccess, String methodName, String methodDesc) {
 		modified = true;
 	}
