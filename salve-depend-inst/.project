@@ -4,6 +4,7 @@
   <projects>
     <project>salve-inst</project>
     <project>salve-depend</project>
+    <project>salve-asm</project>
   </projects>
   <buildSpec>
     <buildCommand>

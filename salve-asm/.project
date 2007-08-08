@@ -1,9 +1,7 @@
 <projectDescription>
-  <name>salve-inst</name>
+  <name>salve-asm</name>
   <comment/>
-  <projects>
-    <project>salve-asm</project>
-  </projects>
+  <projects/>
   <buildSpec>
     <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>
