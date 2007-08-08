@@ -21,7 +21,8 @@ import org.junit.Test;
 import salve.InstrumentationException;
 
 public class NotEmptyContractInstrumentorTest extends AbstractContractInstrumentorTest {
-	@Test public void testArgumentTypeErrorChecking() throws Exception {
+	@Test
+	public void testArgumentTypeErrorChecking() throws Exception {
 		try {
 			create("NonStringParameterBean");
 			fail("Expected error instrumenting non-string notempty argument");
@@ -32,12 +33,13 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 		}
 	}
 
-	@Test public void testNotEmpty() throws Exception {
+	@Test
+	public void testNotEmpty() throws Exception {
 		Bean bean = (Bean) create("Bean");
 		final String token = new String("foo");
 
-		assertTrue(token == bean.test(token));
-		assertTrue(token == bean.test(null, token, null));
+		assertEquals(token, bean.test(token));
+		assertEquals(token, bean.test(null, token, null));
 
 		try {
 			bean.test(null, null, null);
@@ -65,7 +67,8 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 
 	}
 
-	@Test public void testReturnTypeErrorChecking() throws Exception {
+	@Test
+	public void testReturnTypeErrorChecking() throws Exception {
 
 		try {
 			create("VoidReturnBean");
@@ -79,14 +82,15 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 	}
 
 	public static class Bean {
-		public static final String NULL = new String("not-empty");
+		public static final String NULL = new String("!!!not-empty!!!");
 
 		public Object test(Object arg1) {
 			return arg1;
 		}
 
-		@NotEmpty public String test(Object arg1, @NotEmpty String arg2, Object arg3) {
-			return arg2 == NULL ? null : arg2;
+		@NotEmpty
+		public String test(Object arg1, @NotEmpty String arg2, Object arg3) {
+			return NULL.equals(arg2) ? null : arg2;
 		}
 	}
 
@@ -97,7 +101,8 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 	}
 
 	public static class VoidReturnBean {
-		@NotEmpty public void test() {
+		@NotEmpty
+		public void test() {
 		}
 	}
 

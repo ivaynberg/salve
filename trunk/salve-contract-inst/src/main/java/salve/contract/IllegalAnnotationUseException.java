@@ -16,7 +16,16 @@
  */
 package salve.contract;
 
+/**
+ * Thrown when an annotation is applied in an illegal manner. For example
+ * {@code void foo(@NotEmpty int a)}.
+ * 
+ * @author ivaynberg
+ * 
+ */
 public class IllegalAnnotationUseException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
+
 	public IllegalAnnotationUseException(String message) {
 		super(message);
 	}

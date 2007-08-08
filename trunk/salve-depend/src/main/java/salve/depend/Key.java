@@ -16,7 +16,6 @@
  */
 package salve.depend;
 
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
 /**
@@ -27,7 +26,7 @@ import java.lang.annotation.Annotation;
  * 
  * @author ivaynberg
  */
-public interface Key extends Serializable {
+public interface Key {
 	/**
 	 * Annotations that identify the dependency
 	 * 

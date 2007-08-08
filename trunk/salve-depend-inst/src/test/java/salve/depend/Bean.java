@@ -16,19 +16,24 @@
  */
 package salve.depend;
 
-
 public class Bean extends AbstractBean {
 
 	// force this class to have a clinit
-	@SuppressWarnings("unused") public static final long FORCE_CLINIT = System.currentTimeMillis();
+	@SuppressWarnings("unused")
+	public static final long FORCE_CLINIT = System.currentTimeMillis();
 
 	private static BlackDependency staticBlack;
 
-	@Square @Dependency @Circle private RedDependency red;
+	@Square
+	@Dependency
+	@Circle
+	private RedDependency red;
 
-	@Dependency(strategy = InstrumentationStrategy.INJECT_FIELD) private BlueDependency blue;
+	@Dependency(strategy = InstrumentationStrategy.INJECT_FIELD)
+	private BlueDependency blue;
 
-	@Circle private BlackDependency black;
+	@Circle
+	private BlackDependency black;
 
 	public Bean() {
 
@@ -36,7 +41,9 @@ public class Bean extends AbstractBean {
 
 	public Bean(int num) {
 		super(num);
+		@SuppressWarnings("unused")
 		Object r = red;
+		@SuppressWarnings("unused")
 		Object b = blue;
 	}
 

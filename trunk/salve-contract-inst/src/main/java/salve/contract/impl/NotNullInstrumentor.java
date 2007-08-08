@@ -120,7 +120,13 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 	}
 
 	private boolean checkType(final Type ret) {
-		return !AsmUtil.isPrimitive(ret) & ret.getSort() != Type.VOID;
+		if (AsmUtil.isPrimitive(ret)) {
+			return false;
+		} else if (ret.getSort() == Type.VOID) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 }
