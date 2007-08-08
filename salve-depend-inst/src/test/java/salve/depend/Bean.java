@@ -1,25 +1,34 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package salve.depend;
 
-import salve.depend.InjectionStrategy;
 
 public class Bean extends AbstractBean {
 
 	// force this class to have a clinit
-	@SuppressWarnings("unused")
-	public static final long FORCE_CLINIT = System.currentTimeMillis();
+	@SuppressWarnings("unused") public static final long FORCE_CLINIT = System.currentTimeMillis();
 
 	private static BlackDependency staticBlack;
 
-	@Square
-	@Dependency
-	@Circle
-	private RedDependency red;
+	@Square @Dependency @Circle private RedDependency red;
 
-	@Dependency(strategy = InjectionStrategy.INJECT_FIELD)
-	private BlueDependency blue;
+	@Dependency(strategy = InjectionStrategy.INJECT_FIELD) private BlueDependency blue;
 
-	@Circle
-	private BlackDependency black;
+	@Circle private BlackDependency black;
 
 	public Bean() {
 
@@ -79,19 +88,19 @@ public class Bean extends AbstractBean {
 		this.red = red;
 	}
 
+	private class InnerBean {
+		public void method() {
+			red.method1();
+			blue.method1();
+		}
+	}
+
 	public static BlackDependency getStaticBlack() {
 		return staticBlack;
 	}
 
 	public static void setStaticBlack(BlackDependency staticBlack) {
 		Bean.staticBlack = staticBlack;
-	}
-
-	private class InnerBean {
-		public void method() {
-			red.method1();
-			blue.method1();
-		}
 	}
 
 }
