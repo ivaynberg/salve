@@ -19,16 +19,31 @@ package salve.depend;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import salve.depend.cache.Lru3Cache;
+
 /**
  * Dependency library is a singleton that holds all registered locators. Users
  * use this singleton to register their locators, and Salve uses it to retrieve
  * dependencies from those locators.
  * 
  * @author ivaynberg
- * 
  */
 public class DependencyLibrary {
 	private static final List<Locator> locators = new CopyOnWriteArrayList<Locator>();
+	private static CacheProvider cacheProvider = new CacheProvider() {
+
+		public Cache<Key, Object> getCache() {
+			return new Lru3Cache<Key, Object>();
+		}
+
+	};
+
+	private static ThreadLocal<Cache<Key, Object>> LRU = new ThreadLocal<Cache<Key, Object>>() {
+		@Override
+		protected Cache<Key, Object> initialValue() {
+			return cacheProvider.getCache();
+		}
+	};
 
 	/**
 	 * Registers a locator
@@ -44,6 +59,8 @@ public class DependencyLibrary {
 	 */
 	public static final void clear() {
 		locators.clear();
+		// TODO there is no way to clear all the values from all threads...
+		LRU.remove();
 	}
 
 	/**
@@ -56,14 +73,35 @@ public class DependencyLibrary {
 	 *             when dependency is not found in any registered locator
 	 */
 	public static final Object locate(Key key) throws DependencyNotFoundException {
+		if (key == null) {
+			throw new IllegalArgumentException("Argument `key` cannot be null");
+		}
+
+		Object dependency = LRU.get().get(key);
+		if (dependency != null) {
+			return dependency;
+		}
+
 		for (Locator locator : locators) {
-			Object dependency = locator.locate(key);
+			dependency = locator.locate(key);
 			if (dependency != null) {
 				checkType(dependency, key, locator);
+				LRU.get().put(key, dependency);
 				return dependency;
 			}
 		}
+
 		throw new DependencyNotFoundException(key);
+	}
+
+	/**
+	 * Sets cache provider. The cache is used in {@link #locate(Key)} before the
+	 * locators are searched.
+	 * 
+	 * @param cacheProvider
+	 */
+	public static void setCacheProvider(CacheProvider cacheProvider) {
+		DependencyLibrary.cacheProvider = cacheProvider;
 	}
 
 	/**
