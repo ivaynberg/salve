@@ -29,8 +29,7 @@ import org.springframework.transaction.interceptor.TransactionAttributeSourceAdv
 
 import salve.depend.DependencyLibrary;
 import salve.depend.Locator;
-import salve.depend.spring.txn.AdviserUtil;
-import salve.depend.spring.txn.TransactionalInstrumentor;
+import salve.depend.cache.NoopCacheProvider;
 import salve.loader.BytecodePool;
 
 // TODO factor out a bunch of this common code
@@ -253,6 +252,7 @@ public class TransactionalInstrumentorTest extends Assert {
 		adv = new MockTransactionAttributeSourceAdvisor();
 		locator = EasyMock.createMock(Locator.class);
 		DependencyLibrary.addLocator(locator);
+		DependencyLibrary.setCacheProvider(new NoopCacheProvider());
 	}
 
 	private static void loadBeans() throws Exception {
