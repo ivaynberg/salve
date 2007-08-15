@@ -1,0 +1,21 @@
+<projectDescription>
+  <name>salve-depend-inst</name>
+  <comment/>
+  <projects>
+    <project>salve-depend</project>
+    <project>salve-asm</project>
+    <project>salve-inst</project>
+  </projects>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+    <buildCommand>
+      <name>org.maven.ide.eclipse.maven2Builder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+    <nature>org.maven.ide.eclipse.maven2Nature</nature>
+  </natures>
+</projectDescription>

@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: salve
+Bundle-SymbolicName: salve_inst
+Bundle-Version: 0.6.0
+Export-Package: salve,
+ salve.config,
+ salve.loader,
+ salve.monitor,
+ salve.util
