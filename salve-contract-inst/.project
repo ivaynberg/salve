@@ -2,9 +2,9 @@
   <name>salve-contract-inst</name>
   <comment/>
   <projects>
-    <project>salve-contract</project>
-    <project>salve-inst</project>
     <project>salve-asm</project>
+    <project>salve-inst</project>
+    <project>salve-contract</project>
   </projects>
   <buildSpec>
     <buildCommand>

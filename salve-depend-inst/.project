@@ -2,9 +2,9 @@
   <name>salve-depend-inst</name>
   <comment/>
   <projects>
+    <project>salve-inst</project>
     <project>salve-depend</project>
     <project>salve-asm</project>
-    <project>salve-inst</project>
   </projects>
   <buildSpec>
     <buildCommand>
