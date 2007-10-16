@@ -23,6 +23,7 @@ import salve.InstrumentationException;
 import salve.InstrumentorMonitor;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassWriter;
+import salve.util.BytecodeLoadingClassWriter;
 
 /**
  * Instrumentor that instruments {@link Dependency} fields.
@@ -39,7 +40,7 @@ public class DependencyInstrumentor extends AbstractInstrumentor {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected byte[] internalInstrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
+	protected byte[] internalInstrument(String className, final BytecodeLoader loader, InstrumentorMonitor monitor)
 			throws InstrumentationException {
 		byte[] bytecode = loader.loadBytecode(className);
 		if (bytecode == null) {
@@ -48,7 +49,7 @@ public class DependencyInstrumentor extends AbstractInstrumentor {
 
 		ClassAnalyzer analyzer = new ClassAnalyzer(loader);
 		ClassReader reader = new ClassReader(bytecode);
-		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
 		ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, monitor);
 		reader.accept(inst, 0);
 
