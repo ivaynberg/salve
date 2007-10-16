@@ -222,7 +222,7 @@ public class SalveBuilder extends AbstractBuilder {
 						false, null);
 			}
 		} catch (InstrumentationException e) {
-			markError(resource, "Instrumentation error: " + e.getMessage());
+			markError(resource, "Instrumentation error: " + e.getMessage()+" ("+e.getCause().getMessage()+")");
 		} catch (IOException e) {
 			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 					"Unable to parse class file: " + file.getName(), e);
