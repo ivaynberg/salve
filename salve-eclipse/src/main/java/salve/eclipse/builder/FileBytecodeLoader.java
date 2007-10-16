@@ -35,6 +35,9 @@ public class FileBytecodeLoader implements BytecodeLoader {
 	}
 
 	public byte[] loadBytecode(String className) {
+		if (!file.getFullPath().toString().endsWith(className + ".class")) {
+			return null;
+		}
 		try {
 			InputStream in = file.getContents();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
