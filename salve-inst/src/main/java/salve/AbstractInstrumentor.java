@@ -45,6 +45,7 @@ public abstract class AbstractInstrumentor implements Instrumentor {
 		try {
 			return internalInstrument(className, loader, monitor);
 		} catch (Exception e) {
+			e.printStackTrace(System.err);
 			throw new InstrumentationException("Error instrumenting " + className + " with instrumentor "
 					+ getClass().getName(), e);
 		}
