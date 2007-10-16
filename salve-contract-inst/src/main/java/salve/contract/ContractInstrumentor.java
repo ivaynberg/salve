@@ -31,27 +31,9 @@ import salve.contract.impl.NotNullInstrumentor;
 import salve.contract.impl.NumericalInstrumentor;
 import salve.contract.impl.OMIAnalyzer;
 import salve.contract.impl.OMIInstrumentor;
+import salve.util.BytecodeLoadingClassWriter;
 
 public class ContractInstrumentor extends AbstractInstrumentor {
-
-	@Override
-	protected byte[] internalInstrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
-			throws InstrumentationException {
-
-		byte[] bytecode = loader.loadBytecode(className);
-		if (bytecode == null) {
-			throw new CannotLoadBytecodeException(className);
-		}
-
-		OMIAnalyzer analyzer = new OMIAnalyzer();
-		analyzer.analyze(bytecode, loader);
-
-		ClassReader reader = new ClassReader(bytecode);
-		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		reader.accept(new ConditionalChecksInstrumentor(new OMIInstrumentor(writer, analyzer, monitor), monitor), 0);
-		bytecode = writer.toByteArray();
-		return bytecode;
-	}
 
 	public static class ConditionalChecksInstrumentor extends ClassAdapter {
 		private String owner;
@@ -76,6 +58,25 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 			mv = new NumericalInstrumentor(mv, monitor, owner, access, name, desc);
 			return mv;
 		}
+	}
+
+	@Override
+	protected byte[] internalInstrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
+			throws InstrumentationException {
+
+		byte[] bytecode = loader.loadBytecode(className);
+		if (bytecode == null) {
+			throw new CannotLoadBytecodeException(className);
+		}
+
+		OMIAnalyzer analyzer = new OMIAnalyzer();
+		analyzer.analyze(bytecode, loader);
+
+		ClassReader reader = new ClassReader(bytecode);
+		ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
+		reader.accept(new ConditionalChecksInstrumentor(new OMIInstrumentor(writer, analyzer, monitor), monitor), 0);
+		bytecode = writer.toByteArray();
+		return bytecode;
 	}
 
 }
