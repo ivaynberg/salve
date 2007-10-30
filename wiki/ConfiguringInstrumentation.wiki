@@ -24,12 +24,12 @@ Best option for development as no special code post-compilation step is needed, 
 === How ===
 To enable the agent add the following JVM option to the startup command:
 {{{
--Djavaagent:<path to salve-agent.jar>
+-javaagent:<path to salve-agent.jar>
 }}}
 
 Example:
 {{{
-java ... -Djavaagent:~/.m2/repository/salve/salve-agent/1.0/salve-agent-1.0.jar
+java ... -javaagent:~/.m2/repository/salve/salve-agent/1.0/salve-agent-1.0.jar
 }}}
 
 == Maven2 Build ==
