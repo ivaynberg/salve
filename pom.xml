@@ -4,7 +4,7 @@
 
 	<groupId>salve</groupId>
 	<artifactId>salve</artifactId>
-	<version>0.7</version>
+	<version>0.8-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Salve</name>
@@ -12,9 +12,9 @@
 	<url>http://code.google.com/p/salve/</url>
 
 	<scm>
-		<connection>scm:svn:http://salve.googlecode.com/svn/tags/salve-0.7</connection>
-		<developerConnection>scm:svn:https://salve.googlecode.com/svn/tags/salve-0.7</developerConnection>
-		<url>http://salve.googlecode.com/svn/tags/salve-0.7</url>
+		<connection>scm:svn:http://salve.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://salve.googlecode.com/svn/trunk</developerConnection>
+		<url>http://salve.googlecode.com/svn/trunk</url>
 	</scm>
 
 	<modules>
