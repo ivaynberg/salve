@@ -18,18 +18,27 @@
 <assembly>
 	<id>salve-assembly</id>
 	<formats>
-		<format>tar.gz</format>
 		<format>zip</format>
 	</formats>
 	<includeBaseDirectory>false</includeBaseDirectory>
 
+  <fileSets>
+    <fileSet>
+      <directory>${basedir}</directory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+      <outputDirectory></outputDirectory>
+      <excludes>
+        <exclude>**/*</exclude>
+      </excludes>
+    </fileSet>
+  </fileSets>
+
 	<moduleSets>
 		<moduleSet>
 			<includes>
-				<include>salve:salve</include>
+        <include>salve:salve</include>
 				<include>salve:salve-asm</include>
-				<include>salve:salve-agent</include>
-				<include>salve:salve-asm</include>
+        <include>salve:salve-agent</include>
 				<include>salve:salve-contract</include>
 				<include>salve:salve-contract-inst</include>
 				<include>salve:salve-depend</include>
@@ -41,7 +50,7 @@
 				<include>salve:salve-maven2</include>
 			</includes>
 			<sources>
-				<outputDirectory>src/${artifactId}</outputDirectory>
+				<outputDirectory></outputDirectory>
 			</sources>
 			<binaries>
 				<outputDirectory>lib</outputDirectory>
