@@ -22,8 +22,8 @@
 		<module>salve-inst</module>
 		<module>salve-agent</module>
 		<module>salve-maven2</module>
-        <module>salve-contract</module>
-        <module>salve-contract-inst</module>
+    <module>salve-contract</module>
+    <module>salve-contract-inst</module>
 		<module>salve-depend</module>
 		<module>salve-depend-inst</module>
 		<module>salve-depend-spring</module>
@@ -110,6 +110,14 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	
+	<pluginRepositories>
+    <pluginRepository>
+        <id>dstovall.org</id>
+        <url>http://dstovall.org/maven2/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
 	
 	<distributionManagement>
 		<site>
