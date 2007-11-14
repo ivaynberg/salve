@@ -38,4 +38,6 @@ interface Constants {
 	static final String TXNATTR_NAME = "salve/depend/spring/txn/TransactionAttribute";
 	static final String TXNATTR_DESC = "Lsalve/depend/spring/txn/TransactionAttribute;";
 	static final String TXNATTR_INIT_DESC = "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;)V";
+
+	static final String RTE_NAME = "java/lang/RuntimeException";
 }

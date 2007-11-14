@@ -20,11 +20,13 @@ import salve.asmlib.AdviceAdapter;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
+import salve.asmlib.GeneratorAdapter;
+import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.StaticInitMerger;
 import salve.asmlib.Type;
-import salve.util.asm.GeneratorAdapter;
+
 
 /**
  * INTERNAL
@@ -116,6 +118,10 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		private int ptm;
 		private int status;
 
+		private Label tryCatchStart = new Label();
+		private Label tryCatchEnd = new Label();
+		private Label tryCatchHandler = new Label();
+
 		/**
 		 * Constructor
 		 * 
@@ -161,6 +167,9 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		@Override
 		public void visitCode() {
 			if (shouldInstrument()) {
+				mv.visitTryCatchBlock(tryCatchStart, tryCatchEnd,
+						tryCatchHandler, "java/lang/RuntimeException");
+
 				monitor.methodModified(owner, methodAccess, methodName,
 						methodDesc);
 
@@ -222,6 +231,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 				mv.visitMethodInsn(INVOKEINTERFACE, PTM_NAME,
 						PTM_GETTXN_METHOD_NAME, PTM_GETTXN_METHOD_DESC);
 				mv.visitVarInsn(ASTORE, status);
+
+				mv.visitLabel(tryCatchStart);
 			}
 		}
 
@@ -232,13 +243,23 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		protected void onMethodExit(int opcode) {
 			if (shouldInstrument()) {
 				if (opcode == ATHROW) {
-					mv.visitInsn(DUP);
-					mv.visitVarInsn(ALOAD, ptm);
-					mv.visitVarInsn(ALOAD, status);
-					mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
-					mv.visitMethodInsn(INVOKESTATIC, ADVISERUTIL_NAME,
-							ADVISERUTIL_COMPLETE_METHOD_NAME,
-							ADVISERUTIL_COMPLETE_METHOD_DESC2);
+					/*
+					 * we are at a throw statement. if this exception is a
+					 * runtime exception we do not need to handle it because it
+					 * will be handled and rethrown in our installed try/catch
+					 * block
+					 */
+
+					// if (e instanceof RuntimeException) { goto skipRollback; }
+					mv.visitInsn(Opcodes.DUP);
+					mv.visitTypeInsn(INSTANCEOF, RTE_NAME);
+					Label skipRollback = new Label();
+					mv.visitJumpInsn(IFNE, skipRollback);
+
+					genereateRollbackBytecode();
+
+					mv.visitLabel(skipRollback);
+					mv.visitInsn(Opcodes.ATHROW);
 				} else {
 					mv.visitVarInsn(ALOAD, ptm);
 					mv.visitVarInsn(ALOAD, status);
@@ -249,6 +270,27 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 
 				}
 			}
+		}
+
+		@Override
+		public void visitMaxs(int maxStack, int maxLocals) {
+			if (shouldInstrument()) {
+				mv.visitLabel(tryCatchEnd);
+				mv.visitLabel(tryCatchHandler);
+				genereateRollbackBytecode();
+				mv.visitInsn(Opcodes.ATHROW);
+			}
+			super.visitMaxs(maxStack, maxLocals);
+		}
+
+		private void genereateRollbackBytecode() {
+			mv.visitInsn(DUP);
+			mv.visitVarInsn(ALOAD, ptm);
+			mv.visitVarInsn(ALOAD, status);
+			mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
+			mv.visitMethodInsn(INVOKESTATIC, ADVISERUTIL_NAME,
+					ADVISERUTIL_COMPLETE_METHOD_NAME,
+					ADVISERUTIL_COMPLETE_METHOD_DESC2);
 		}
 
 		/**

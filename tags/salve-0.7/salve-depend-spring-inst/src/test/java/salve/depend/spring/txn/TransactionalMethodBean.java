@@ -35,16 +35,38 @@ public class TransactionalMethodBean {
 		}
 	}
 
+	public void doit() {
+
+		try {
+			dosomething();
+		} catch (RuntimeException e) {
+			if (!(e instanceof RuntimeException)) {
+				dosomething2();
+			}
+			throw e;
+		}
+	}
+
+	private void dosomething() {
+	}
+
+	private void dosomething2() {
+	}
+
 	@Transactional
 	public Object exception(int mode, Object p) {
 		switch (mode) {
 		case 1:
 			throw new ArrayIndexOutOfBoundsException();
 		case 2:
-			throw new IllegalStateException();
+			causeRuntimeException();
 		default:
 			return p;
 		}
+	}
+
+	public void causeRuntimeException() {
+		throw new IllegalStateException();
 	}
 
 	@Transactional
