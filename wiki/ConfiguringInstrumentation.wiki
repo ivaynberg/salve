@@ -85,3 +85,5 @@ Coming soon
 
 == Eclipse ==
 Salve has an eclipse builder plugin which can incrementally instrument files as you are editing them. See salve-eclipse module in svn.
+
+Eclipse update site: http://salve.googlecode.com/svn/trunk/salve-eclipse-update-site/
