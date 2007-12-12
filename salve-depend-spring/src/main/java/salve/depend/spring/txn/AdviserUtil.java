@@ -14,9 +14,9 @@
 package salve.depend.spring.txn;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.interceptor.TransactionAttributeSourceAdvisor;
 
@@ -34,24 +34,110 @@ import salve.depend.Key;
  * @author ivaynberg
  */
 public class AdviserUtil {
+	private static final Method CREATE;
+	private static Method COMMIT = null;
+	private static Method COMMIT_AFTER_ERR = null;
+	private static Method CLEANUP = null;
+
+	static {
+		try {
+			CREATE = TransactionAspectSupport.class
+					.getDeclaredMethod(
+							"createTransactionIfNecessary",
+							new Class[] {
+									org.springframework.transaction.interceptor.TransactionAttribute.class,
+									String.class });
+
+			Method[] methods = TransactionAspectSupport.class
+					.getDeclaredMethods();
+			for (Method method : methods) {
+				if (method.getName().equals("commitTransactionAfterReturning")) {
+					COMMIT = method;
+				} else if (method.getName().equals(
+						"completeTransactionAfterThrowing")) {
+					COMMIT_AFTER_ERR = method;
+				} else if (method.getName().equals("cleanupTransactionInfo")) {
+					CLEANUP = method;
+				}
+			}
+
+			if (COMMIT == null) {
+				throw new RuntimeException(
+						"COULD NOT FIND COMMIT METHOD IN TRANSACTION ASPECT SUPPORT");
+			}
+			if (COMMIT_AFTER_ERR == null) {
+				throw new RuntimeException(
+						"COULD NOT FIND COMMIT_AFTER_ERR METHOD IN TRANSACTION ASPECT SUPPORT");
+			}
+			if (CLEANUP == null) {
+				throw new RuntimeException(
+						"COULD NOT FIND CLEANUP METHOD IN TRANSACTION ASPECT SUPPORT");
+			}
+
+			CREATE.setAccessible(true);
+			COMMIT.setAccessible(true);
+			COMMIT_AFTER_ERR.setAccessible(true);
+			CLEANUP.setAccessible(true);
+
+		} catch (Exception e) {
+			throw new RuntimeException("COULD NOT INITIALIZE ADVISER UTIL!", e);
+		}
+	}
+
 	private AdviserUtil() {
 
 	}
 
-	public static void complete(PlatformTransactionManager mgr,
-			TransactionStatus st, TransactionAttribute attr) {
-		mgr.commit(st);
+	public static Object begin(TransactionAttribute attr, String txnName) {
+		//System.out.println("ADVISER UTIL::BEGIN");
+		try {
+			return CREATE.invoke(getSupport(), attr, txnName);
+		} catch (Exception e) {
+			throw new RuntimeException("Salve failed to create transaction", e);
+		}
 	}
 
-	public static void complete(Throwable t, PlatformTransactionManager mgr,
-			TransactionStatus st, TransactionAttribute attr) {
-		if (attr.rollbackOn(t)) {
-			// XXX wrap any rte from rollback() nicely so we can still see
-			// original error in param 't'
-			mgr.rollback(st);
-		} else {
-			mgr.commit(st);
+	public static void finish(Object txn) {
+		//System.out.println("ADVISER UTIL::FINISH");
+		try {
+			COMMIT.invoke(getSupport(), txn);
+		} catch (Exception e) {
+			throw new RuntimeException("Salve failed to complete transaction",
+					e);
 		}
+	}
+
+	public static void finish(Throwable ex, Object txn) {
+		//System.out.println("ADVISER UTIL::FINISH(EX)");
+		try {
+			COMMIT_AFTER_ERR.invoke(getSupport(), txn, ex);
+		} catch (Exception e) {
+			throw new RuntimeException(
+					"Salve failed to complete transaction on error", e);
+		}
+	}
+
+	public static void cleanup(Object txn) {
+		//System.out.println("ADVISER UTIL::CLEANUP");
+		try {
+			CLEANUP.invoke(getSupport(), txn);
+		} catch (Exception e) {
+			throw new RuntimeException(
+					"Salve failed to cleanup transaction info", e);
+		}
+	}
+
+	private static TransactionAspectSupport getSupport() {
+		// XXX better exception handling - wrap dependency not found with a
+		// nice message
+		TransactionAttributeSourceAdvisor adviser = (TransactionAttributeSourceAdvisor) DependencyLibrary
+				.locate(AdviserKey.INSTANCE);
+
+		// XXX HACK HACK HACK
+		TransactionAspectSupport base = (TransactionAspectSupport) adviser
+				.getAdvice();
+
+		return base;
 	}
 
 	public static PlatformTransactionManager locateTransactionManager() {
