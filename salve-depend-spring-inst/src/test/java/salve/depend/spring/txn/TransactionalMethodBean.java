@@ -18,6 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class TransactionalMethodBean {
 	public static final long CLINIT_FORCER = System.currentTimeMillis();
 
+	public TransactionalMethodBean() {
+
+	}
+
 	@Transactional
 	public void args1(int a) {
 
@@ -55,6 +59,30 @@ public class TransactionalMethodBean {
 	@Transactional
 	public void simple() {
 
+	}
+
+	@Transactional(rollbackFor = RollbackException.class)
+	public void exceptionOk() throws RollbackException, NoRollbackException {
+	}
+
+	@Transactional(rollbackFor = RollbackException.class)
+	public void exceptionOkWithException() throws RollbackException,
+			NoRollbackException {
+		throw new NoRollbackException();
+	}
+
+	@Transactional(rollbackFor = RollbackException.class)
+	public void exception() throws RollbackException, NoRollbackException {
+		throw new RollbackException();
+	}
+
+	@Transactional
+	public void exceptionFromWithin() {
+		throwRte();
+	}
+
+	private void throwRte() {
+		throw new RuntimeException();
 	}
 
 }

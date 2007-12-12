@@ -19,6 +19,7 @@ import org.aopalliance.aop.Advice;
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -55,12 +56,15 @@ public class TransactionalInstrumentorTest extends Assert {
 		MockTransactionStatus status = new MockTransactionStatus();
 
 		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
-				.andReturn(adv);
+				.andReturn(adv).times(3);
+
 		EasyMock.expect(
 				ptm
 						.getTransaction((TransactionDefinition) EasyMock
 								.anyObject())).andReturn(status);
+
 		ptm.commit(status);
+
 		EasyMock.replay(locator, ptm);
 		Object[] array1 = new Object[0];
 		assertTrue(bean.args2(1, array1, null) == array1);
@@ -70,7 +74,7 @@ public class TransactionalInstrumentorTest extends Assert {
 
 		EasyMock.reset(locator, ptm);
 		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
-				.andReturn(adv);
+				.andReturn(adv).times(3);
 		EasyMock.expect(
 				ptm
 						.getTransaction((TransactionDefinition) EasyMock
@@ -89,7 +93,6 @@ public class TransactionalInstrumentorTest extends Assert {
 		TransactionalMethodBean bean = (TransactionalMethodBean) methodBeanClass
 				.newInstance();
 		assertTrue(bean.CLINIT_FORCER != 0);
-
 	}
 
 	@Test
@@ -99,7 +102,7 @@ public class TransactionalInstrumentorTest extends Assert {
 
 		MockTransactionStatus status = new MockTransactionStatus();
 		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
-				.andReturn(adv);
+				.andReturn(adv).times(3);
 		EasyMock.expect(
 				ptm
 						.getTransaction((TransactionDefinition) EasyMock
@@ -119,14 +122,28 @@ public class TransactionalInstrumentorTest extends Assert {
 				.newInstance();
 
 		MockTransactionStatus status = new MockTransactionStatus();
+
+		// start txn
 		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
 				.andReturn(adv);
+
 		EasyMock.expect(
 				ptm
 						.getTransaction((TransactionDefinition) EasyMock
 								.anyObject())).andReturn(status);
 
+		// cleanup
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		// commit
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
 		ptm.commit(status);
+
+		// //////////
+
 		EasyMock.replay(locator, ptm);
 		bean.simple();
 		EasyMock.verify(locator, ptm);
@@ -139,7 +156,7 @@ public class TransactionalInstrumentorTest extends Assert {
 
 		MockTransactionStatus status = new MockTransactionStatus();
 		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
-				.andReturn(adv);
+				.andReturn(adv).times(3);
 		EasyMock.expect(
 				ptm
 						.getTransaction((TransactionDefinition) EasyMock
@@ -163,7 +180,7 @@ public class TransactionalInstrumentorTest extends Assert {
 
 		MockTransactionStatus status = new MockTransactionStatus();
 		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
-				.andReturn(adv);
+				.andReturn(adv).times(3);
 		EasyMock.expect(
 				ptm
 						.getTransaction((TransactionDefinition) EasyMock
@@ -184,7 +201,7 @@ public class TransactionalInstrumentorTest extends Assert {
 
 		MockTransactionStatus status = new MockTransactionStatus();
 		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
-				.andReturn(adv);
+				.andReturn(adv).times(3);
 		EasyMock.expect(
 				ptm
 						.getTransaction((TransactionDefinition) EasyMock
@@ -205,17 +222,9 @@ public class TransactionalInstrumentorTest extends Assert {
 	@Test
 	public void testTransactionalClassInstrumentation() throws Exception {
 
-		// test constructor is instrumented
+		// test constructor is NOT instrumented
 
 		MockTransactionStatus status = new MockTransactionStatus();
-		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
-				.andReturn(adv);
-		EasyMock.expect(
-				ptm
-						.getTransaction((TransactionDefinition) EasyMock
-								.anyObject())).andReturn(status);
-
-		ptm.commit(status);
 		EasyMock.replay(locator, ptm);
 		TransactionalClassBean bean = (TransactionalClassBean) classBeanClass
 				.newInstance();
@@ -226,7 +235,7 @@ public class TransactionalInstrumentorTest extends Assert {
 
 		EasyMock.reset(locator, ptm);
 		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
-				.andReturn(adv);
+				.andReturn(adv).times(3);
 		EasyMock.expect(
 				ptm
 						.getTransaction((TransactionDefinition) EasyMock
@@ -326,4 +335,140 @@ public class TransactionalInstrumentorTest extends Assert {
 		}
 	}
 
+	@Test
+	public void testExceptionOk() throws Exception {
+		TransactionalMethodBean bean = (TransactionalMethodBean) methodBeanClass
+				.newInstance();
+
+		MockTransactionStatus status = new MockTransactionStatus();
+
+		// locate adviser and start txn
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		EasyMock.expect(
+				ptm
+						.getTransaction((TransactionDefinition) EasyMock
+								.anyObject())).andReturn(status);
+
+		// locate adviser and cleanup
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		// locate adviser and commit
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		ptm.commit(status);
+
+		EasyMock.replay(locator, ptm);
+		bean.exceptionOk();
+		EasyMock.verify(locator, ptm);
+	}
+
+	@Test
+	public void testExceptionOkWithException() throws Exception {
+		TransactionalMethodBean bean = (TransactionalMethodBean) methodBeanClass
+				.newInstance();
+
+		MockTransactionStatus status = new MockTransactionStatus();
+
+		// locate adviser and start txn
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		EasyMock.expect(
+				ptm
+						.getTransaction((TransactionDefinition) EasyMock
+								.anyObject())).andReturn(status);
+
+		// locate adviser and cleanup
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		// locate adviser and commit
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		ptm.commit(status);
+
+		EasyMock.replay(locator, ptm);
+		try {
+			bean.exceptionOkWithException();
+		} catch (NoRollbackException e) {
+			// noop
+		}
+		EasyMock.verify(locator, ptm);
+	}
+
+	@Test
+	public void testException() throws Exception {
+		TransactionalMethodBean bean = (TransactionalMethodBean) methodBeanClass
+				.newInstance();
+
+		MockTransactionStatus status = new MockTransactionStatus();
+
+		// locate adviser and start txn
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		EasyMock.expect(
+				ptm
+						.getTransaction((TransactionDefinition) EasyMock
+								.anyObject())).andReturn(status);
+
+		// locate adviser and rollback
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		ptm.rollback(status);
+
+		// locate adviser and cleanup
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		EasyMock.replay(locator, ptm);
+		try {
+			bean.exception();
+		} catch (RollbackException e) {
+			// noop
+		}
+		EasyMock.verify(locator, ptm);
+
+	}
+
+	@Test
+	public void testExceptionFromWithin() throws Exception {
+		TransactionalMethodBean bean = (TransactionalMethodBean) methodBeanClass
+				.newInstance();
+
+		MockTransactionStatus status = new MockTransactionStatus();
+
+		// locate adviser and start txn
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		EasyMock.expect(
+				ptm
+						.getTransaction((TransactionDefinition) EasyMock
+								.anyObject())).andReturn(status);
+
+		// locate adviser and rollback
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		ptm.rollback(status);
+
+		// locate adviser and cleanup
+		EasyMock.expect(locator.locate(AdviserUtil.AdviserKey.INSTANCE))
+				.andReturn(adv);
+
+		EasyMock.replay(locator, ptm);
+		try {
+			bean.exceptionFromWithin();
+		} catch (RuntimeException e) {
+			// noop
+		}
+		EasyMock.verify(locator, ptm);
+	}
 }

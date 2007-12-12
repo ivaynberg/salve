@@ -31,7 +31,13 @@ public class TransactionalInstrumentor extends AbstractInstrumentor {
 		ClassReader reader = new ClassReader(bytecode);
 		ClassWriter writer = new BytecodeLoadingClassWriter(
 				ClassWriter.COMPUTE_FRAMES, loader);
-		ClassInstrumentor inst = new ClassInstrumentor(writer, monitor);
+
+		ClassAnalyzerImpl analyzer = new ClassAnalyzerImpl();
+		reader.accept(analyzer, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG);
+
+		ClassInstrumentor inst = new ClassInstrumentor(analyzer, writer,
+				monitor);
+		
 		reader.accept(inst, 0);
 		return writer.toByteArray();
 	}
