@@ -84,15 +84,19 @@ public class JavaProjectBytecodeLoader implements BytecodeLoader {
 			if (res != null) {
 				File file = new File(res.getLocation().toOSString());
 				if (file != null && file.exists()) {
-					delegate.addLoader(new FilePathLoader(file));
+					delegate.addLoader(newFilePathLoader(file));
 				}
 			} else {
 				File file = new File(path.toOSString());
 				if (file.exists()) {
-					delegate.addLoader(new FilePathLoader(file));
+					delegate.addLoader(newFilePathLoader(file));
 				}
 			}
 		}
+	}
+
+	protected BytecodeLoader newFilePathLoader(File file) {
+		return new FilePathLoader(file);
 	}
 
 }
