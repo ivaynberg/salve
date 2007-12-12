@@ -45,21 +45,7 @@ public class FilePathLoader extends AbstractUrlLoader {
 		this.path = path;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected URL getBytecodeUrl(String className) {
-		final String pathName = path.getAbsolutePath();
-		final String fileName = className + ".class";
-		if (pathName.endsWith(".jar") || pathName.endsWith(".zip")) {
-			return findResourceInJar(path, fileName);
-		} else {
-			return findResourceInDir(path, fileName);
-		}
-	}
-
-	private static URL findResourceInDir(File path, String name) {
+	protected URL findResourceInDir(File path, String name) {
 		File file = new File(path.getAbsolutePath() + File.separator + name);
 		if (file.exists()) {
 			try {
@@ -72,7 +58,8 @@ public class FilePathLoader extends AbstractUrlLoader {
 		return null;
 	}
 
-	private static URL findResourceInJar(File path, String name) {
+	protected URL findResourceInJar(File path, String name) {
+
 		String jarUrl;
 		try {
 			JarFile jar = new JarFile(path);
@@ -86,5 +73,19 @@ public class FilePathLoader extends AbstractUrlLoader {
 		}
 
 		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected URL getBytecodeUrl(String className) {
+		final String pathName = path.getAbsolutePath();
+		final String fileName = className + ".class";
+		if (pathName.endsWith(".jar") || pathName.endsWith(".zip")) {
+			return findResourceInJar(path, fileName);
+		} else {
+			return findResourceInDir(path, fileName);
+		}
 	}
 }
