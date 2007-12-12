@@ -16,10 +16,11 @@ package salve.depend.spring.txn;
 import org.springframework.transaction.annotation.Transactional;
 
 import salve.InstrumentorMonitor;
-import salve.asmlib.AdviceAdapter;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
+import salve.asmlib.Label;
+import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.StaticInitMerger;
@@ -35,10 +36,10 @@ import salve.util.asm.GeneratorAdapter;
  * @author ivaynberg
  */
 class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
-	private boolean annotated = false;
 	private String owner;
 	private final InstrumentorMonitor monitor;
 	private int nextAttribute = 0;
+	private final ClassAnalyzer analyzer;
 
 	/**
 	 * Constructor
@@ -48,9 +49,11 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	 * @param monitor
 	 *            instrumentor monitor
 	 */
-	public ClassInstrumentor(ClassVisitor cv, InstrumentorMonitor monitor) {
+	public ClassInstrumentor(ClassAnalyzer analyzer, ClassVisitor cv,
+			InstrumentorMonitor monitor) {
 		super(new StaticInitMerger("_salvespringtxn_", cv));
 		this.monitor = monitor;
+		this.analyzer = analyzer;
 	}
 
 	/**
@@ -71,17 +74,54 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 			final boolean visible) {
 		// rewrite @Transactional as @SpringTransactional
 		if (TRANSACTIONAL_DESC.equals(desc)) {
-			annotated = true;
 			return cv.visitAnnotation(SPRINGTRANSACTIONAL_DESC, visible);
-		} else if (SPRINGTRANSACTIONAL_DESC.equals(desc)) {
-			// if we see a @SpringTransactional annot this class has
-			// already been instrumented
-			annotated = false;
-			return cv.visitAnnotation(desc, visible);
 		} else {
 			return cv.visitAnnotation(desc, visible);
 		}
 	}
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////
+	/*private static class Foo {
+		private static TransactionAttribute attr;
+
+		private void x(String foo) {
+			Object txn = AdviserUtil.begin(attr, "foo");
+		}
+
+		private int r(int a) {
+			x("bah");
+			return 0;
+		}
+
+		public void a() {
+			Object info = AdviserUtil.begin(null, null);
+			try {
+				System.out.println("hello");
+				b();
+			} catch (RuntimeException e) {
+				AdviserUtil.finish(e, info);
+				throw e;
+			} finally {
+				AdviserUtil.cleanup(info);
+			}
+			AdviserUtil.finish(info);
+		}
+
+		private void cleanup() {
+		}
+
+		private void commit() {
+		}
+
+		private void rollback() {
+		}
+
+		private void b() {
+
+		}
+	}
+*/
+	// ////////////////////////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * {@inheritDoc}
@@ -90,13 +130,114 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	public MethodVisitor visitMethod(int access, String name, String desc,
 			String signature, String[] exceptions) {
 
-		if ((access & ACC_STATIC) != 0) {
+		if (analyzer
+				.shouldInstrument(access, name, desc, signature, exceptions)) {
+
+			final String delegateMethodName = "__salve_txn$" + name;
+
+			// generate field to hold transactional attribute class for this
+			// method
+			final String attrName = generateTransactionalAttributeField(
+					delegateMethodName, desc);
+
+			final String txnName = owner + name;
+
+			MethodVisitor mv = cv.visitMethod(access, name, desc, signature,
+					exceptions);
+			mv.visitCode();
+
+			// //////////////////////////////////////////////////////////////////////////////////////////
+
+			GeneratorAdapter gen = new GeneratorAdapter(mv, access, name, desc);
+
+			Label start = new Label();
+			Label end = new Label();
+			Label exception = new Label();
+			Label cleanupAndCommit = new Label();
+			Label cleanupAndThrow = new Label();
+
+			gen.visitTryCatchBlock(start, end, exception,
+					"java/lang/Throwable");
+
+			gen.visitTryCatchBlock(start, cleanupAndThrow, cleanupAndThrow,
+					null);
+
+			// Object status;
+			int txn = gen.newLocal(Type.getType("Ljava/lang/Object;"));
+
+			// status=AdviserUtil.begin(attr, "joinpoint");
+			mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
+			mv.visitLdcInsn(txnName);
+			mv
+					.visitMethodInsn(
+							INVOKESTATIC,
+							"salve/depend/spring/txn/AdviserUtil",
+							"begin",
+							"(Lsalve/depend/spring/txn/TransactionAttribute;Ljava/lang/String;)Ljava/lang/Object;");
+			mv.visitVarInsn(ASTORE, txn);
+
+			mv.visitLabel(start);
+
+			// call delegate
+			gen.loadThis();
+			gen.loadArgs();
+			gen.visitMethodInsn(INVOKESPECIAL, owner, delegateMethodName, desc);
+
+			gen.visitLabel(end);
+			gen.visitJumpInsn(GOTO, cleanupAndCommit);
+
+			gen.visitLabel(exception);
+
+			//mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+			//mv.visitLdcInsn(">>>EXCEPTION LABEL");
+			//mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
+			
+			// dup exception
+			gen.dup();
+
+			// finish(ex, status);
+			gen.loadLocal(txn);
+			gen.visitMethodInsn(INVOKESTATIC,
+					"salve/depend/spring/txn/AdviserUtil", "finish",
+					"(Ljava/lang/Throwable;Ljava/lang/Object;)V");
+
+			// throw e;
+			gen.visitInsn(ATHROW);
+
+			gen.visitLabel(cleanupAndThrow);
+			
+			gen.loadLocal(txn);
+			gen.visitMethodInsn(INVOKESTATIC,
+					"salve/depend/spring/txn/AdviserUtil", "cleanup",
+					"(Ljava/lang/Object;)V");
+
+			gen.visitInsn(ATHROW);
+
+			gen.visitLabel(cleanupAndCommit);
+
+			gen.loadLocal(txn);
+			gen.visitMethodInsn(INVOKESTATIC,
+					"salve/depend/spring/txn/AdviserUtil", "cleanup",
+					"(Ljava/lang/Object;)V");
+
+			gen.loadLocal(txn);
+			gen.visitMethodInsn(INVOKESTATIC,
+					"salve/depend/spring/txn/AdviserUtil", "finish",
+					"(Ljava/lang/Object;)V");
+
+			gen.returnValue();
+
+			gen.endMethod();
+
+			// //////////////////////////////////////////////////////////////////////////////////////////
+
+			mv = cv.visitMethod(access, delegateMethodName, desc, signature,
+					exceptions);
+
+			return new MethodInstrumentor(mv);
+		} else {
 			return cv.visitMethod(access, name, desc, signature, exceptions);
 		}
-
-		MethodVisitor mv = cv.visitMethod(access, name, desc, signature,
-				exceptions);
-		return new MethodInstrumentor(mv, access, name, desc);
 	}
 
 	/**
@@ -104,36 +245,11 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	 * 
 	 * @author ivaynberg
 	 */
-	public class MethodInstrumentor extends AdviceAdapter implements Opcodes,
+	public class MethodInstrumentor extends MethodAdapter implements Opcodes,
 			Constants {
 
-		private final String methodName;
-		private final String methodDesc;
-		private final int methodAccess;
-
-		private String attrName;
-		private boolean annotated = false;
-		private int ptm;
-		private int status;
-
-		/**
-		 * Constructor
-		 * 
-		 * @param mv
-		 *            method visitor
-		 * @param access
-		 *            method access flags
-		 * @param name
-		 *            method name
-		 * @param desc
-		 *            method descriptor
-		 */
-		public MethodInstrumentor(MethodVisitor mv, int access, String name,
-				String desc) {
-			super(mv, access, name, desc);
-			methodName = name;
-			methodDesc = desc;
-			methodAccess = access;
+		public MethodInstrumentor(MethodVisitor mv) {
+			super(mv);
 		}
 
 		/**
@@ -143,122 +259,49 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 			// rewrite @Transactional as @SpringTransactional
 			if (TRANSACTIONAL_DESC.equals(desc)) {
-				annotated = true;
 				return mv.visitAnnotation(SPRINGTRANSACTIONAL_DESC, visible);
-			} else if (SPRINGTRANSACTIONAL_DESC.equals(desc)) {
-				// if we see a @SpringTransactional annot this method has
-				// already been instrumented
-				annotated = false;
-				return mv.visitAnnotation(desc, visible);
 			} else {
 				return mv.visitAnnotation(desc, visible);
 			}
 		}
 
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void visitCode() {
-			if (shouldInstrument()) {
-				monitor.methodModified(owner, methodAccess, methodName,
-						methodDesc);
+	}
 
-				attrName = "_salvestxn$attr" + nextAttribute++;
-				cv.visitField(ACC_PRIVATE + ACC_STATIC + ACC_FINAL, attrName,
-						TXNATTR_DESC, null, null);
+	private String generateTransactionalAttributeField(String methodName,
+			String methodDesc) {
+		String attrName = "_salvestxn$attr" + nextAttribute++;
+		cv.visitField(ACC_PRIVATE + ACC_STATIC + ACC_FINAL, attrName,
+				TXNATTR_DESC, null, null);
 
-				GeneratorAdapter clinit = new GeneratorAdapter(cv.visitMethod(
-						ACC_STATIC, "<clinit>", "()V", null, null), ACC_STATIC,
-						"<clinit>", "()V");
-				clinit.visitCode();
-				clinit.visitTypeInsn(NEW, TXNATTR_NAME);
-				clinit.visitInsn(DUP);
-				clinit.visitLdcInsn(Type.getObjectType(owner));
-				clinit.visitLdcInsn(this.methodName);
+		GeneratorAdapter clinit = new GeneratorAdapter(cv.visitMethod(
+				ACC_STATIC, "<clinit>", "()V", null, null), ACC_STATIC,
+				"<clinit>", "()V");
+		clinit.visitCode();
+		clinit.visitTypeInsn(NEW, TXNATTR_NAME);
+		clinit.visitInsn(DUP);
+		clinit.visitLdcInsn(Type.getObjectType(owner));
+		clinit.visitLdcInsn(methodName);
 
-				// create array of method argument types
-				Type[] types = Type.getArgumentTypes(methodDesc);
-				clinit.push(types.length);
-				clinit.visitTypeInsn(ANEWARRAY, "java/lang/Class");
+		// create array of method argument types
+		Type[] types = Type.getArgumentTypes(methodDesc);
+		clinit.push(types.length);
+		clinit.visitTypeInsn(ANEWARRAY, "java/lang/Class");
 
-				for (int i = 0; i < types.length; i++) {
-					final Type type = types[i];
-					clinit.visitInsn(DUP);
-					clinit.push(i);
-					clinit.push(type);
-					clinit.visitInsn(AASTORE);
-				}
-				clinit.visitMethodInsn(INVOKESPECIAL, TXNATTR_NAME, "<init>",
-						TXNATTR_INIT_DESC);
-				clinit.visitFieldInsn(PUTSTATIC, owner, attrName, TXNATTR_DESC);
-				clinit.visitInsn(RETURN);
-				clinit.visitMaxs(0, 0);
-				clinit.visitEnd();
-			}
-
-			super.visitCode();
+		for (int i = 0; i < types.length; i++) {
+			final Type type = types[i];
+			clinit.visitInsn(DUP);
+			clinit.push(i);
+			clinit.push(type);
+			clinit.visitInsn(AASTORE);
 		}
+		clinit.visitMethodInsn(INVOKESPECIAL, TXNATTR_NAME, "<init>",
+				TXNATTR_INIT_DESC);
+		clinit.visitFieldInsn(PUTSTATIC, owner, attrName, TXNATTR_DESC);
+		clinit.visitInsn(RETURN);
+		clinit.visitMaxs(0, 0);
+		clinit.visitEnd();
 
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		protected void onMethodEnter() {
-			if (shouldInstrument()) {
-				ptm = newLocal(Type.getType(PTM_DESC));
-				status = newLocal(Type.getType(STATUS_DESC));
-
-				// ptm=AdviserUtil.locateTransactionManager();
-				mv.visitMethodInsn(INVOKESTATIC, ADVISERUTIL_NAME,
-						ADVISERUTIL_LOCATE_METHOD_NAME,
-						ADVISERUTIL_LOCATE_METHOD_DESC);
-				mv.visitVarInsn(ASTORE, ptm);
-
-				// TransactionStatus status=ptm.getTransaction(attrname)
-
-				mv.visitVarInsn(ALOAD, ptm);
-				mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
-				mv.visitMethodInsn(INVOKEINTERFACE, PTM_NAME,
-						PTM_GETTXN_METHOD_NAME, PTM_GETTXN_METHOD_DESC);
-				mv.visitVarInsn(ASTORE, status);
-			}
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		protected void onMethodExit(int opcode) {
-			if (shouldInstrument()) {
-				if (opcode == ATHROW) {
-					mv.visitInsn(DUP);
-					mv.visitVarInsn(ALOAD, ptm);
-					mv.visitVarInsn(ALOAD, status);
-					mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
-					mv.visitMethodInsn(INVOKESTATIC, ADVISERUTIL_NAME,
-							ADVISERUTIL_COMPLETE_METHOD_NAME,
-							ADVISERUTIL_COMPLETE_METHOD_DESC2);
-				} else {
-					mv.visitVarInsn(ALOAD, ptm);
-					mv.visitVarInsn(ALOAD, status);
-					mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
-					mv.visitMethodInsn(INVOKESTATIC, ADVISERUTIL_NAME,
-							ADVISERUTIL_COMPLETE_METHOD_NAME,
-							ADVISERUTIL_COMPLETE_METHOD_DESC);
-
-				}
-			}
-		}
-
-		/**
-		 * @return true if the method should be instrumented (is transactional),
-		 *         false otherwise
-		 */
-		private boolean shouldInstrument() {
-			return annotated || ClassInstrumentor.this.annotated;
-		}
-
+		return attrName;
 	}
 
 }
