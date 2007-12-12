@@ -17,8 +17,11 @@
 package salve.eclipse.builder;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -46,13 +49,18 @@ import salve.config.XmlConfigReader;
 import salve.eclipse.Activator;
 import salve.eclipse.JavaProjectBytecodeLoader;
 import salve.loader.CompoundLoader;
+import salve.loader.FilePathLoader;
 import salve.monitor.NoopMonitor;
 import salve.util.FallbackBytecodeClassLoader;
+import salve.util.LruCache;
 
 public class SalveBuilder extends AbstractBuilder {
 
 	public static final String BUILDER_ID = "salve.eclipse.Builder";
 	private static final String MARKER_ID = "salve.eclipse.marker.error.instrument";
+
+	private LruCache urlCache = new LruCache(10000);
+	private final ReentrantReadWriteLock urlCacheLock = new ReentrantReadWriteLock();
 
 	public SalveBuilder() {
 		super(MARKER_ID);
@@ -81,7 +89,12 @@ public class SalveBuilder extends AbstractBuilder {
 		removeMarks(configResource);
 
 		// load config
-		BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject());
+		BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject()) {
+			@Override
+			protected BytecodeLoader newFilePathLoader(File file) {
+				return new CachingFilePathLoader(file);
+			}
+		};
 		ClassLoader cloader = new FallbackBytecodeClassLoader(getClass()
 				.getClassLoader(), bloader);
 
@@ -222,12 +235,48 @@ public class SalveBuilder extends AbstractBuilder {
 						false, null);
 			}
 		} catch (InstrumentationException e) {
-			markError(resource, "Instrumentation error: " + e.getMessage()+" ("+e.getCause().getMessage()+")");
+			markError(resource, "Instrumentation error: " + e.getMessage()
+					+ " (" + e.getCause().getMessage() + ")");
 		} catch (IOException e) {
 			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 					"Unable to parse class file: " + file.getName(), e);
 			throw new CoreException(status);
 		}
 
+	}
+
+	private class CachingFilePathLoader extends FilePathLoader {
+
+		public CachingFilePathLoader(File path) {
+			super(path);
+		}
+
+		@Override
+		protected URL findResourceInJar(File path, String name) {
+			final String cacheKey = path.getAbsolutePath() + name;
+			urlCacheLock.readLock().lock();
+			try {
+				URL url = (URL) urlCache.get(cacheKey);
+				if (url != null) {
+					return url;
+				}
+			} finally {
+				urlCacheLock.readLock().unlock();
+			}
+
+			// XXX instead of releasing read lock and acquiring write lock we
+			// should upgrade the read lock to write lock
+
+			URL url = super.findResourceInJar(path, name);
+
+			urlCacheLock.writeLock().lock();
+			try {
+				urlCache.put(cacheKey, url);
+			} finally {
+				urlCacheLock.writeLock().unlock();
+			}
+
+			return url;
+		}
 	}
 }
