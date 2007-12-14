@@ -29,6 +29,7 @@ import org.junit.Test;
 import salve.depend.cache.NoopCacheProvider;
 import salve.loader.BytecodePool;
 import salve.loader.ClassLoaderLoader;
+import salve.util.EasyMockTemplate;
 
 public class DependencyInstrumentorTest extends Assert implements Constants {
 	private static String BEAN_NAME = "salve/depend/Bean";
@@ -37,6 +38,34 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	private static BlueDependency blue;
 	private static RedDependency red;
 	private static Locator locator;
+
+	@BeforeClass
+	public static void initClass() throws Exception {
+		loadBeans();
+		initDependencyLibrary();
+	}
+
+	private static void initDependencyLibrary() {
+		DependencyLibrary.clear();
+
+		blue = EasyMock.createMock(BlueDependency.class);
+		red = EasyMock.createMock(RedDependency.class);
+		locator = EasyMock.createMock(Locator.class);
+		DependencyLibrary.addLocator(locator);
+		DependencyLibrary.setCacheProvider(new NoopCacheProvider());
+	}
+
+	private static void loadBeans() throws Exception {
+		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
+		BytecodePool pool = new BytecodePool();
+		pool.addLoader(new ClassLoaderLoader(classLoader));
+		beanClass = pool.instrumentIntoClass(BEAN_NAME, new DependencyInstrumentor());
+
+		// FileOutputStream fos = new FileOutputStream(
+		// "target/test-classes/salve/dependency/Bean$Instrumented.class");
+		// fos.write(bytecode);
+		// fos.close();
+	}
 
 	@Before
 	public void resetMocks() {
@@ -71,58 +100,85 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	@Test
 	public void testFieldAccessInConstructor() throws Exception {
 
-		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
-				.andReturn(red);
-		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+		new EasyMockTemplate(locator) {
 
-		EasyMock.replay(locator, blue, red);
+			@Override
+			protected void setupExpectations() {
+				EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+						.andReturn(red);
+				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+			}
 
-		Constructor<?> c = beanClass.getConstructor(int.class);
-		c.newInstance(5);
+			@Override
+			protected void testExpectations() throws Exception {
+				Constructor<?> c = beanClass.getConstructor(int.class);
+				c.newInstance(5);
+			}
 
-		EasyMock.verify(locator, blue, red);
+		}.test();
+
 	}
 
 	@Test
 	public void testFieldRead() throws Exception {
-		Bean bean = (Bean) beanClass.newInstance();
 
-		/*
-		 * when we call bean.method1() both red and blue will be looked up. when
-		 * we call bean.method2() only red will be looked up. blue needs to be
-		 * looked up only once because it is cached in the field. red is looked
-		 * up twice because it is cached per method and we call two methods
-		 */
-		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
-				.andReturn(red).times(2);
-		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
-		// inside bean.method1() and bean.method2() we call all four methods
-		blue.method1();
-		blue.method1();
-		blue.method2();
-		blue.method2();
-		red.method1();
-		red.method1();
-		EasyMock.expect(red.method2()).andReturn(null);
-		EasyMock.expect(red.method2()).andReturn(null);
+		new EasyMockTemplate(locator, red, blue) {
 
-		EasyMock.replay(locator, blue, red);
-		bean.method1();
-		bean.method2();
-		EasyMock.verify(locator, blue, red);
+			@Override
+			protected void setupExpectations() {
+				/*
+				 * when we call bean.method1() both red and blue will be looked
+				 * up. when we call bean.method2() only red will be looked up.
+				 * blue needs to be looked up only once because it is cached in
+				 * the field. red is looked up twice because it is cached per
+				 * method and we call two methods
+				 */
+				EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+						.andReturn(red).times(2);
+				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+				// inside bean.method1() and bean.method2() we call all four
+				// methods
+				blue.method1();
+				blue.method1();
+				blue.method2();
+				blue.method2();
+				red.method1();
+				red.method1();
+				EasyMock.expect(red.method2()).andReturn(null);
+				EasyMock.expect(red.method2()).andReturn(null);
+			}
+
+			@Override
+			protected void testExpectations() throws Exception {
+				Bean bean = (Bean) beanClass.newInstance();
+				bean.method1();
+				bean.method2();
+			}
+
+		}.test();
 	}
 
 	@Test
 	public void testFieldReadOnReturn() throws Exception {
-		Bean bean = (Bean) beanClass.newInstance();
-		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
-				.andReturn(red);
-		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
 
-		EasyMock.replay(locator, blue, red);
-		assertTrue(bean.getRed() == red);
-		assertTrue(bean.getBlue() == blue);
-		EasyMock.verify(locator, blue, red);
+		new EasyMockTemplate(locator, red, blue) {
+
+			@Override
+			protected void setupExpectations() {
+				EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+						.andReturn(red);
+				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+			}
+
+			@Override
+			protected void testExpectations() throws Exception {
+				Bean bean = (Bean) beanClass.newInstance();
+				assertTrue(bean.getRed() == red);
+				assertTrue(bean.getBlue() == blue);
+			}
+
+		}.test();
+
 	}
 
 	@Test
@@ -137,7 +193,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 	@Test
 	public void testFieldWrite() throws Exception {
-		Bean bean = (Bean) beanClass.newInstance();
+		final Bean bean = (Bean) beanClass.newInstance();
 
 		try {
 			bean.setBlue(blue);
@@ -165,45 +221,25 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 	@Test
 	public void testInnerClassFieldRead() throws Exception {
-		Bean bean = (Bean) beanClass.newInstance();
+		new EasyMockTemplate(locator, red, blue) {
 
-		EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
-				.andReturn(red);
-		EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+			@Override
+			protected void setupExpectations() {
+				EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+						.andReturn(red);
+				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
 
-		blue.method1();
-		red.method1();
+				blue.method1();
+				red.method1();
+			}
 
-		EasyMock.replay(locator, blue, red);
-		bean.methodInner();
-		EasyMock.verify(locator, blue, red);
-	}
+			@Override
+			protected void testExpectations() throws Exception {
+				Bean bean = (Bean) beanClass.newInstance();
+				bean.methodInner();
+			}
 
-	@BeforeClass
-	public static void initClass() throws Exception {
-		loadBeans();
-		initDependencyLibrary();
-	}
+		}.test();
 
-	private static void initDependencyLibrary() {
-		DependencyLibrary.clear();
-
-		blue = EasyMock.createMock(BlueDependency.class);
-		red = EasyMock.createMock(RedDependency.class);
-		locator = EasyMock.createMock(Locator.class);
-		DependencyLibrary.addLocator(locator);
-		DependencyLibrary.setCacheProvider(new NoopCacheProvider());
-	}
-
-	private static void loadBeans() throws Exception {
-		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool();
-		pool.addLoader(new ClassLoaderLoader(classLoader));
-		beanClass = pool.instrumentIntoClass(BEAN_NAME, new DependencyInstrumentor());
-
-		// FileOutputStream fos = new FileOutputStream(
-		// "target/test-classes/salve/dependency/Bean$Instrumented.class");
-		// fos.write(bytecode);
-		// fos.close();
 	}
 }

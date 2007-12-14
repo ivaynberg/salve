@@ -24,9 +24,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymock</artifactId>
-			<version>2.2</version>
+			<groupId>salve</groupId>
+			<artifactId>salve-test</artifactId>
+			<version>0.8-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

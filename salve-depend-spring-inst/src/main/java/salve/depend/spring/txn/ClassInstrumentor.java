@@ -33,6 +33,27 @@ import salve.util.asm.GeneratorAdapter;
  * Instrumentor for classes and methods annotated with {@link Transactional}
  * </p>
  * 
+ * <pre>
+ * Instrumentation transformation:
+ * -------------------------------
+ * 
+ * public void method() {
+ * 		Object info = AdviserUtil.begin(null, null);
+ *  
+ *  	try {
+ * 		 	__salve_delegate$method(); // original method
+ *  	} catch (Throwable t) {
+ *  		AdviserUtil.finish(t, info);
+ *  		throw t;
+ *  	} finally {
+ *  		AdviserUtil.cleanup(info);
+ *  	}
+ *  	AdviserUtil.finish(info);
+ *  
+ *  }
+ *  
+ * </pre>
+ * 
  * @author ivaynberg
  */
 class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
@@ -80,49 +101,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		}
 	}
 
-	// ////////////////////////////////////////////////////////////////////////////////////////////
-	/*private static class Foo {
-		private static TransactionAttribute attr;
-
-		private void x(String foo) {
-			Object txn = AdviserUtil.begin(attr, "foo");
-		}
-
-		private int r(int a) {
-			x("bah");
-			return 0;
-		}
-
-		public void a() {
-			Object info = AdviserUtil.begin(null, null);
-			try {
-				System.out.println("hello");
-				b();
-			} catch (RuntimeException e) {
-				AdviserUtil.finish(e, info);
-				throw e;
-			} finally {
-				AdviserUtil.cleanup(info);
-			}
-			AdviserUtil.finish(info);
-		}
-
-		private void cleanup() {
-		}
-
-		private void commit() {
-		}
-
-		private void rollback() {
-		}
-
-		private void b() {
-
-		}
-	}
-*/
-	// ////////////////////////////////////////////////////////////////////////////////////////////
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -156,8 +134,9 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 			Label cleanupAndCommit = new Label();
 			Label cleanupAndThrow = new Label();
 
-			gen.visitTryCatchBlock(start, end, exception,
-					"java/lang/Throwable");
+			gen
+					.visitTryCatchBlock(start, end, exception,
+							"java/lang/Throwable");
 
 			gen.visitTryCatchBlock(start, cleanupAndThrow, cleanupAndThrow,
 					null);
@@ -188,10 +167,12 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 
 			gen.visitLabel(exception);
 
-			//mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-			//mv.visitLdcInsn(">>>EXCEPTION LABEL");
-			//mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
-			
+			// mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out",
+			// "Ljava/io/PrintStream;");
+			// mv.visitLdcInsn(">>>EXCEPTION LABEL");
+			// mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream",
+			// "println", "(Ljava/lang/String;)V");
+
 			// dup exception
 			gen.dup();
 
@@ -205,7 +186,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 			gen.visitInsn(ATHROW);
 
 			gen.visitLabel(cleanupAndThrow);
-			
+
 			gen.loadLocal(txn);
 			gen.visitMethodInsn(INVOKESTATIC,
 					"salve/depend/spring/txn/AdviserUtil", "cleanup",
