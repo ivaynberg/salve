@@ -11,15 +11,6 @@
 	<artifactId>salve-asm</artifactId>
 	<name>Salve Embedded ASM Lib</name>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymock</artifactId>
-			<version>2.2</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>

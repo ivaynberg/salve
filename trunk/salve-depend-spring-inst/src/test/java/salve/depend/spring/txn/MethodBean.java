@@ -15,10 +15,10 @@ package salve.depend.spring.txn;
 
 import org.springframework.transaction.annotation.Transactional;
 
-public class TransactionalMethodBean {
+public class MethodBean {
 	public static final long CLINIT_FORCER = System.currentTimeMillis();
 
-	public TransactionalMethodBean() {
+	public MethodBean() {
 
 	}
 

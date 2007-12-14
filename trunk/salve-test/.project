@@ -1,12 +1,7 @@
 <projectDescription>
-  <name>salve-depend-spring-inst</name>
+  <name>salve-test</name>
   <comment/>
-  <projects>
-    <project>salve-asm</project>
-    <project>salve-depend</project>
-    <project>salve-depend-spring</project>
-    <project>salve-inst</project>
-  </projects>
+  <projects/>
   <buildSpec>
     <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>

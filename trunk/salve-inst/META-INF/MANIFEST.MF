@@ -5,7 +5,7 @@ Bundle-SymbolicName: salve.inst
 Bundle-Version: 0.7.1
 Export-Package: salve,
  salve.config;uses:="salve",
+ salve.util;uses:="salve",
  salve.loader;uses:="salve",
- salve.monitor;uses:="salve",
- salve.util;uses:="salve,salve.asmlib"
+ salve.monitor;uses:="salve"
 Require-Bundle: salve.asm

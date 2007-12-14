@@ -16,7 +16,7 @@ package salve.depend.spring.txn;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public class TransactionalClassBean {
+public class ClassBean {
 	public static final long CLINIT_FORCER = System.currentTimeMillis();
 
 	public void method() {
