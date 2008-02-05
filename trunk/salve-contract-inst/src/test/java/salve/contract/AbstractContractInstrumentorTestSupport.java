@@ -23,8 +23,8 @@ import org.junit.Assert;
 
 import salve.loader.BytecodePool;
 
-public class AbstractContractInstrumentorTest extends Assert {
-	private static final ClassLoader CL = AbstractContractInstrumentorTest.class.getClassLoader();
+public class AbstractContractInstrumentorTestSupport extends Assert {
+	private static final ClassLoader CL = AbstractContractInstrumentorTestSupport.class.getClassLoader();
 	private static final ContractInstrumentor INST = new ContractInstrumentor();
 
 	private static final Map<String, Class<?>> loaded = new HashMap<String, Class<?>>();

@@ -3,8 +3,8 @@
   <comment/>
   <projects>
     <project>salve-inst</project>
-    <project>salve-contract</project>
     <project>salve-asm</project>
+    <project>salve-contract</project>
   </projects>
   <buildSpec>
     <buildCommand>
