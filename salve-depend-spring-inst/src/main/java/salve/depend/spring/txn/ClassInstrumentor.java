@@ -141,19 +141,34 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 			gen.visitTryCatchBlock(start, cleanupAndThrow, cleanupAndThrow,
 					null);
 
-			// Object status;
-			int txn = gen.newLocal(Type.getType("Ljava/lang/Object;"));
+			// TransactionManager mgr
+			int tm = gen.newLocal(Type
+					.getType("Lsalve/depend/spring/txn/TransactionManager;"));
 
-			// status=AdviserUtil.begin(attr, "joinpoint");
+			// mgr=DependencyLibrary.locate(TransactionManagerKey.INSTANCE);
+			mv.visitFieldInsn(GETSTATIC,
+					"salve/depend/spring/txn/TransactionManager",
+					"KEY", "Lsalve/depend/Key;");
+			mv.visitMethodInsn(INVOKESTATIC, "salve/depend/DependencyLibrary",
+					"locate", "(Lsalve/depend/Key;)Ljava/lang/Object;");
+			mv.visitTypeInsn(CHECKCAST,
+					"salve/depend/spring/txn/TransactionManager");
+			mv.visitVarInsn(ASTORE, tm);
+
+			// Object status;
+			int status = gen.newLocal(Type.getType("Ljava/lang/Object;"));
+
+			// status=tm.begin(attr,name);
+			mv.visitVarInsn(ALOAD, tm);
 			mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
 			mv.visitLdcInsn(txnName);
 			mv
 					.visitMethodInsn(
-							INVOKESTATIC,
-							"salve/depend/spring/txn/AdviserUtil",
-							"begin",
+							INVOKEINTERFACE,
+							"salve/depend/spring/txn/TransactionManager",
+							"start",
 							"(Lsalve/depend/spring/txn/TransactionAttribute;Ljava/lang/String;)Ljava/lang/Object;");
-			mv.visitVarInsn(ASTORE, txn);
+			mv.visitVarInsn(ASTORE, status);
 
 			mv.visitLabel(start);
 
@@ -173,13 +188,15 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 			// mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream",
 			// "println", "(Ljava/lang/String;)V");
 
-			// dup exception
-			gen.dup();
+			// stack: {ex}, we need {ex,tm,ex}
+			gen.dup(); // {ex,ex}
+			mv.visitVarInsn(ALOAD, tm); // {ex,ex,tm}
+			gen.swap(); // {ex,tm,ex}
 
-			// finish(ex, status);
-			gen.loadLocal(txn);
-			gen.visitMethodInsn(INVOKESTATIC,
-					"salve/depend/spring/txn/AdviserUtil", "finish",
+			// tm.finish(ex, status);
+			gen.loadLocal(status);
+			mv.visitMethodInsn(INVOKEINTERFACE,
+					"salve/depend/spring/txn/TransactionManager", "finish",
 					"(Ljava/lang/Throwable;Ljava/lang/Object;)V");
 
 			// throw e;
@@ -187,23 +204,27 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 
 			gen.visitLabel(cleanupAndThrow);
 
-			gen.loadLocal(txn);
-			gen.visitMethodInsn(INVOKESTATIC,
-					"salve/depend/spring/txn/AdviserUtil", "cleanup",
+			// tm.cleanup(status);
+			gen.loadLocal(tm);
+			gen.loadLocal(status);
+			mv.visitMethodInsn(INVOKEINTERFACE,
+					"salve/depend/spring/txn/TransactionManager", "cleanup",
 					"(Ljava/lang/Object;)V");
 
 			gen.visitInsn(ATHROW);
 
 			gen.visitLabel(cleanupAndCommit);
 
-			gen.loadLocal(txn);
-			gen.visitMethodInsn(INVOKESTATIC,
-					"salve/depend/spring/txn/AdviserUtil", "cleanup",
+			gen.loadLocal(tm);
+			gen.loadLocal(status);
+			mv.visitMethodInsn(INVOKEINTERFACE,
+					"salve/depend/spring/txn/TransactionManager", "cleanup",
 					"(Ljava/lang/Object;)V");
 
-			gen.loadLocal(txn);
-			gen.visitMethodInsn(INVOKESTATIC,
-					"salve/depend/spring/txn/AdviserUtil", "finish",
+			gen.loadLocal(tm);
+			gen.loadLocal(status);
+			mv.visitMethodInsn(INVOKEINTERFACE,
+					"salve/depend/spring/txn/TransactionManager", "finish",
 					"(Ljava/lang/Object;)V");
 
 			gen.returnValue();
