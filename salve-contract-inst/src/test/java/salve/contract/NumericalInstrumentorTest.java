@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import salve.InstrumentationException;
 
-public class NumericalInstrumentorTest extends AbstractContractInstrumentorTest {
+public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestSupport {
 	@Test
 	public void testArgumentTypeErrorChecking() throws Exception {
 		try {

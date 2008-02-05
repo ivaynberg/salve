@@ -18,7 +18,7 @@ package salve.contract;
 
 import org.junit.Test;
 
-public class OMIInstrumentorTest extends AbstractContractInstrumentorTest {
+public class OMIInstrumentorTest extends AbstractContractInstrumentorTestSupport {
 
 	@Test public void testProperImplementation() throws Exception {
 		final Bean bean = (Bean) create("Bean");
