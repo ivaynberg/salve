@@ -240,6 +240,16 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 			}
 
 		}.test();
-
 	}
+
+	@Test
+	public void testInterfaceInstrumentation() throws Exception {
+		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
+		BytecodePool pool = new BytecodePool();
+		pool.addLoader(new ClassLoaderLoader(classLoader));
+
+		@SuppressWarnings("unused")
+		Class<?> interfaceClass = pool.instrumentIntoClass("salve/depend/Interface", new DependencyInstrumentor());
+	}
+
 }

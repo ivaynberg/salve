@@ -23,6 +23,7 @@ import salve.InstrumentationException;
 import salve.InstrumentorMonitor;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassWriter;
+import salve.asmlib.Opcodes;
 import salve.util.BytecodeLoadingClassWriter;
 
 /**
@@ -49,10 +50,16 @@ public class DependencyInstrumentor extends AbstractInstrumentor {
 
 		ClassAnalyzer analyzer = new ClassAnalyzer(loader);
 		ClassReader reader = new ClassReader(bytecode);
-		ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
-		ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, monitor);
-		reader.accept(inst, 0);
 
-		return writer.toByteArray();
+		if ((reader.getAccess() & Opcodes.ACC_INTERFACE) > 0) {
+			// skip interfaces
+			return bytecode;
+		} else {
+			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
+			ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, monitor);
+			reader.accept(inst, 0);
+
+			return writer.toByteArray();
+		}
 	}
 }
