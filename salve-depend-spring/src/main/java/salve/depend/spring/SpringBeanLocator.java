@@ -47,11 +47,16 @@ public class SpringBeanLocator implements Locator {
 	@SuppressWarnings("unchecked")
 	public Object locate(Key key) {
 
+		if (key == null) {
+			throw new IllegalArgumentException("Argument key cannot be null");
+		}
 		SpringBeanId id = null;
 		// XXX refactor the loop into KeyUtils
-		for (Annotation annot : key.getAnnotations()) {
-			if (SpringBeanId.class.equals(annot.annotationType())) {
-				id = (SpringBeanId) annot;
+		if (key.getAnnotations() != null) {
+			for (Annotation annot : key.getAnnotations()) {
+				if (SpringBeanId.class.equals(annot.annotationType())) {
+					id = (SpringBeanId) annot;
+				}
 			}
 		}
 
