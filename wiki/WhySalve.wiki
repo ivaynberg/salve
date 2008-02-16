@@ -13,7 +13,7 @@ The ideal solution would allow domain layer objects to be lightweight, contain b
 
 {{{
 // This is a JPA entity
-@javax.persistence.Entity public class Acount {
+@javax.persistence.Entity public class Account {
 
   // this is a dependency we wish Salve to instrument
   @javax.persistence.Transient
@@ -42,7 +42,7 @@ Without Salve such an object is not practical: there is no good way to set the `
 
 When the bytecode of Account class is processed by Salve, it will look like this:
 {{{
-@javax.persistence.Entity public class Acount {
+@javax.persistence.Entity public class Account {
 
   // added by salve to facilitate lookup of email service dependency
   public static final salve.depend.Key _key_email=new salve.depend.Key(...);
