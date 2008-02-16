@@ -176,7 +176,7 @@ public class SalveBuilder extends AbstractBuilder {
 		String info = String
 				.format(
 						"Salve build stats: jar cache: %dh/%dm bytecode cache: %dh/%dm build time: %ds",
-						urlCache.getHitCount(), urlCache.getMissCount(),
+						urlCache.getHitCount(), urlCache.getMissCount(), bytecodePool.getCacheHitCount(),
 						bytecodePool.getCacheMissCount(), buildSeconds);
 
 		mark(getProject(), info, IMarker.SEVERITY_INFO);
