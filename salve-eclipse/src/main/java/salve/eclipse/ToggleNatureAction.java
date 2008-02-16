@@ -20,6 +20,7 @@ import java.util.Iterator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IAction;
@@ -27,6 +28,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+
+import salve.eclipse.builder.SalveBuilder;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
 
@@ -95,6 +98,10 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 							natures.length - i - 1);
 					description.setNatureIds(newNatures);
 					project.setDescription(description, null);
+
+					// clear error markers
+					project.deleteMarkers(SalveBuilder.MARKER_ID, true,  IResource.DEPTH_INFINITE);
+					
 					return;
 				}
 			}
@@ -108,5 +115,4 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 		} catch (CoreException e) {
 		}
 	}
-
 }
