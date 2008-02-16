@@ -16,12 +16,11 @@
  */
 package salve.loader;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import salve.BytecodeLoader;
 import salve.Instrumentor;
 import salve.monitor.NoopMonitor;
 import salve.util.ClassesUtil;
+import salve.util.LruCache;
 
 /**
  * A caching {@link BytecodeLoader} implementation that contains various
@@ -34,7 +33,7 @@ public class BytecodePool extends CompoundLoader {
 
 	private static final byte[] NOT_FOUND = new byte[] {};
 
-	private final ConcurrentHashMap<String, byte[]> cache = new ConcurrentHashMap<String, byte[]>();
+	private final LruCache<String, byte[]> cache = new LruCache<String, byte[]>(5000);
 
 	/**
 	 * Adds a bytecode loader that can load bytecode using
@@ -60,6 +59,20 @@ public class BytecodePool extends CompoundLoader {
 	public BytecodePool addLoaderFor(String name, byte[] bytecode) {
 		addLoader(new MemoryLoader(name, bytecode));
 		return this;
+	}
+
+	/**
+	 * @return number of hits in bytecode cache
+	 */
+	public int getCacheHitCount() {
+		return cache.getHitCount();
+	}
+
+	/**
+	 * @return number of misses in bytecode cache
+	 */
+	public int getCacheMissCount() {
+		return cache.getMissCount();
 	}
 
 	/**
@@ -145,6 +158,13 @@ public class BytecodePool extends CompoundLoader {
 	}
 
 	/**
+	 * Resets cache statistics
+	 */
+	public void resetCacheStatistics() {
+		cache.resetStatistics();
+	}
+
+	/**
 	 * Caches bytecode in the pool
 	 * 
 	 * @param className
@@ -159,5 +179,4 @@ public class BytecodePool extends CompoundLoader {
 		}
 		cache.put(className, bytecode);
 	}
-
 }

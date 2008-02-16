@@ -19,11 +19,13 @@ package salve.eclipse.builder;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -48,6 +50,7 @@ import salve.config.XmlConfig;
 import salve.config.XmlConfigReader;
 import salve.eclipse.Activator;
 import salve.eclipse.JavaProjectBytecodeLoader;
+import salve.loader.BytecodePool;
 import salve.loader.CompoundLoader;
 import salve.loader.FilePathLoader;
 import salve.monitor.NoopMonitor;
@@ -57,13 +60,19 @@ import salve.util.LruCache;
 public class SalveBuilder extends AbstractBuilder {
 
 	public static final String BUILDER_ID = "salve.eclipse.Builder";
-	private static final String MARKER_ID = "salve.eclipse.marker.error.instrument";
+	public static final String MARKER_ID = "salve.eclipse.marker.error.instrument";
 
-	private LruCache urlCache = new LruCache(10000);
+	private LruCache<String, URL> urlCache = new LruCache<String, URL>(100000);
 	private final ReentrantReadWriteLock urlCacheLock = new ReentrantReadWriteLock();
+	private final URL NOT_IN_JAR;
 
 	public SalveBuilder() {
 		super(MARKER_ID);
+		try {
+			NOT_IN_JAR = new URL("http://salve.googlecode.com");
+		} catch (MalformedURLException e) {
+			throw new RuntimeException("Could not create salve builder", e);
+		}
 	}
 
 	/*
@@ -75,6 +84,8 @@ public class SalveBuilder extends AbstractBuilder {
 	@SuppressWarnings("unchecked")
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
+
+		long buildStart = System.currentTimeMillis();
 
 		removeMarks(getProject());
 
@@ -140,7 +151,14 @@ public class SalveBuilder extends AbstractBuilder {
 		}
 
 		// build
-		ResourceBuilder builder = new ResourceBuilder(config, bloader, monitor);
+
+		// we use a bytecode pool instead of bloader directly because the pool
+		// comes with a cache
+		BytecodePool bytecodePool = new BytecodePool();
+		bytecodePool.addLoader(bloader);
+
+		ResourceBuilder builder = new ResourceBuilder(config, bytecodePool,
+				monitor);
 		if (kind == FULL_BUILD) {
 			getProject().accept(builder);
 		} else {
@@ -151,6 +169,17 @@ public class SalveBuilder extends AbstractBuilder {
 				delta.accept(builder);
 			}
 		}
+
+		long buildEnd = System.currentTimeMillis();
+		long buildSeconds = (buildEnd - buildStart) / 1000;
+
+		String info = String
+				.format(
+						"Salve build stats: jar cache: %dh/%dm bytecode cache: %dh/%dm build time: %ds",
+						urlCache.getHitCount(), urlCache.getMissCount(),
+						bytecodePool.getCacheMissCount(), buildSeconds);
+
+		mark(getProject(), info, IMarker.SEVERITY_INFO);
 
 		return null;
 	}
@@ -253,12 +282,18 @@ public class SalveBuilder extends AbstractBuilder {
 
 		@Override
 		protected URL findResourceInJar(File path, String name) {
-			final String cacheKey = path.getAbsolutePath() + name;
+
+			final String cacheKey = path.lastModified()
+					+ path.getAbsolutePath() + name;
 			urlCacheLock.readLock().lock();
 			try {
-				URL url = (URL) urlCache.get(cacheKey);
-				if (url != null) {
-					return url;
+				Object cached = urlCache.get(cacheKey);
+				if (cached != null) {
+					if (cached == NOT_IN_JAR) {
+						return null;
+					} else {
+						return (URL) cached;
+					}
 				}
 			} finally {
 				urlCacheLock.readLock().unlock();
@@ -271,11 +306,10 @@ public class SalveBuilder extends AbstractBuilder {
 
 			urlCacheLock.writeLock().lock();
 			try {
-				urlCache.put(cacheKey, url);
+				urlCache.put(cacheKey, (url == null) ? NOT_IN_JAR : url);
 			} finally {
 				urlCacheLock.writeLock().unlock();
 			}
-
 			return url;
 		}
 	}
