@@ -29,8 +29,6 @@ import salve.asmlib.MethodVisitor;
 import salve.contract.impl.NotEmptyInstrumentor;
 import salve.contract.impl.NotNullInstrumentor;
 import salve.contract.impl.NumericalInstrumentor;
-import salve.contract.impl.OMIAnalyzer;
-import salve.contract.impl.OMIInstrumentor;
 import salve.util.BytecodeLoadingClassWriter;
 
 public class ContractInstrumentor extends AbstractInstrumentor {
@@ -69,12 +67,9 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 			throw new CannotLoadBytecodeException(className);
 		}
 
-		OMIAnalyzer analyzer = new OMIAnalyzer();
-		analyzer.analyze(bytecode, loader);
-
 		ClassReader reader = new ClassReader(bytecode);
 		ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
-		reader.accept(new ConditionalChecksInstrumentor(new OMIInstrumentor(writer, analyzer, monitor), monitor), 0);
+		reader.accept(new ConditionalChecksInstrumentor(writer, monitor), 0);
 		bytecode = writer.toByteArray();
 		return bytecode;
 	}
