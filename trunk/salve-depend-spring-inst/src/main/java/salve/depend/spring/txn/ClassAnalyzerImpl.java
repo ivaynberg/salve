@@ -92,6 +92,10 @@ public class ClassAnalyzerImpl implements ClassVisitor, Constants,
 		return str.toString();
 	}
 
+	public boolean shouldInstrument() {
+		return methods.size() > 0;
+	}
+
 	public boolean shouldInstrument(int access, String name, String desc,
 			String sig, String[] exceptions) {
 		return methods.contains(toString(access, name, desc, sig, exceptions));

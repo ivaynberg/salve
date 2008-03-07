@@ -81,4 +81,8 @@ public class LruCache<K, V> {
 		missCount = 0;
 	}
 
+	public int size() {
+		return cache.size();
+	}
+
 }

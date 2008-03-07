@@ -87,6 +87,13 @@ public class SalveBuilder extends AbstractBuilder {
 
 		long buildStart = System.currentTimeMillis();
 
+		try {
+			urlCacheLock.writeLock().lock();
+			urlCache.resetStatistics();
+		} finally {
+			urlCacheLock.writeLock().unlock();
+		}
+
 		removeMarks(getProject());
 
 		// find config resource
@@ -182,13 +189,6 @@ public class SalveBuilder extends AbstractBuilder {
 
 		mark(getProject(), info, IMarker.SEVERITY_INFO);
 
-		try {
-			urlCacheLock.writeLock().lock();
-			urlCache.resetStatistics();
-		} finally {
-			urlCacheLock.writeLock().unlock();
-		}
-
 		return null;
 	}
 
@@ -250,6 +250,7 @@ public class SalveBuilder extends AbstractBuilder {
 
 		if (!(resource instanceof IFile)
 				|| !resource.getName().endsWith(".class")) {
+
 			return;
 		}
 
@@ -272,9 +273,11 @@ public class SalveBuilder extends AbstractBuilder {
 						false, null);
 			}
 		} catch (InstrumentationException e) {
+			log(IStatus.ERROR, "error instrumenting: " + file.getName(), e);
 			markError(resource, "Instrumentation error: " + e.getMessage()
 					+ " (" + e.getCause().getMessage() + ")");
 		} catch (IOException e) {
+			log(IStatus.ERROR, "error reading: " + file.getName(), e);
 			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 					"Unable to parse class file: " + file.getName(), e);
 			throw new CoreException(status);
@@ -312,6 +315,8 @@ public class SalveBuilder extends AbstractBuilder {
 
 			URL url = super.findResourceInJar(path, name);
 
+			
+			
 			urlCacheLock.writeLock().lock();
 			try {
 				urlCache.put(cacheKey, (url == null) ? NOT_IN_JAR : url);

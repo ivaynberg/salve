@@ -25,20 +25,6 @@ import salve.asmlib.Type;
  * 
  */
 public class AsmUtil {
-	private static final String DOUBLEDESC = "Ljava/lang/Double;";
-
-	private static final String FLOATDESC = "Ljava/lang/Float;";
-	private static final String LONGDESC = "Ljava/lang/Long;";
-	private static final String INTEGERDESC = "Ljava/lang/Integer;";
-	private static final String SHORTDESC = "Ljava/lang/Short;";
-	private static final String BYTEDESC = "Ljava/lang/Byte;";
-	private static final String BOOLEANDESC = "Ljava/lang/Boolean;";
-	private static final String CHARDESC = "Ljava/lang/Character;";
-
-	private AsmUtil() {
-
-	}
-
 	public static class Types {
 		public static Type CLASS = Type.getType(Class.class);
 
@@ -46,6 +32,16 @@ public class AsmUtil {
 
 		}
 	}
+
+	private static final String DOUBLEDESC = "Ljava/lang/Double;";
+	private static final String FLOATDESC = "Ljava/lang/Float;";
+	private static final String LONGDESC = "Ljava/lang/Long;";
+	private static final String INTEGERDESC = "Ljava/lang/Integer;";
+	private static final String SHORTDESC = "Ljava/lang/Short;";
+	private static final String BYTEDESC = "Ljava/lang/Byte;";
+	private static final String BOOLEANDESC = "Ljava/lang/Boolean;";
+
+	private static final String CHARDESC = "Ljava/lang/Character;";
 
 	/**
 	 * Checks if type is byte or Byte
@@ -113,6 +109,10 @@ public class AsmUtil {
 		return type.getSort() != Type.OBJECT && type.getSort() != Type.ARRAY;
 	}
 
+	public static boolean isSet(int value, int flag) {
+		return (value & flag) > 0;
+	}
+
 	/**
 	 * Checks if type is short or Short
 	 * 
@@ -164,6 +164,10 @@ public class AsmUtil {
 		} else {
 			return type;
 		}
+
+	}
+
+	private AsmUtil() {
 
 	}
 

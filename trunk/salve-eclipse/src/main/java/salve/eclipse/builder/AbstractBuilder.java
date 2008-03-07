@@ -22,6 +22,9 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
+
+import salve.eclipse.Activator;
 
 public abstract class AbstractBuilder extends IncrementalProjectBuilder {
 
@@ -62,6 +65,16 @@ public abstract class AbstractBuilder extends IncrementalProjectBuilder {
 			resource.deleteMarkers(markerType, true, IResource.DEPTH_ZERO);
 		} catch (CoreException ce) {
 		}
+	}
+
+	protected void log(int level, String message) {
+		Activator.getDefault().getLog().log(
+				new Status(level, Activator.PLUGIN_ID, message));
+	}
+
+	protected void log(int level, String message, Throwable e) {
+		Activator.getDefault().getLog().log(
+				new Status(level, Activator.PLUGIN_ID, message, e));
 	}
 
 }

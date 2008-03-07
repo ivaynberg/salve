@@ -25,6 +25,7 @@ import salve.asmlib.ClassReader;
 import salve.asmlib.ClassWriter;
 import salve.asmlib.Opcodes;
 import salve.util.BytecodeLoadingClassWriter;
+import salve.util.asm.AsmUtil;
 
 /**
  * Instrumentor that instruments {@link Dependency} fields.
@@ -48,18 +49,25 @@ public class DependencyInstrumentor extends AbstractInstrumentor {
 			throw new CannotLoadBytecodeException(className);
 		}
 
-		ClassAnalyzer analyzer = new ClassAnalyzer(loader);
 		ClassReader reader = new ClassReader(bytecode);
+		byte[] instrumented = bytecode;
 
-		if ((reader.getAccess() & Opcodes.ACC_INTERFACE) > 0) {
+		int access = reader.getAccess();
+		if (AsmUtil.isSet(access, Opcodes.ACC_INTERFACE)) {
 			// skip interfaces
-			return bytecode;
+		} else if (AsmUtil.isSet(access, Opcodes.ACC_ANNOTATION)) {
+			// skip annotations
+		} else if (AsmUtil.isSet(access, Opcodes.ACC_ENUM)) {
+			// skip enums
 		} else {
-			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
-			ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, monitor);
-			reader.accept(inst, 0);
-
-			return writer.toByteArray();
+			ClassAnalyzer analyzer = new ClassAnalyzer(loader, className);
+			if (analyzer.shouldInstrument()) {
+				ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
+				ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, monitor);
+				reader.accept(inst, 0);
+				instrumented = writer.toByteArray();
+			}
 		}
+		return instrumented;
 	}
 }
