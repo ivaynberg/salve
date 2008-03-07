@@ -2,10 +2,10 @@
   <name>salve-depend-inst</name>
   <comment/>
   <projects>
-    <project>salve-depend</project>
-    <project>salve-asm</project>
-    <project>salve-test</project>
     <project>salve-inst</project>
+    <project>salve-test</project>
+    <project>salve-asm</project>
+    <project>salve-depend</project>
   </projects>
   <buildSpec>
     <buildCommand>

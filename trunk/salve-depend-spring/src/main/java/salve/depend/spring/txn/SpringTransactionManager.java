@@ -65,6 +65,8 @@ public class SpringTransactionManager implements TransactionManager,
 
 	public void afterPropertiesSet() throws Exception {
 
+		System.out.println("salve spring transaction manager initialized");
+		
 		TransactionAttributeSourceAdvisor adviser = (TransactionAttributeSourceAdvisor) BeanFactoryUtils
 				.beanOfTypeIncludingAncestors(applicationContext,
 						TransactionAttributeSourceAdvisor.class);
