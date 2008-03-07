@@ -21,6 +21,7 @@ import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationException;
 import salve.InstrumentorMonitor;
+import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassVisitor;
@@ -30,8 +31,45 @@ import salve.contract.impl.NotEmptyInstrumentor;
 import salve.contract.impl.NotNullInstrumentor;
 import salve.contract.impl.NumericalInstrumentor;
 import salve.util.BytecodeLoadingClassWriter;
+import salve.util.asm.ClassVisitorAdapter;
+import salve.util.asm.MethodVisitorAdapter;
 
 public class ContractInstrumentor extends AbstractInstrumentor {
+
+	public static class Analyzer extends ClassVisitorAdapter {
+		private class MethodVisitor extends MethodVisitorAdapter {
+			@Override
+			public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+				if (desc.startsWith("Lsalve/contract/")) {
+					instrument = true;
+				}
+				return null;
+			}
+
+			@Override
+			public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+				if (desc.startsWith("Lsalve/contract/")) {
+					instrument = true;
+				}
+				return null;
+			}
+		}
+
+		private boolean instrument = false;
+
+		public boolean shouldInstrument() {
+			return instrument;
+		}
+
+		@Override
+		public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+			if (!instrument) {
+				return new MethodVisitor();
+			} else {
+				return null;
+			}
+		}
+	}
 
 	public static class ConditionalChecksInstrumentor extends ClassAdapter {
 		private String owner;
@@ -68,9 +106,15 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 		}
 
 		ClassReader reader = new ClassReader(bytecode);
-		ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
-		reader.accept(new ConditionalChecksInstrumentor(writer, monitor), 0);
-		bytecode = writer.toByteArray();
+		Analyzer analyzer = new Analyzer();
+		reader.accept(analyzer, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+		if (analyzer.shouldInstrument()) {
+			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
+			reader.accept(new ConditionalChecksInstrumentor(writer, monitor), 0);
+			bytecode = writer.toByteArray();
+		} else {
+			System.out.println("chose not to instrument " + className);
+		}
 		return bytecode;
 	}
 

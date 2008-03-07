@@ -47,9 +47,130 @@ import salve.util.asm.MethodVisitorAdapter;
  */
 class ClassAnalyzer implements Opcodes, Constants {
 
+	/**
+	 * Class visitor that performs the analysis
+	 * 
+	 * @author ivaynberg
+	 * 
+	 */
+	private class Analyzer extends ClassVisitorAdapter {
+		private String owner;
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+			owner = name;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public FieldVisitor visitField(final int fieldAccess, final String fieldName, final String fieldDesc,
+				String signature, Object value) {
+			return new FieldVisitorAdapter() {
+
+				@Override
+				public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+					return visitFieldAnnotation(fieldAccess, fieldName, fieldDesc, desc);
+				}
+			};
+		}
+
+		/**
+		 * called when a field within class being analyzed is visited
+		 */
+		private AnnotationVisitor visitFieldAnnotation(int fieldAcess, String fieldName, String fieldDesc,
+				String annotDesc) {
+			if (Constants.DEP_DESC.equals(annotDesc)) {
+				final DependencyField field = new DependencyField(owner, fieldName, fieldDesc);
+
+				fieldKeyToField.put(generateFieldKey(owner, fieldName), field);
+				return new AnnotationVisitorAdapter() {
+
+					@Override
+					public void visitEnum(String name, String desc, String value) {
+
+						if ("strategy".equals(name)) {
+							field.setStrategy(value);
+						}
+					}
+
+				};
+			}
+			return null;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public MethodVisitor visitMethod(final int access, final String name, final String desc,
+				final String signature, final String[] exceptions) {
+
+			// do not ignore static methods because jvm creates synthetic static
+			// methods that access fields
+			// XXX check if we can check for ACC_SYNTHETIC here
+			if ((access & ACC_ABSTRACT) != 0 || name.startsWith(FIELDINIT_METHOD_PREFIX)) {
+				return null;
+			}
+
+			final String methodKey = generateMethodKey(owner, name, desc);
+			return new MethodVisitorAdapter() {
+				@Override
+				public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+					DependencyField field = getDependency(owner, name);
+					if (field != null) {
+						List<DependencyField> fields = methodKeyToFields.get(methodKey);
+						if (fields == null) {
+							fields = new ArrayList<DependencyField>(4);
+							fields.add(field);
+							methodKeyToFields.put(methodKey, fields);
+						} else if (!fields.contains(field)) {
+							fields.add(field);
+						}
+					}
+				}
+			};
+		}
+	}
+
+	/**
+	 * Generates a field key used to uniquely identify a field within classes
+	 * 
+	 * @param className
+	 *            binary name of the class that contains the field
+	 * @param fieldName
+	 *            field name
+	 * @return generated field key
+	 */
+	private static String generateFieldKey(String className, String fieldName) {
+		return className + "." + fieldName;
+	}
+
+	/**
+	 * Generates a method key to uniquely identify a method within classes
+	 * 
+	 * @param className
+	 *            binary class name of the class that contains the method
+	 * @param methodName
+	 *            method name
+	 * @param methodDescriptor
+	 *            method descriptor
+	 * @return generated method key
+	 */
+	private static String generateMethodKey(String className, String methodName, String methodDescriptor) {
+		return className + "." + methodName + methodDescriptor;
+	}
+
 	private final BytecodeLoader loader;
+
 	private final Set<String> scannedClasses = new HashSet<String>();
+
 	private final Map<String, DependencyField> fieldKeyToField = new HashMap<String, DependencyField>();
+
 	private final Map<String, List<DependencyField>> methodKeyToFields = new HashMap<String, List<DependencyField>>();
 
 	/**
@@ -58,11 +179,35 @@ class ClassAnalyzer implements Opcodes, Constants {
 	 * @param loader
 	 *            bytecode loader
 	 */
-	public ClassAnalyzer(BytecodeLoader loader) {
+	public ClassAnalyzer(BytecodeLoader loader, String className) {
 		if (loader == null) {
 			throw new IllegalArgumentException("Argument `loader` cannot be null");
 		}
 		this.loader = loader;
+		analyzeClass(className);
+	}
+
+	/**
+	 * Analyzes the specified class
+	 * 
+	 * @param owner
+	 *            binary class name
+	 */
+	private void analyzeClass(String owner) {
+		if (!scannedClasses.contains(owner)) {
+			scannedClasses.add(owner);
+
+			byte[] bytecode = loader.loadBytecode(owner);
+			if (bytecode == null) {
+				throw new CannotLoadBytecodeException(owner);
+			}
+			ClassReader reader = new ClassReader(bytecode);
+			reader.accept(new Analyzer(), ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES);
+		}
+	}
+
+	public boolean shouldInstrument() {
+		return fieldKeyToField.size() > 0 || methodKeyToFields.size() > 0;
 	}
 
 	/**
@@ -110,142 +255,5 @@ class ClassAnalyzer implements Opcodes, Constants {
 		// TODO check args
 		analyzeClass(owner);
 		return fieldKeyToField.get(generateFieldKey(owner, fieldName));
-	}
-
-	/**
-	 * Analyzes the specified class
-	 * 
-	 * @param owner
-	 *            binary class name
-	 */
-	private void analyzeClass(String owner) {
-		if (!scannedClasses.contains(owner)) {
-			scannedClasses.add(owner);
-
-			byte[] bytecode = loader.loadBytecode(owner);
-			if (bytecode == null) {
-				throw new CannotLoadBytecodeException(owner);
-			}
-			ClassReader reader = new ClassReader(bytecode);
-			reader.accept(new Analyzer(), ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES);
-		}
-	}
-
-	/**
-	 * Class visitor that performs the analysis
-	 * 
-	 * @author ivaynberg
-	 * 
-	 */
-	private class Analyzer extends ClassVisitorAdapter {
-		private String owner;
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-			owner = name;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public FieldVisitor visitField(final int fieldAccess, final String fieldName, final String fieldDesc,
-				String signature, Object value) {
-			return new FieldVisitorAdapter() {
-
-				@Override
-				public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-					return visitFieldAnnotation(fieldAccess, fieldName, fieldDesc, desc);
-				}
-			};
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public MethodVisitor visitMethod(final int access, final String name, final String desc,
-				final String signature, final String[] exceptions) {
-
-			// do not ignore static methods because jvm creates synthetic static
-			// methods that access fields
-			// XXX check if we can check for ACC_SYNTHETIC here
-			if ((access & ACC_ABSTRACT) != 0 || name.startsWith(FIELDINIT_METHOD_PREFIX)) {
-				return null;
-			}
-
-			final String methodKey = generateMethodKey(owner, name, desc);
-			return new MethodVisitorAdapter() {
-				@Override
-				public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-					DependencyField field = getDependency(owner, name);
-					if (field != null) {
-						List<DependencyField> fields = methodKeyToFields.get(methodKey);
-						if (fields == null) {
-							fields = new ArrayList<DependencyField>(4);
-							fields.add(field);
-							methodKeyToFields.put(methodKey, fields);
-						} else if (!fields.contains(field)) {
-							fields.add(field);
-						}
-					}
-				}
-			};
-		}
-
-		/**
-		 * called when a field within class being analyzed is visited
-		 */
-		private AnnotationVisitor visitFieldAnnotation(int fieldAcess, String fieldName, String fieldDesc,
-				String annotDesc) {
-			if (Constants.DEP_DESC.equals(annotDesc)) {
-				final DependencyField field = new DependencyField(owner, fieldName, fieldDesc);
-
-				fieldKeyToField.put(generateFieldKey(owner, fieldName), field);
-				return new AnnotationVisitorAdapter() {
-
-					@Override
-					public void visitEnum(String name, String desc, String value) {
-
-						if ("strategy".equals(name)) {
-							field.setStrategy(value);
-						}
-					}
-
-				};
-			}
-			return null;
-		}
-	}
-
-	/**
-	 * Generates a field key used to uniquely identify a field within classes
-	 * 
-	 * @param className
-	 *            binary name of the class that contains the field
-	 * @param fieldName
-	 *            field name
-	 * @return generated field key
-	 */
-	private static String generateFieldKey(String className, String fieldName) {
-		return className + "." + fieldName;
-	}
-
-	/**
-	 * Generates a method key to uniquely identify a method within classes
-	 * 
-	 * @param className
-	 *            binary class name of the class that contains the method
-	 * @param methodName
-	 *            method name
-	 * @param methodDescriptor
-	 *            method descriptor
-	 * @return generated method key
-	 */
-	private static String generateMethodKey(String className, String methodName, String methodDescriptor) {
-		return className + "." + methodName + methodDescriptor;
 	}
 }

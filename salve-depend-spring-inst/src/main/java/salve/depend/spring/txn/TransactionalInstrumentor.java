@@ -27,19 +27,23 @@ public class TransactionalInstrumentor extends AbstractInstrumentor {
 			BytecodeLoader loader, InstrumentorMonitor monitor)
 			throws InstrumentationException {
 
-		final byte[] bytecode = loader.loadBytecode(className);
+		byte[] bytecode = loader.loadBytecode(className);
 		ClassReader reader = new ClassReader(bytecode);
 		ClassWriter writer = new BytecodeLoadingClassWriter(
 				ClassWriter.COMPUTE_FRAMES, loader);
 
 		ClassAnalyzerImpl analyzer = new ClassAnalyzerImpl();
-		reader.accept(analyzer, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG);
+		reader.accept(analyzer, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG
+				| ClassReader.SKIP_FRAMES);
 
-		ClassInstrumentor inst = new ClassInstrumentor(analyzer, writer,
-				monitor);
-		
-		reader.accept(inst, 0);
-		return writer.toByteArray();
+		if (analyzer.shouldInstrument()) {
+			ClassInstrumentor inst = new ClassInstrumentor(analyzer, writer,
+					monitor);
+			reader.accept(inst, 0);
+			bytecode = writer.toByteArray();
+		}
+
+		return bytecode;
 	}
 
 }
