@@ -112,8 +112,6 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
 			reader.accept(new ConditionalChecksInstrumentor(writer, monitor), 0);
 			bytecode = writer.toByteArray();
-		} else {
-			System.out.println("chose not to instrument " + className);
 		}
 		return bytecode;
 	}
