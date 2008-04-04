@@ -63,6 +63,14 @@ public class ClassLoaderLoader implements BytecodeLoader {
 		} catch (IOException e) {
 			// TODO exception: nicer message
 			throw new RuntimeException("Could not read bytecode", e);
+		} finally {
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException e) {
+					throw new RuntimeException("Could not close input stream used to load: " + className);
+				}
+			}
 		}
 	}
 }

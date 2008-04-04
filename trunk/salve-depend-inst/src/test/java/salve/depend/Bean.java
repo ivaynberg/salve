@@ -18,11 +18,25 @@ package salve.depend;
 
 public class Bean extends AbstractBean {
 
+	private class InnerBean {
+		public void method() {
+			red.method1();
+			blue.method1();
+		}
+	}
+
 	// force this class to have a clinit
-	@SuppressWarnings("unused")
 	public static final long FORCE_CLINIT = System.currentTimeMillis();
 
 	private static BlackDependency staticBlack;
+
+	public static BlackDependency getStaticBlack() {
+		return staticBlack;
+	}
+
+	public static void setStaticBlack(BlackDependency staticBlack) {
+		Bean.staticBlack = staticBlack;
+	}
 
 	@Square
 	@Dependency
@@ -93,21 +107,6 @@ public class Bean extends AbstractBean {
 
 	public void setRed(RedDependency red) {
 		this.red = red;
-	}
-
-	private class InnerBean {
-		public void method() {
-			red.method1();
-			blue.method1();
-		}
-	}
-
-	public static BlackDependency getStaticBlack() {
-		return staticBlack;
-	}
-
-	public static void setStaticBlack(BlackDependency staticBlack) {
-		Bean.staticBlack = staticBlack;
 	}
 
 }

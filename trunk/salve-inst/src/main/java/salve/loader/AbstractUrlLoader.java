@@ -33,6 +33,15 @@ import salve.BytecodeLoader;
 public abstract class AbstractUrlLoader implements BytecodeLoader {
 
 	/**
+	 * Converts class name into a {@link URL} that contains the class bytecode
+	 * 
+	 * @param className
+	 *            binary class name
+	 * @return {@link URL} that points to class' bytecode
+	 */
+	protected abstract URL getBytecodeUrl(String className);
+
+	/**
 	 * {@inheritDoc}
 	 */
 	public final byte[] loadBytecode(String className) {
@@ -40,8 +49,9 @@ public abstract class AbstractUrlLoader implements BytecodeLoader {
 		if (url == null) {
 			return null;
 		} else {
+			InputStream in = null;
 			try {
-				final InputStream in = url.openStream();
+				in = url.openStream();
 				final ByteArrayOutputStream out = new ByteArrayOutputStream();
 				final byte[] buff = new byte[1024];
 				while (true) {
@@ -54,17 +64,16 @@ public abstract class AbstractUrlLoader implements BytecodeLoader {
 				return out.toByteArray();
 			} catch (IOException e) {
 				throw new RuntimeException("Could not read bytecode from " + url.toString(), e);
+			} finally {
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						throw new RuntimeException("Could not close input stream for url: " + url.toString(), e);
+					}
+				}
 			}
 		}
 	}
-
-	/**
-	 * Converts class name into a {@link URL} that contains the class bytecode
-	 * 
-	 * @param className
-	 *            binary class name
-	 * @return {@link URL} that points to class' bytecode
-	 */
-	protected abstract URL getBytecodeUrl(String className);
 
 }
