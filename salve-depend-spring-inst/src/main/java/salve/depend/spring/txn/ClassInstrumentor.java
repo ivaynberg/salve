@@ -111,6 +111,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		if (analyzer
 				.shouldInstrument(access, name, desc, signature, exceptions)) {
 
+			monitor.methodModified(owner, access, name, desc);
+
 			final String delegateMethodName = "__salve_txn$" + name;
 
 			// generate field to hold transactional attribute class for this
@@ -147,8 +149,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 
 			// mgr=DependencyLibrary.locate(TransactionManagerKey.INSTANCE);
 			mv.visitFieldInsn(GETSTATIC,
-					"salve/depend/spring/txn/TransactionManager",
-					"KEY", "Lsalve/depend/Key;");
+					"salve/depend/spring/txn/TransactionManager", "KEY",
+					"Lsalve/depend/Key;");
 			mv.visitMethodInsn(INVOKESTATIC, "salve/depend/DependencyLibrary",
 					"locate", "(Lsalve/depend/Key;)Ljava/lang/Object;");
 			mv.visitTypeInsn(CHECKCAST,

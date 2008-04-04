@@ -17,6 +17,7 @@
 package salve.eclipse.builder;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.eclipse.core.resources.IFile;
@@ -38,8 +39,9 @@ public class FileBytecodeLoader implements BytecodeLoader {
 		if (!file.getFullPath().toString().endsWith(className + ".class")) {
 			return null;
 		}
+		InputStream in = null;
 		try {
-			InputStream in = file.getContents();
+			in = file.getContents();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			byte[] buff = new byte[1024];
 			while (true) {
@@ -52,6 +54,16 @@ public class FileBytecodeLoader implements BytecodeLoader {
 			return out.toByteArray();
 		} catch (Exception e) {
 			throw new CannotLoadBytecodeException(className, e);
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+					throw new RuntimeException(
+							"Could not close input stream for file: "
+									+ file.getFullPath().toString());
+				}
+			}
 		}
 	}
 }

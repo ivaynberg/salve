@@ -53,7 +53,6 @@ public class GuiceBeanLocator implements Locator {
 	/**
 	 * {@inheritDoc}
 	 */
-	@SuppressWarnings("unchecked")
 	public Object locate(Key key) {
 		Annotation bindingAnnot = null;
 

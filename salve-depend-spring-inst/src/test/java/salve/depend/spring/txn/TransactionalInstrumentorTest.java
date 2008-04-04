@@ -19,7 +19,6 @@ import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.transaction.TransactionStatus;
 
 import salve.depend.DependencyLibrary;
 import salve.depend.Locator;
