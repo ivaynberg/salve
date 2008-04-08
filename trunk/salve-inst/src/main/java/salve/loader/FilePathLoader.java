@@ -17,11 +17,15 @@
 package salve.loader;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import salve.BytecodeLoader;
+import salve.util.StreamsUtil;
 
 /**
  * Bytecode loader that can load bytecode from specified file path. The file
@@ -29,8 +33,9 @@ import java.util.jar.JarFile;
  * 
  * @author ivaynberg
  */
-public class FilePathLoader extends AbstractUrlLoader {
-	private final File path;
+public class FilePathLoader implements BytecodeLoader {
+	private static final String FILE_ERROR_MSG = "Could not read bytecode from {}";
+	private final File base;
 
 	/**
 	 * Constructor
@@ -41,50 +46,83 @@ public class FilePathLoader extends AbstractUrlLoader {
 	public FilePathLoader(File path) {
 		if (path == null) {
 			throw new IllegalArgumentException("Argument `path` cannot be null");
+		} else if (!path.exists()) {
+			throw new IllegalArgumentException("File `path` does not exist: " + path.getAbsolutePath());
 		}
-		this.path = path;
+		this.base = path;
 	}
 
-	protected URL findResourceInDir(File path, String name) {
-		File file = new File(path.getAbsolutePath() + File.separator + name);
-		if (file.exists()) {
-			try {
-				return file.getCanonicalFile().toURL();
-			} catch (MalformedURLException e) {
-			} catch (IOException e) {
-			}
-		}
-
-		return null;
-	}
-
-	protected URL findResourceInJar(File path, String name) {
-		String jarUrl;
+	protected JarEntry findJarEntry(File jar, String name) throws IOException {
+		JarFile archive = new JarFile(jar);
 		try {
-			JarFile jar = new JarFile(path);
-			JarEntry je = jar.getJarEntry(name);
-			if (je != null) {
-				jarUrl = path.getCanonicalFile().toURL().toString();
-				return new URL("jar:" + jarUrl + "!/" + name);
+			JarEntry entry = (JarEntry) archive.getEntry(name);
+			return entry;
+		} finally {
+			if (archive != null) {
+				archive.close();
 			}
-		} catch (MalformedURLException e) {
-		} catch (IOException e) {
 		}
-
-		return null;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	protected URL getBytecodeUrl(String className) {
-		final String pathName = path.getAbsolutePath();
+	public byte[] loadBytecode(String className) {
 		final String fileName = className + ".class";
+		final String pathName = base.getAbsolutePath();
 		if (pathName.endsWith(".jar") || pathName.endsWith(".zip")) {
-			return findResourceInJar(path, fileName);
+			return loadFromJar(base, fileName);
 		} else {
-			return findResourceInDir(path, fileName);
+			return loadFromFile(new File(base, fileName));
+		}
+	}
+
+	protected byte[] loadFromFile(File file) {
+		if (file.exists()) {
+			FileInputStream fis;
+			try {
+				fis = new FileInputStream(file);
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException("Could not open file for reading bytecode: " + file.getAbsolutePath(), e);
+			}
+			return StreamsUtil.drain(fis, FILE_ERROR_MSG, file.getAbsolutePath());
+		} else {
+			return null;
+		}
+	}
+
+	protected byte[] loadFromJar(File jar, String name) {
+		try {
+			byte[] bytecode = null;
+
+			if (jar.exists()) {
+
+				JarEntry entry = findJarEntry(jar, name);
+				if (entry != null) {
+					bytecode = readJarEntry(jar, entry);
+				}
+			}
+
+			return bytecode;
+		} catch (IOException e) {
+			throw new RuntimeException("Could not read bytecode for " + name + "@jar: " + jar.getAbsolutePath(), e);
+		}
+	}
+
+	protected byte[] readJarEntry(File jar, JarEntry entry) throws IOException {
+		JarFile archive = new JarFile(jar);
+		try {
+			InputStream in = null;
+			try {
+				in = archive.getInputStream(entry);
+				return StreamsUtil.drain(in);
+			} finally {
+				if (in != null) {
+					in.close();
+				}
+			}
+		} finally {
+			archive.close();
 		}
 	}
 }

@@ -16,11 +16,10 @@
  */
 package salve.loader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import salve.BytecodeLoader;
+import salve.util.StreamsUtil;
 
 /**
  * {@link BytecodeLoader} that loads bytecode using
@@ -29,6 +28,7 @@ import salve.BytecodeLoader;
  * @author ivaynberg
  */
 public class ClassLoaderLoader implements BytecodeLoader {
+	private static final String ERROR_MSG = "Error reading input stream for class {}, classloader {}";
 	private final ClassLoader loader;
 
 	/**
@@ -48,29 +48,11 @@ public class ClassLoaderLoader implements BytecodeLoader {
 	 * {@inheritDoc}
 	 */
 	public byte[] loadBytecode(String className) {
-		InputStream is = loader.getResourceAsStream(className + ".class");
-		if (is == null) {
+		InputStream in = loader.getResourceAsStream(className + ".class");
+		if (in != null) {
+			return StreamsUtil.drain(in, ERROR_MSG, className, loader);
+		} else {
 			return null;
-		}
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		byte[] buff = new byte[1024];
-		int read = 0;
-		try {
-			while ((read = is.read(buff)) > 0) {
-				baos.write(buff, 0, read);
-			}
-			return baos.toByteArray();
-		} catch (IOException e) {
-			// TODO exception: nicer message
-			throw new RuntimeException("Could not read bytecode", e);
-		} finally {
-			if (is != null) {
-				try {
-					is.close();
-				} catch (IOException e) {
-					throw new RuntimeException("Could not close input stream used to load: " + className);
-				}
-			}
 		}
 	}
 }
