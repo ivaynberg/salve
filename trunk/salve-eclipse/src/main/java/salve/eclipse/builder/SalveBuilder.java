@@ -19,6 +19,7 @@ package salve.eclipse.builder;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.jar.JarEntry;
@@ -55,6 +56,7 @@ import salve.loader.FilePathLoader;
 import salve.monitor.NoopMonitor;
 import salve.util.FallbackBytecodeClassLoader;
 import salve.util.LruCache;
+import salve.util.StreamsUtil;
 
 public class SalveBuilder extends AbstractBuilder {
 
@@ -257,9 +259,8 @@ public class SalveBuilder extends AbstractBuilder {
 		removeMarks(resource);
 		try {
 
-			ClassReader reader;
-			reader = new ClassReader(file.getContents());
-			final String cn = reader.getClassName();
+			final String cn = readClassName(file);
+
 			for (Instrumentor inst : config.getInstrumentors(cn)) {
 				// System.out.println("instrumenting: " + cn + " with: "
 				// + inst.getClass().getName());
@@ -274,11 +275,26 @@ public class SalveBuilder extends AbstractBuilder {
 			log(IStatus.ERROR, "error instrumenting: " + file.getName(), e);
 			markError(resource, "Instrumentation error: " + e.getMessage()
 					+ " (" + e.getCause().getMessage() + ")");
+		}
+	}
+
+	private String readClassName(final IFile file) throws CoreException {
+		ClassReader reader;
+		final InputStream is = file.getContents();
+		try {
+			reader = new ClassReader(is);
+			final String cn = reader.getClassName();
+			return cn;
 		} catch (IOException e) {
-			log(IStatus.ERROR, "error reading: " + file.getName(), e);
+			// log(IStatus.ERROR, "error reading: "
+			// + file.getFullPath().toOSString(), e);
 			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-					"Unable to parse class file: " + file.getName(), e);
+					"Unable to parse class file: "
+							+ file.getFullPath().toOSString(), e);
 			throw new CoreException(status);
+		} finally {
+			StreamsUtil.close(is, "Could not close input stream for file {}",
+					file.getFullPath().toOSString());
 		}
 
 	}
@@ -293,8 +309,8 @@ public class SalveBuilder extends AbstractBuilder {
 		protected JarEntry findJarEntry(File jar, String name)
 				throws IOException {
 
-			final String cacheKey = jar.lastModified()
-					+ jar.getAbsolutePath() + name;
+			final String cacheKey = jar.lastModified() + jar.getAbsolutePath()
+					+ name;
 			jarEntryCacheLock.readLock().lock();
 			try {
 				JarEntry cached = jarEntryCache.get(cacheKey);

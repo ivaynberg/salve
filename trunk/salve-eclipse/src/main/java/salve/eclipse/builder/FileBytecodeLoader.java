@@ -16,14 +16,13 @@
  */
 package salve.eclipse.builder;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 
 import salve.BytecodeLoader;
-import salve.CannotLoadBytecodeException;
+import salve.util.StreamsUtil;
 
 public class FileBytecodeLoader implements BytecodeLoader {
 	private final IFile file;
@@ -39,31 +38,13 @@ public class FileBytecodeLoader implements BytecodeLoader {
 		if (!file.getFullPath().toString().endsWith(className + ".class")) {
 			return null;
 		}
-		InputStream in = null;
 		try {
-			in = file.getContents();
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			byte[] buff = new byte[1024];
-			while (true) {
-				int read = in.read(buff);
-				if (read < 1) {
-					break;
-				}
-				out.write(buff, 0, read);
-			}
-			return out.toByteArray();
-		} catch (Exception e) {
-			throw new CannotLoadBytecodeException(className, e);
-		} finally {
-			if (in != null) {
-				try {
-					in.close();
-				} catch (IOException e) {
-					throw new RuntimeException(
-							"Could not close input stream for file: "
-									+ file.getFullPath().toString());
-				}
-			}
+			InputStream in = file.getContents();
+			return StreamsUtil.drain(in, "Could not read bytecode from {}",
+					file.getFullPath().toOSString());
+		} catch (CoreException e) {
+			throw new RuntimeException("Could not read contents of: "
+					+ file.getFullPath().toOSString());
 		}
 	}
 }
