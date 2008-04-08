@@ -27,6 +27,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import salve.ConfigException;
 import salve.Instrumentor;
+import salve.util.StreamsUtil;
 
 /**
  * Reads config data from an xml file into a {@link XmlConfig} object
@@ -35,39 +36,6 @@ import salve.Instrumentor;
  * 
  */
 public class XmlConfigReader {
-	private final ClassLoader instrumentorLoader;
-
-	/**
-	 * Constructor
-	 * 
-	 * @param instrumentorLoader
-	 *            class loader that can be used to load instrumentor classes
-	 *            specified in the xml config
-	 */
-	public XmlConfigReader(ClassLoader instrumentorLoader) {
-		this.instrumentorLoader = instrumentorLoader;
-	}
-
-	/**
-	 * Reads xml config into the specified config object
-	 * 
-	 * @param is
-	 *            input stream to configuration xml
-	 * @param config
-	 *            config object
-	 * @throws ConfigException
-	 */
-	public void read(InputStream is, XmlConfig config) throws ConfigException {
-		try {
-			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-			parser.parse(is, new Handler(config));
-		} catch (RTConfigException e) {
-			throw e.toConfigException();
-		} catch (Exception e) {
-			throw new ConfigException("Could not read configuration", e);
-		}
-	}
-
 	private class Handler extends DefaultHandler {
 		private final XmlConfig config;
 		private XmlPackageConfig pconfig;
@@ -82,18 +50,6 @@ public class XmlConfigReader {
 			if ("package".equals(name)) {
 				onEndPackage();
 			}
-		}
-
-		@Override
-		public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
-			if ("package".equals(name)) {
-				String packageName = attributes.getValue("name");
-				onStartPackage(packageName);
-			} else if ("instrumentor".equals(name)) {
-				String instClassName = attributes.getValue("class");
-				onInstrumentor(instClassName);
-			}
-
 		}
 
 		/**
@@ -139,6 +95,18 @@ public class XmlConfigReader {
 			pconfig = new XmlPackageConfig();
 			pconfig.setPackageName(packageName);
 		}
+
+		@Override
+		public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
+			if ("package".equals(name)) {
+				String packageName = attributes.getValue("name");
+				onStartPackage(packageName);
+			} else if ("instrumentor".equals(name)) {
+				String instClassName = attributes.getValue("class");
+				onInstrumentor(instClassName);
+			}
+
+		}
 	}
 
 	private static class RTConfigException extends RuntimeException {
@@ -157,6 +125,41 @@ public class XmlConfigReader {
 			return new ConfigException(getMessage(), getCause());
 		}
 
+	}
+
+	private final ClassLoader instrumentorLoader;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param instrumentorLoader
+	 *            class loader that can be used to load instrumentor classes
+	 *            specified in the xml config
+	 */
+	public XmlConfigReader(ClassLoader instrumentorLoader) {
+		this.instrumentorLoader = instrumentorLoader;
+	}
+
+	/**
+	 * Reads xml config into the specified config object
+	 * 
+	 * @param is
+	 *            input stream to configuration xml
+	 * @param config
+	 *            config object
+	 * @throws ConfigException
+	 */
+	public void read(InputStream is, XmlConfig config) throws ConfigException {
+		try {
+			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+			parser.parse(is, new Handler(config));
+		} catch (RTConfigException e) {
+			throw e.toConfigException();
+		} catch (Exception e) {
+			throw new ConfigException("Could not read configuration", e);
+		} finally {
+			StreamsUtil.close(is, "Could not close xml config stream");
+		}
 	}
 
 }
