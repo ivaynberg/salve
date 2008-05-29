@@ -74,7 +74,7 @@ public class GuiceBeanLocator implements Locator {
 		}
 
 		if (Provider.class.isAssignableFrom(key.getType())) {
-			return injector.getProvider(guiceKey).get();
+			return injector.getProvider(guiceKey);
 		} else {
 			return injector.getInstance(guiceKey);
 		}
