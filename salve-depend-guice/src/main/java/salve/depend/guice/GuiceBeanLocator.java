@@ -24,6 +24,7 @@ import salve.depend.Locator;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Injector;
+import com.google.inject.Provider;
 
 /**
  * Salve locator that can connect {@link DependencyLibrary} to guice
@@ -64,11 +65,18 @@ public class GuiceBeanLocator implements Locator {
 			}
 		}
 
+		com.google.inject.Key<?> guiceKey = null;
+
 		if (bindingAnnot == null) {
-			return injector.getInstance(key.getType());
+			guiceKey = com.google.inject.Key.get(key.getType());
 		} else {
-			return injector.getInstance(com.google.inject.Key.get(
-					key.getType(), bindingAnnot));
+			guiceKey = com.google.inject.Key.get(key.getType(), bindingAnnot);
+		}
+
+		if (Provider.class.isAssignableFrom(key.getType())) {
+			return injector.getProvider(guiceKey).get();
+		} else {
+			return injector.getInstance(guiceKey);
 		}
 
 		// XXX investigate properly returning null, see javadoc note
