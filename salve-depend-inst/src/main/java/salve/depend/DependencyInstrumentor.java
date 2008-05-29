@@ -64,7 +64,7 @@ public class DependencyInstrumentor extends AbstractInstrumentor {
 			if (analyzer.shouldInstrument()) {
 				ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
 				ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, monitor);
-				reader.accept(inst, 0);
+				reader.accept(inst, ClassReader.EXPAND_FRAMES);
 				instrumented = writer.toByteArray();
 			}
 		}
