@@ -1,0 +1,5 @@
+<config>
+        <package name="com.mycompany">
+                <instrumentor class="salve.depend.DependencyInstrumentor"/>
+        </package>
+</config>
