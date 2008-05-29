@@ -4,6 +4,8 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 
+import com.google.inject.Provider;
+
 import salve.depend.Dependency;
 
 /**
@@ -17,6 +19,9 @@ public class HomePage extends WebPage
 
     @Dependency
     private Service service;
+    
+    @Dependency
+    private Provider<String> stringProvider;
 
     /**
      * Constructor that is invoked when page is invoked without a session.
@@ -27,7 +32,8 @@ public class HomePage extends WebPage
     public HomePage(final PageParameters parameters)
     {
 
-        add(new Label("message", service.getHelloText()));
+    	add(new Label("message", service.getHelloText() + " | " +
+    			stringProvider.get()));
     }
 
 }
