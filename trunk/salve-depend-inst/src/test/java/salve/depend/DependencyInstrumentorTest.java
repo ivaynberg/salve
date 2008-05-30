@@ -74,7 +74,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 	@Test
 	public void testAnnotations() throws Exception {
-		Annotation[] annots = beanClass.getDeclaredField(KEY_FIELD_PREFIX + "red").getAnnotations();
+		Annotation[] annots = beanClass.getDeclaredField(REMOVED_FIELD_PREFIX + "red").getAnnotations();
 		assertEquals(2, annots.length);
 		final Class<?> a1 = annots[0].annotationType();
 		final Class<?> a2 = annots[1].annotationType();
@@ -104,7 +104,8 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 			@Override
 			protected void setupExpectations() {
-				EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+				EasyMock.expect(
+						locator.locate(new KeyImpl(RedDependency.class, Bean.class, REMOVED_FIELD_PREFIX + "red")))
 						.andReturn(red);
 				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
 			}
@@ -133,7 +134,8 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 				 * the field. red is looked up twice because it is cached per
 				 * method and we call two methods
 				 */
-				EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+				EasyMock.expect(
+						locator.locate(new KeyImpl(RedDependency.class, Bean.class, REMOVED_FIELD_PREFIX + "red")))
 						.andReturn(red).times(2);
 				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
 				// inside bean.method1() and bean.method2() we call all four
@@ -165,7 +167,8 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 			@Override
 			protected void setupExpectations() {
-				EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+				EasyMock.expect(
+						locator.locate(new KeyImpl(RedDependency.class, Bean.class, REMOVED_FIELD_PREFIX + "red")))
 						.andReturn(red);
 				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
 			}
@@ -225,7 +228,8 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 			@Override
 			protected void setupExpectations() {
-				EasyMock.expect(locator.locate(new KeyImpl(RedDependency.class, Bean.class, KEY_FIELD_PREFIX + "red")))
+				EasyMock.expect(
+						locator.locate(new KeyImpl(RedDependency.class, Bean.class, REMOVED_FIELD_PREFIX + "red")))
 						.andReturn(red);
 				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
 

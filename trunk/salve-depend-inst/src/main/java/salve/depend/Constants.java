@@ -28,6 +28,7 @@ package salve.depend;
 interface Constants {
 	public static final String NS = "_salve";
 	public static final String DEPNS = NS + "dep";
+	public static final String REMOVED_FIELD_PREFIX = DEPNS + "rmfld$";
 	public static final String KEY_FIELD_PREFIX = DEPNS + "key$";
 	public static final String FIELDINIT_METHOD_PREFIX = DEPNS + "fldinit$";
 	public static final String CLINIT_METHOD_PREFIX = DEPNS + "clinit$";
