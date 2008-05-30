@@ -104,10 +104,8 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 			@Override
 			protected void setupExpectations() {
-				EasyMock.expect(
-						locator.locate(new KeyImpl(RedDependency.class, Bean.class, REMOVED_FIELD_PREFIX + "red")))
-						.andReturn(red);
-				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "red"))).andReturn(red);
+				EasyMock.expect(locator.locate(new TestKey(BlueDependency.class))).andReturn(blue);
 			}
 
 			@Override
@@ -134,10 +132,9 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 				 * the field. red is looked up twice because it is cached per
 				 * method and we call two methods
 				 */
-				EasyMock.expect(
-						locator.locate(new KeyImpl(RedDependency.class, Bean.class, REMOVED_FIELD_PREFIX + "red")))
-						.andReturn(red).times(2);
-				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "red"))).andReturn(red)
+						.times(2);
+				EasyMock.expect(locator.locate(new TestKey(BlueDependency.class))).andReturn(blue);
 				// inside bean.method1() and bean.method2() we call all four
 				// methods
 				blue.method1();
@@ -167,10 +164,8 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 			@Override
 			protected void setupExpectations() {
-				EasyMock.expect(
-						locator.locate(new KeyImpl(RedDependency.class, Bean.class, REMOVED_FIELD_PREFIX + "red")))
-						.andReturn(red);
-				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "red"))).andReturn(red);
+				EasyMock.expect(locator.locate(new TestKey(BlueDependency.class))).andReturn(blue);
 			}
 
 			@Override
@@ -228,10 +223,8 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 			@Override
 			protected void setupExpectations() {
-				EasyMock.expect(
-						locator.locate(new KeyImpl(RedDependency.class, Bean.class, REMOVED_FIELD_PREFIX + "red")))
-						.andReturn(red);
-				EasyMock.expect(locator.locate(new KeyImpl(BlueDependency.class))).andReturn(blue);
+				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "red"))).andReturn(red);
+				EasyMock.expect(locator.locate(new TestKey(BlueDependency.class))).andReturn(blue);
 
 				blue.method1();
 				red.method1();

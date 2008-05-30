@@ -202,7 +202,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 			final String fieldName = getDependencyFieldName(field);
 			clinit.visitTypeInsn(NEW, KEYIMPL_NAME);
 			clinit.visitInsn(DUP);
-			clinit.visitLdcInsn(field.getType());
 			clinit.visitLdcInsn(Type.getObjectType(owner));
 			clinit.visitLdcInsn(fieldName);
 			clinit.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>", KEYIMPL_INIT_DESC);
@@ -212,75 +211,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		clinit.visitInsn(RETURN);
 		clinit.visitMaxs(0, 0);
 		clinit.visitEnd();
-	}
-
-	/**
-	 * Generates a method used to initialize a dependency field...
-	 * 
-	 * <pre>
-	 * private void _salinit$dao() {
-	 * 	if (dao == null) {
-	 * 		Key key = new KeyImpl(Dao.class, getClass(), &quot;dao&quot;);
-	 * 		dao = DependencyLibrary.locate(key);
-	 * 	}
-	 * }
-	 * </pre>
-	 * 
-	 * @param field
-	 * @deprecated
-	 */
-	@Deprecated
-	private void generateFieldInitializerMethod(DependencyField field) {
-		Type fieldOwnerType = Type.getObjectType(field.getOwner());
-
-		final int acc = ACC_PRIVATE;
-		final String name = FIELDINIT_METHOD_PREFIX + field.getName();
-		final String desc = "()V";
-		MethodVisitor mv = cv.visitMethod(acc, name, desc, null, null);
-		monitor.methodAdded(owner, acc, name, desc);
-
-		mv.visitCode();
-		Label l0 = new Label();
-		mv.visitLabel(l0);
-		mv.visitVarInsn(ALOAD, 0);
-		mv.visitFieldInsn(GETFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
-		Label l1 = new Label();
-		mv.visitJumpInsn(IFNONNULL, l1);
-
-		mv.visitTypeInsn(NEW, KEYIMPL_NAME);
-		mv.visitInsn(DUP);
-		mv.visitLdcInsn(field.getType());
-
-		mv.visitLdcInsn(Type.getType(fieldOwnerType.getDescriptor()));
-		mv.visitLdcInsn(field.getName());
-
-		mv.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>", KEYIMPL_INIT_DESC);
-		mv.visitVarInsn(ASTORE, 1);
-		Label l5 = new Label();
-		mv.visitLabel(l5);
-		mv.visitVarInsn(ALOAD, 0);
-		mv.visitVarInsn(ALOAD, 1);
-		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD, DEPLIB_LOCATE_METHOD_DESC);
-		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
-		mv.visitFieldInsn(PUTFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
-		mv.visitLabel(l1);
-		mv.visitInsn(RETURN);
-		Label l6 = new Label();
-		mv.visitLabel(l6);
-		mv.visitLocalVariable("this", fieldOwnerType.getDescriptor(), null, l0, l6, 0);
-		mv.visitLocalVariable("key", KEY_DESC, null, l5, l1, 1);
-		mv.visitMaxs(5, 2);
-		mv.visitEnd();
-	}
-
-	/** @deprecated */
-	@Deprecated
-	private void generateFieldInitiazerMethods() {
-		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
-			if (STRAT_INJECT.equals(field.getStrategy())) {
-				generateFieldInitializerMethod(field);
-			}
-		}
 	}
 
 	private String getDependencyFieldName(DependencyField field) {
@@ -382,7 +312,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		owner = name;
 		cv.visit(version, access, name, signature, superName, interfaces);
-		// generateFieldInitiazerMethods();
 	}
 
 	/**

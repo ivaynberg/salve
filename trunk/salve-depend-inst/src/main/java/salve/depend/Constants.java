@@ -33,8 +33,8 @@ interface Constants {
 	public static final String FIELDINIT_METHOD_PREFIX = DEPNS + "fldinit$";
 	public static final String CLINIT_METHOD_PREFIX = DEPNS + "clinit$";
 
-	public static final String KEYIMPL_NAME = "salve/depend/KeyImpl";
-	public static final String KEYIMPL_INIT_DESC = "(Ljava/lang/Class;Ljava/lang/Class;Ljava/lang/String;)V";
+	public static final String KEYIMPL_NAME = "salve/depend/FieldKey";
+	public static final String KEYIMPL_INIT_DESC = "(Ljava/lang/Class;Ljava/lang/String;)V";
 	public static final String DEPLIB_NAME = "salve/depend/DependencyLibrary";
 	public static final String KEY_NAME = "salve/depend/Key";
 	public static final String KEY_DESC = "L" + KEY_NAME + ";";
