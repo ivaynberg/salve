@@ -17,6 +17,7 @@
 package salve.depend.cache;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,6 +25,40 @@ import org.junit.Test;
 import salve.depend.Key;
 
 public class Lru3CacheTest extends Assert {
+
+	private static class K extends O implements Key {
+
+		public K(int index) {
+			super(index);
+		}
+
+		public Annotation[] getAnnotations() {
+			return null;
+		}
+
+		public Type getGenericType() {
+			return null;
+		}
+
+		public Class<?> getType() {
+			return null;
+		}
+
+	}
+
+	private static class O {
+		private final int index;
+
+		public O(int index) {
+			this.index = index;
+		}
+
+		@Override
+		public String toString() {
+			return getClass().getSimpleName() + String.valueOf(index);
+		}
+
+	}
 
 	@Test
 	public void test() {
@@ -89,36 +124,6 @@ public class Lru3CacheTest extends Assert {
 		assertTrue(lru.get(k4) == o4);
 		assertTrue(lru.get(k2) == o2);
 		assertTrue(lru.get(k3) == o3);
-
-	}
-
-	private static class K extends O implements Key {
-
-		public K(int index) {
-			super(index);
-		}
-
-		public Annotation[] getAnnotations() {
-			return null;
-		}
-
-		public Class<?> getType() {
-			return null;
-		}
-
-	}
-
-	private static class O {
-		private final int index;
-
-		public O(int index) {
-			this.index = index;
-		}
-
-		@Override
-		public String toString() {
-			return getClass().getSimpleName() + String.valueOf(index);
-		}
 
 	}
 

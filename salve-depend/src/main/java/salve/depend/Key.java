@@ -17,27 +17,35 @@
 package salve.depend;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 /**
- * A key that can uniquely identify a dependency
+ * A key that can uniquely identify a dependency.
+ * 
+ * It is important to properly implement key equality, thus most implementations
+ * should extend {@link AbstractKey} which provides proper
+ * {@link #equals(Object)} and {@link #hashCode()} implementations.
  * 
  * @see Locator
  * @see DependencyLibrary
+ * @see AbstractKey
  * 
  * @author ivaynberg
  */
 public interface Key {
 	/**
-	 * Annotations that identify the dependency
-	 * 
-	 * @return
+	 * @return annotations that identify the dependency
 	 */
 	Annotation[] getAnnotations();
 
 	/**
-	 * Dependency type
-	 * 
-	 * @return
+	 * @return a {@link Type} object that represents the declared dependency
+	 *         type.
+	 */
+	Type getGenericType();
+
+	/**
+	 * @return dependency {@link Class}
 	 */
 	Class<?> getType();
 }

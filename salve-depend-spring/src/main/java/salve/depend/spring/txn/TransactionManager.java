@@ -1,6 +1,7 @@
 package salve.depend.spring.txn;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 import salve.depend.Key;
 
@@ -21,6 +22,10 @@ public interface TransactionManager {
 
 		public Class<?> getType() {
 			return TransactionManager.class;
+		}
+
+		public Type getGenericType() {
+			return getType();
 		}
 	};
 }
