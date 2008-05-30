@@ -20,11 +20,11 @@ import java.lang.annotation.Annotation;
 
 import salve.depend.DependencyLibrary;
 import salve.depend.Key;
+import salve.depend.KeyImpl;
 import salve.depend.Locator;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Injector;
-import com.google.inject.Provider;
 
 /**
  * Salve locator that can connect {@link DependencyLibrary} to guice
@@ -54,7 +54,10 @@ public class GuiceBeanLocator implements Locator {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Object locate(Key key) {
+	public Object locate(Key key2) {
+
+		final KeyImpl key = (KeyImpl) key2;
+
 		Annotation bindingAnnot = null;
 
 		Annotation[] annots = key.getAnnotations();
@@ -68,16 +71,15 @@ public class GuiceBeanLocator implements Locator {
 		com.google.inject.Key<?> guiceKey = null;
 
 		if (bindingAnnot == null) {
-			guiceKey = com.google.inject.Key.get(key.getType());
+			guiceKey = com.google.inject.Key.get(key.getField()
+					.getGenericType());
 		} else {
-			guiceKey = com.google.inject.Key.get(key.getType(), bindingAnnot);
+			guiceKey = com.google.inject.Key.get(key.getField()
+					.getGenericType(), bindingAnnot);
 		}
 
-		if (Provider.class.isAssignableFrom(key.getType())) {
-			return injector.getProvider(guiceKey);
-		} else {
-			return injector.getInstance(guiceKey);
-		}
+		final Object ret = injector.getInstance(guiceKey);
+		return ret;
 
 		// XXX investigate properly returning null, see javadoc note
 	}

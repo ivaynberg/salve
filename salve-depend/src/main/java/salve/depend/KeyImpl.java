@@ -32,7 +32,7 @@ public class KeyImpl implements Key {
 	private static final long serialVersionUID = 1L;
 	private static final Annotation[] EMPTY = new Annotation[0];
 	private final Class<?> type;
-
+	private final Field field;
 	private final Annotation[] annots;
 
 	/**
@@ -44,6 +44,7 @@ public class KeyImpl implements Key {
 		super();
 		this.type = type;
 		annots = EMPTY;
+		field = null;
 	}
 
 	/**
@@ -57,6 +58,7 @@ public class KeyImpl implements Key {
 		super();
 		this.type = type;
 		this.annots = annots;
+		field = null;
 	}
 
 	/**
@@ -74,7 +76,6 @@ public class KeyImpl implements Key {
 	public KeyImpl(Class<?> dependencyType, Class<?> keyOwner, String keyFieldName) {
 
 		this.type = dependencyType;
-		Field field;
 		try {
 			field = keyOwner.getDeclaredField(keyFieldName);
 			annots = field.getAnnotations();
@@ -105,6 +106,10 @@ public class KeyImpl implements Key {
 	 */
 	public Annotation[] getAnnotations() {
 		return annots;
+	}
+
+	public Field getField() {
+		return field;
 	}
 
 	/**

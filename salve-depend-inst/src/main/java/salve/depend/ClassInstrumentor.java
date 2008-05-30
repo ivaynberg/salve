@@ -45,254 +45,6 @@ import salve.asmlib.Type;
  * 
  */
 class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
-	private final ClassAnalyzer analyzer;
-	private String owner = null;
-	private final InstrumentorMonitor monitor;
-
-	/**
-	 * Constructor
-	 * 
-	 * @param cv
-	 *            class visitor
-	 * @param analyzer
-	 *            analyzer
-	 * @param monitor
-	 *            instrumentor monitor
-	 */
-	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer, InstrumentorMonitor monitor) {
-		super(new StaticInitMerger(DEPNS + "_clinit", cv));
-		this.analyzer = analyzer;
-		this.monitor = monitor;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		owner = name;
-		cv.visit(version, access, name, signature, superName, interfaces);
-		generateFieldInitiazerMethods();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void visitEnd() {
-		addClinit();
-		super.visitEnd();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
-			final Object value) {
-		final DependencyField field = analyzer.getDependency(owner, name);
-		if (field != null) {
-			FieldVisitor fv = null;
-			if (field.getStrategy().equals(STRAT_REMOVE)) {
-				/*
-				 * generate key field. we do this inplace here because it gives
-				 * easier access to annotations on the removed field which we
-				 * have to copy to key field
-				 */
-				final int a = ACC_PUBLIC + ACC_STATIC + ACC_FINAL;
-				final String n = KEY_FIELD_PREFIX + name;
-				final String d = KEY_DESC;
-				fv = cv.visitField(a, n, d, null, null);
-				monitor.fieldRemoved(owner, access, name, desc);
-				monitor.fieldAdded(owner, a, n, d);
-			} else {
-				fv = cv.visitField(access + ACC_TRANSIENT, name, desc, signature, value);
-			}
-			return new DependencyAnnotRemover(fv);
-		} else {
-			return cv.visitField(access, name, desc, signature, value);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
-
-		boolean instrument = analyzer.getDependenciesInMethod(owner, name, desc) != null;
-
-		if (instrument) {
-			monitor.methodModified(owner, access, name, desc);
-			MethodInstrumentor inst = new MethodInstrumentor(access, name, desc, mv);
-			inst.lvs = new LocalVariablesSorter(access, desc, inst);
-			return inst.lvs;
-		} else {
-			return mv;
-		}
-	}
-
-	/**
-	 * Adds clinit method used to initialze any added static fields
-	 */
-	private void addClinit() {
-		boolean hasRemoveFieldDependencies = false;
-		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
-			if (STRAT_REMOVE.equals(field.getStrategy())) {
-				hasRemoveFieldDependencies = true;
-				break;
-			}
-		}
-		if (!hasRemoveFieldDependencies) {
-			return;
-		}
-
-		final int acc = ACC_STATIC;
-		final String name = "<clinit>";
-		final String desc = "()V";
-		MethodVisitor clinit = cv.visitMethod(acc, name, desc, null, null);
-		monitor.methodModified(owner, acc, name, desc);
-		clinit.visitCode();
-
-		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
-			if (STRAT_INJECT.equals(field.getStrategy())) {
-				continue;
-			}
-
-			final String fieldName = KEY_FIELD_PREFIX + field.getName();
-
-			clinit.visitLabel(new Label());
-			clinit.visitTypeInsn(NEW, KEYIMPL_NAME);
-			clinit.visitInsn(DUP);
-			clinit.visitLabel(new Label());
-			clinit.visitLdcInsn(field.getType());
-			clinit.visitLdcInsn(Type.getObjectType(owner));
-			clinit.visitLabel(new Label());
-			clinit.visitLdcInsn(fieldName);
-			clinit.visitLabel(new Label());
-			clinit.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>", KEYIMPL_INIT_DESC);
-			clinit.visitFieldInsn(PUTSTATIC, owner, fieldName, KEY_DESC);
-		}
-
-		clinit.visitInsn(RETURN);
-		clinit.visitMaxs(0, 0);
-		clinit.visitEnd();
-	}
-
-	/**
-	 * Generates a method used to initialize a dependency field...
-	 * 
-	 * <pre>
-	 * private void _salinit$dao() {
-	 * 	if (dao == null) {
-	 * 		Key key = new KeyImpl(Dao.class, getClass(), &quot;dao&quot;);
-	 * 		dao = DependencyLibrary.locate(key);
-	 * 	}
-	 * }
-	 * </pre>
-	 * 
-	 * @param field
-	 */
-	private void generateFieldInitializerMethod(DependencyField field) {
-		Type fieldOwnerType = Type.getObjectType(field.getOwner());
-
-		final int acc = ACC_PRIVATE;
-		final String name = FIELDINIT_METHOD_PREFIX + field.getName();
-		final String desc = "()V";
-		MethodVisitor mv = cv.visitMethod(acc, name, desc, null, null);
-		monitor.methodAdded(owner, acc, name, desc);
-
-		mv.visitCode();
-		Label l0 = new Label();
-		mv.visitLabel(l0);
-		mv.visitVarInsn(ALOAD, 0);
-		mv.visitFieldInsn(GETFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
-		Label l1 = new Label();
-		mv.visitJumpInsn(IFNONNULL, l1);
-
-		mv.visitTypeInsn(NEW, KEYIMPL_NAME);
-		mv.visitInsn(DUP);
-		mv.visitLdcInsn(field.getType());
-
-		mv.visitLdcInsn(Type.getType(fieldOwnerType.getDescriptor()));
-		mv.visitLdcInsn(field.getName());
-
-		mv.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>", KEYIMPL_INIT_DESC);
-		mv.visitVarInsn(ASTORE, 1);
-		Label l5 = new Label();
-		mv.visitLabel(l5);
-		mv.visitVarInsn(ALOAD, 0);
-		mv.visitVarInsn(ALOAD, 1);
-		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD, DEPLIB_LOCATE_METHOD_DESC);
-		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
-		mv.visitFieldInsn(PUTFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
-		mv.visitLabel(l1);
-		mv.visitInsn(RETURN);
-		Label l6 = new Label();
-		mv.visitLabel(l6);
-		mv.visitLocalVariable("this", fieldOwnerType.getDescriptor(), null, l0, l6, 0);
-		mv.visitLocalVariable("key", KEY_DESC, null, l5, l1, 1);
-		mv.visitMaxs(5, 2);
-		mv.visitEnd();
-	}
-
-	private void generateFieldInitiazerMethods() {
-		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
-			if (STRAT_INJECT.equals(field.getStrategy())) {
-				generateFieldInitializerMethod(field);
-			}
-		}
-	}
-
-	/**
-	 * Generates bytecode to lazy-init a local with a dependency
-	 * 
-	 * <pre>
-	 * 	if (local == null) {
-	 * 		Key key = new KeyImpl(...);
-	 * 		local = DependencyLibrary.locate(key);
-	 * 	}
-	 * }
-	 * </pre>
-	 * 
-	 * @param field
-	 * @param local
-	 */
-	private void loadDependencyIntoLocal(MethodVisitor mv, DependencyField field, int local) {
-		mv.visitVarInsn(ALOAD, local);
-		Label initialized = new Label();
-		mv.visitJumpInsn(IFNONNULL, initialized);
-
-		mv.visitFieldInsn(GETSTATIC, field.getOwner(), KEY_FIELD_PREFIX + field.getName(), KEY_DESC);
-
-		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD, DEPLIB_LOCATE_METHOD_DESC);
-
-		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
-		mv.visitVarInsn(ASTORE, local);
-
-		mv.visitLabel(initialized);
-		mv.visitVarInsn(ALOAD, local);
-	}
-
-	/**
-	 * generates bytecode to throw an {@link IllegalFieldWriteException}
-	 * exception
-	 * 
-	 * @param field
-	 *            field for which the exception needs to be thrown
-	 */
-	private void throwIllegalFieldWriteException(MethodVisitor mv, DependencyField field) {
-		Label l0 = new Label();
-		mv.visitLabel(l0);
-		mv.visitTypeInsn(NEW, IFWE_NAME);
-		mv.visitInsn(DUP);
-		mv.visitLdcInsn(field.getOwner().replace("/", "."));
-		mv.visitLdcInsn(field.getName());
-		mv.visitMethodInsn(INVOKESPECIAL, IFWE_NAME, "<init>", IFWE_INIT_DESC);
-		mv.visitInsn(ATHROW);
-	}
-
 	/**
 	 * Method instrumentor
 	 * 
@@ -318,6 +70,32 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		public MethodInstrumentor(int acc, String name, String desc, MethodVisitor mv) {
 			super(mv);
 			referencedFields = analyzer.getDependenciesInMethod(owner, name, desc);
+		}
+
+		/**
+		 * Looks up index of local variable that replaces access to depenedncy
+		 * field
+		 * 
+		 * @param field
+		 * @return index of local var
+		 */
+		private int getLocalForField(DependencyField field) {
+			return fieldToLocal.get(field);
+		}
+
+		/**
+		 * Sets index of local variable that will replace access to dependenc
+		 * field
+		 * 
+		 * @param field
+		 * @param local
+		 */
+		private void setLocalForField(DependencyField field, int local) {
+			if (fieldToLocal == null) {
+				fieldToLocal = new HashMap<DependencyField, Integer>();
+			}
+			fieldToLocal.put(field, local);
+
 		}
 
 		/**
@@ -374,39 +152,311 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 				loadDependencyIntoLocal(mv, field, local);
 			} else if (STRAT_INJECT.equals(field.getStrategy())) {
 				// ALOAD 0 ;this is already on the stack
-				mv.visitMethodInsn(INVOKESPECIAL, field.getOwner(), FIELDINIT_METHOD_PREFIX + field.getName(), "()V");
+				loadDependencyIntoField(mv, field);
 				mv.visitVarInsn(ALOAD, 0);
 				mv.visitFieldInsn(opcode, owner, name, desc);
 			}
 
 		}
+	}
 
-		/**
-		 * Looks up index of local variable that replaces access to depenedncy
-		 * field
-		 * 
-		 * @param field
-		 * @return index of local var
-		 */
-		private int getLocalForField(DependencyField field) {
-			return fieldToLocal.get(field);
+	private final ClassAnalyzer analyzer;
+	private String owner = null;
+
+	private final InstrumentorMonitor monitor;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param cv
+	 *            class visitor
+	 * @param analyzer
+	 *            analyzer
+	 * @param monitor
+	 *            instrumentor monitor
+	 */
+	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer, InstrumentorMonitor monitor) {
+		super(new StaticInitMerger(DEPNS + "_clinit", cv));
+		this.analyzer = analyzer;
+		this.monitor = monitor;
+	}
+
+	/**
+	 * Adds clinit method used to initialze any added static fields
+	 */
+	private void addClinit() {
+		boolean instrument = !analyzer.getDependenciesInClass(owner).isEmpty();
+		if (!instrument) {
+			return;
 		}
 
-		/**
-		 * Sets index of local variable that will replace access to dependenc
-		 * field
-		 * 
-		 * @param field
-		 * @param local
-		 */
-		private void setLocalForField(DependencyField field, int local) {
-			if (fieldToLocal == null) {
-				fieldToLocal = new HashMap<DependencyField, Integer>();
+		final int acc = ACC_STATIC;
+		final String name = "<clinit>";
+		final String desc = "()V";
+		MethodVisitor clinit = cv.visitMethod(acc, name, desc, null, null);
+		monitor.methodModified(owner, acc, name, desc);
+		clinit.visitCode();
+
+		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
+			final String keyFieldName = getKeyFieldName(field);
+			final String fieldName = getDependencyFieldName(field);
+			clinit.visitTypeInsn(NEW, KEYIMPL_NAME);
+			clinit.visitInsn(DUP);
+			clinit.visitLdcInsn(field.getType());
+			clinit.visitLdcInsn(Type.getObjectType(owner));
+			clinit.visitLdcInsn(fieldName);
+			clinit.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>", KEYIMPL_INIT_DESC);
+			clinit.visitFieldInsn(PUTSTATIC, owner, keyFieldName, KEY_DESC);
+		}
+
+		clinit.visitInsn(RETURN);
+		clinit.visitMaxs(0, 0);
+		clinit.visitEnd();
+	}
+
+	/**
+	 * Generates a method used to initialize a dependency field...
+	 * 
+	 * <pre>
+	 * private void _salinit$dao() {
+	 * 	if (dao == null) {
+	 * 		Key key = new KeyImpl(Dao.class, getClass(), &quot;dao&quot;);
+	 * 		dao = DependencyLibrary.locate(key);
+	 * 	}
+	 * }
+	 * </pre>
+	 * 
+	 * @param field
+	 * @deprecated
+	 */
+	@Deprecated
+	private void generateFieldInitializerMethod(DependencyField field) {
+		Type fieldOwnerType = Type.getObjectType(field.getOwner());
+
+		final int acc = ACC_PRIVATE;
+		final String name = FIELDINIT_METHOD_PREFIX + field.getName();
+		final String desc = "()V";
+		MethodVisitor mv = cv.visitMethod(acc, name, desc, null, null);
+		monitor.methodAdded(owner, acc, name, desc);
+
+		mv.visitCode();
+		Label l0 = new Label();
+		mv.visitLabel(l0);
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitFieldInsn(GETFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
+		Label l1 = new Label();
+		mv.visitJumpInsn(IFNONNULL, l1);
+
+		mv.visitTypeInsn(NEW, KEYIMPL_NAME);
+		mv.visitInsn(DUP);
+		mv.visitLdcInsn(field.getType());
+
+		mv.visitLdcInsn(Type.getType(fieldOwnerType.getDescriptor()));
+		mv.visitLdcInsn(field.getName());
+
+		mv.visitMethodInsn(INVOKESPECIAL, KEYIMPL_NAME, "<init>", KEYIMPL_INIT_DESC);
+		mv.visitVarInsn(ASTORE, 1);
+		Label l5 = new Label();
+		mv.visitLabel(l5);
+		mv.visitVarInsn(ALOAD, 0);
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD, DEPLIB_LOCATE_METHOD_DESC);
+		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
+		mv.visitFieldInsn(PUTFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
+		mv.visitLabel(l1);
+		mv.visitInsn(RETURN);
+		Label l6 = new Label();
+		mv.visitLabel(l6);
+		mv.visitLocalVariable("this", fieldOwnerType.getDescriptor(), null, l0, l6, 0);
+		mv.visitLocalVariable("key", KEY_DESC, null, l5, l1, 1);
+		mv.visitMaxs(5, 2);
+		mv.visitEnd();
+	}
+
+	/** @deprecated */
+	@Deprecated
+	private void generateFieldInitiazerMethods() {
+		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
+			if (STRAT_INJECT.equals(field.getStrategy())) {
+				generateFieldInitializerMethod(field);
 			}
-			fieldToLocal.put(field, local);
-
 		}
+	}
 
+	private String getDependencyFieldName(DependencyField field) {
+		return STRAT_INJECT.equals(field.getStrategy()) ? field.getName() : REMOVED_FIELD_PREFIX + field.getName();
+	}
+
+	private String getKeyFieldName(DependencyField field) {
+		return KEY_FIELD_PREFIX + field.getName();
+	}
+
+	/**
+	 * Generates bytecode to lazy-init a field with a dependency
+	 * 
+	 * <pre>
+	 * 	if (field == null) {
+	 * 		Key key = STATIC_KEY_HOLDER_FIELD;
+	 * 		field = DependencyLibrary.locate(key);
+	 * 	}
+	 * }
+	 * </pre>
+	 * 
+	 * @param field
+	 * @param local
+	 */
+	private void loadDependencyIntoField(MethodVisitor mv, DependencyField field) {
+		final Type fieldOwnerType = Type.getObjectType(field.getOwner());
+
+		// mv.visitVarInsn(ALOAD, 0); already on the stack
+
+		mv.visitFieldInsn(GETFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
+		Label initialized = new Label();
+		mv.visitJumpInsn(IFNONNULL, initialized);
+		mv.visitVarInsn(ALOAD, 0); // needed for putfield
+		loadDependencyOntoStack(mv, field);
+		mv.visitFieldInsn(PUTFIELD, fieldOwnerType.getInternalName(), field.getName(), field.getDesc());
+		mv.visitLabel(initialized);
+	}
+
+	/**
+	 * Generates bytecode to lazy-init a local with a dependency
+	 * 
+	 * <pre>
+	 * 	if (local == null) {
+	 * 		Key key = STATIC_KEY_HOLDER_FIELD;
+	 * 		local = DependencyLibrary.locate(key);
+	 * 	}
+	 * }
+	 * </pre>
+	 * 
+	 * @param field
+	 * @param local
+	 */
+	private void loadDependencyIntoLocal(MethodVisitor mv, DependencyField field, int local) {
+		mv.visitVarInsn(ALOAD, local);
+		Label initialized = new Label();
+		mv.visitJumpInsn(IFNONNULL, initialized);
+		loadDependencyOntoStack(mv, field);
+		mv.visitVarInsn(ASTORE, local);
+		mv.visitLabel(initialized);
+		mv.visitVarInsn(ALOAD, local);
+	}
+
+	/**
+	 * Looks up dependency and pushes it onto the stack
+	 * 
+	 * @param mv
+	 *            method visitor
+	 * @param field
+	 *            dependency field
+	 */
+	private void loadDependencyOntoStack(MethodVisitor mv, DependencyField field) {
+		mv.visitFieldInsn(GETSTATIC, field.getOwner(), getKeyFieldName(field), KEY_DESC);
+		mv.visitMethodInsn(INVOKESTATIC, DEPLIB_NAME, DEPLIB_LOCATE_METHOD, DEPLIB_LOCATE_METHOD_DESC);
+		mv.visitTypeInsn(CHECKCAST, field.getType().getInternalName());
+	}
+
+	/**
+	 * generates bytecode to throw an {@link IllegalFieldWriteException}
+	 * exception
+	 * 
+	 * @param field
+	 *            field for which the exception needs to be thrown
+	 */
+	private void throwIllegalFieldWriteException(MethodVisitor mv, DependencyField field) {
+		Label l0 = new Label();
+		mv.visitLabel(l0);
+		mv.visitTypeInsn(NEW, IFWE_NAME);
+		mv.visitInsn(DUP);
+		mv.visitLdcInsn(field.getOwner().replace("/", "."));
+		mv.visitLdcInsn(field.getName());
+		mv.visitMethodInsn(INVOKESPECIAL, IFWE_NAME, "<init>", IFWE_INIT_DESC);
+		mv.visitInsn(ATHROW);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+		owner = name;
+		cv.visit(version, access, name, signature, superName, interfaces);
+		// generateFieldInitiazerMethods();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void visitEnd() {
+		addClinit();
+		super.visitEnd();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
+			final Object value) {
+		final DependencyField field = analyzer.getDependency(owner, name);
+		if (field != null) {
+			{
+				// generate salve.depend.Key field
+				final int a = ACC_PUBLIC + ACC_STATIC + ACC_FINAL;
+				final String n = KEY_FIELD_PREFIX + name;
+				final String d = KEY_DESC;
+				cv.visitField(a, n, d, null, null);
+				monitor.fieldAdded(owner, a, n, d);
+			}
+
+			FieldVisitor fv = null;
+			if (field.getStrategy().equals(STRAT_REMOVE)) {
+				/*
+				 * using remove-field strategy, move the field into static space
+				 * and rename it. we do not remove the field completely because
+				 * we still need access to java.lang.reflect.Field object for
+				 * dependency resolution
+				 */
+				final int a = ACC_PUBLIC + ACC_STATIC + ACC_FINAL;
+				final String n = getDependencyFieldName(field);
+
+				monitor.fieldRemoved(owner, access, name, desc);
+				monitor.fieldAdded(owner, a, n, desc);
+
+				fv = cv.visitField(a, n, desc, signature, null);
+			} else {
+				/*
+				 * using inject-field strategy, make field transient so object
+				 * can be serialized
+				 */
+				fv = cv.visitField(access + ACC_TRANSIENT, name, desc, signature, value);
+			}
+
+			return new DependencyAnnotRemover(fv);
+		} else {
+			return cv.visitField(access, name, desc, signature, value);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+		MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
+
+		boolean instrument = analyzer.getDependenciesInMethod(owner, name, desc) != null;
+
+		if (instrument) {
+			monitor.methodModified(owner, access, name, desc);
+			MethodInstrumentor inst = new MethodInstrumentor(access, name, desc, mv);
+			inst.lvs = new LocalVariablesSorter(access, desc, inst);
+			return inst.lvs;
+		} else {
+			return mv;
+		}
 	}
 
 }
