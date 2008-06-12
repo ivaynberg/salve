@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import salve.Scope;
 import salve.depend.DependencyLibrary;
 import salve.depend.Locator;
 import salve.depend.cache.NoopCacheProvider;
@@ -223,7 +224,7 @@ public class TransactionalInstrumentorTest extends Assert {
 	private static void loadBeans() throws Exception {
 		ClassLoader loader = TransactionalInstrumentorTest.class
 				.getClassLoader();
-		BytecodePool pool = new BytecodePool().addLoaderFor(loader);
+		BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(loader);
 		TransactionalInstrumentor inst = new TransactionalInstrumentor();
 
 		mbClass = pool.instrumentIntoClass(METHODBEAN_NAME, inst);
@@ -383,8 +384,8 @@ public class TransactionalInstrumentorTest extends Assert {
 
 		protected void setupExpectations(Object status) {
 			// locate transaction manager
-			EasyMock.expect(locator.locate(TransactionManager.KEY))
-					.andReturn(tm);
+			EasyMock.expect(locator.locate(TransactionManager.KEY)).andReturn(
+					tm);
 		}
 
 	}

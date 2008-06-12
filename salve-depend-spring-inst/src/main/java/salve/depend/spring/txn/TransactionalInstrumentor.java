@@ -14,9 +14,8 @@
 package salve.depend.spring.txn;
 
 import salve.AbstractInstrumentor;
-import salve.BytecodeLoader;
+import salve.InstrumentationContext;
 import salve.InstrumentationException;
-import salve.InstrumentorMonitor;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassWriter;
 import salve.util.BytecodeLoadingClassWriter;
@@ -24,13 +23,13 @@ import salve.util.BytecodeLoadingClassWriter;
 public class TransactionalInstrumentor extends AbstractInstrumentor {
 
 	protected byte[] internalInstrument(String className,
-			BytecodeLoader loader, InstrumentorMonitor monitor)
-			throws InstrumentationException {
+			InstrumentationContext ctx) throws InstrumentationException {
 
-		byte[] bytecode = loader.loadBytecode(className);
+		byte[] bytecode = ctx.getLoader().loadBytecode(className);
+
 		ClassReader reader = new ClassReader(bytecode);
 		ClassWriter writer = new BytecodeLoadingClassWriter(
-				ClassWriter.COMPUTE_FRAMES, loader);
+				ClassWriter.COMPUTE_FRAMES, ctx.getLoader());
 
 		ClassAnalyzerImpl analyzer = new ClassAnalyzerImpl();
 		reader.accept(analyzer, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG
@@ -38,7 +37,7 @@ public class TransactionalInstrumentor extends AbstractInstrumentor {
 
 		if (analyzer.shouldInstrument()) {
 			ClassInstrumentor inst = new ClassInstrumentor(analyzer, writer,
-					monitor);
+					ctx.getMonitor());
 			reader.accept(inst, 0);
 			bytecode = writer.toByteArray();
 		}

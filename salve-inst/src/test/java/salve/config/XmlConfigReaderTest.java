@@ -64,13 +64,13 @@ public class XmlConfigReaderTest {
 		XmlPackageConfig p1 = config.getPackageConfig("salve.package1");
 		Assert.assertNotNull(p1);
 		Assert.assertEquals(1, p1.getInstrumentors().size());
-		Assert.assertTrue(p1.getInstrumentors().get(0) instanceof Instrumentor1);
+		Assert.assertTrue(p1.getInstrumentors().get(0).equals(Instrumentor1.class.getName()));
 
 		XmlPackageConfig p2 = config.getPackageConfig("salve.package2");
 		Assert.assertNotNull(p2);
 		Assert.assertEquals(2, p2.getInstrumentors().size());
-		Assert.assertTrue(p2.getInstrumentors().get(0) instanceof Instrumentor2);
-		Assert.assertTrue(p2.getInstrumentors().get(1) instanceof Instrumentor1);
+		Assert.assertTrue(p2.getInstrumentors().get(0).equals(Instrumentor2.class.getName()));
+		Assert.assertTrue(p2.getInstrumentors().get(1).equals(Instrumentor1.class.getName()));
 
 	}
 }

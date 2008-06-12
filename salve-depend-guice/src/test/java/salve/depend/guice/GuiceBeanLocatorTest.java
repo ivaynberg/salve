@@ -21,6 +21,7 @@ import junit.framework.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import salve.Scope;
 import salve.depend.DependencyInstrumentor;
 import salve.depend.DependencyLibrary;
 import salve.depend.Locator;
@@ -41,25 +42,6 @@ public class GuiceBeanLocatorTest {
 	private static Injector injector;
 	private static Object injected;
 	private static Locator locator;
-
-	@Test
-	public void testLookupByType() {
-		MockService ts = ((Injected) injected).getTestService();
-		Assert.assertNotNull(ts);
-		Assert.assertEquals(ts.getName(), ts.getClass().getName());
-	}
-
-	@Test
-	public void testLookupByTypeAndAnnot() {
-		MockService ts = ((Injected) injected).getBlueTestService();
-		Assert.assertNotNull(ts);
-		Assert.assertEquals(ts.getName(), "BlueTestService");
-	}
-
-	@Test
-	public void testToString() {
-		Assert.assertNotNull(locator.toString());
-	}
 
 	@BeforeClass
 	public static void init() throws Exception {
@@ -84,9 +66,28 @@ public class GuiceBeanLocatorTest {
 		DependencyLibrary.addLocator(locator);
 
 		ClassLoader loader = GuiceBeanLocatorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool().addLoaderFor(loader);
+		BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(loader);
 		Class<?> clazz = pool.instrumentIntoClass(BEAN_NAME,
 				new DependencyInstrumentor());
 		injected = clazz.newInstance();
+	}
+
+	@Test
+	public void testLookupByType() {
+		MockService ts = ((Injected) injected).getTestService();
+		Assert.assertNotNull(ts);
+		Assert.assertEquals(ts.getName(), ts.getClass().getName());
+	}
+
+	@Test
+	public void testLookupByTypeAndAnnot() {
+		MockService ts = ((Injected) injected).getBlueTestService();
+		Assert.assertNotNull(ts);
+		Assert.assertEquals(ts.getName(), "BlueTestService");
+	}
+
+	@Test
+	public void testToString() {
+		Assert.assertNotNull(locator.toString());
 	}
 }

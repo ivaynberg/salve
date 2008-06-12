@@ -78,32 +78,43 @@ public class FilePathLoader implements BytecodeLoader {
 	}
 
 	protected byte[] loadFromFile(File file) {
-		if (file.exists()) {
-			FileInputStream fis;
-			try {
-				fis = new FileInputStream(file);
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException("Could not open file for reading bytecode: " + file.getAbsolutePath(), e);
-			}
-			return StreamsUtil.drain(fis, FILE_ERROR_MSG, file.getAbsolutePath());
-		} else {
+		// do not check if file exists upfront as it is an expensive check,
+		// instead handle thatvia FileNotFoundException
+
+		FileInputStream fis;
+		try {
+			fis = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			// throw new RuntimeException("Could not open file for reading
+			// bytecode: " + file.getAbsolutePath(), e);
 			return null;
 		}
+
+		try {
+			return StreamsUtil.drain(fis, FILE_ERROR_MSG, file.getAbsolutePath());
+		} catch (RuntimeException e) {
+			if (e.getCause() != null && e.getCause() instanceof FileNotFoundException) {
+				return null;
+			}
+			throw e;
+		}
+
 	}
 
 	protected byte[] loadFromJar(File jar, String name) {
+		// do not check if file exists upfront as it is an expensive check,
+		// instead handle thatvia FileNotFoundException
+
 		try {
 			byte[] bytecode = null;
 
-			if (jar.exists()) {
-
-				JarEntry entry = findJarEntry(jar, name);
-				if (entry != null) {
-					bytecode = readJarEntry(jar, entry);
-				}
+			JarEntry entry = findJarEntry(jar, name);
+			if (entry != null) {
+				bytecode = readJarEntry(jar, entry);
 			}
-
 			return bytecode;
+		} catch (FileNotFoundException e) {
+			return null;
 		} catch (IOException e) {
 			throw new RuntimeException("Could not read bytecode for " + name + "@jar: " + jar.getAbsolutePath(), e);
 		}

@@ -27,6 +27,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
 import salve.ConfigException;
+import salve.InstrumentationContext;
 import salve.Instrumentor;
 import salve.config.XmlConfig;
 import salve.config.XmlConfigReader;
@@ -109,7 +110,9 @@ public class SalveMojo extends AbstractMojo {
 			for (Instrumentor inst : config.getInstrumentors(binClassName)) {
 				getLog().debug("Instrumenting " + className + " with " + inst.getClass().getName() + " instrumentor");
 
-				byte[] bytecode = inst.instrument(binClassName, loader, monitor);
+				InstrumentationContext ctx = new InstrumentationContext(loader, monitor, config.getScope(inst));
+
+				byte[] bytecode = inst.instrument(binClassName, ctx);
 				FileOutputStream fos = new FileOutputStream(file);
 				fos.write(bytecode);
 				fos.close();

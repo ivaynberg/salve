@@ -17,7 +17,9 @@
 package salve.loader;
 
 import salve.BytecodeLoader;
+import salve.InstrumentationContext;
 import salve.Instrumentor;
+import salve.Scope;
 import salve.monitor.NoopMonitor;
 import salve.util.ClassesUtil;
 import salve.util.LruCache;
@@ -34,6 +36,18 @@ public class BytecodePool extends CompoundLoader {
 	private static final byte[] NOT_FOUND = new byte[] {};
 
 	private final LruCache<String, byte[]> cache = new LruCache<String, byte[]>(5000);
+
+	private final Scope scope;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param scope
+	 *            instrumentation scope
+	 */
+	public BytecodePool(Scope scope) {
+		this.scope = scope;
+	}
 
 	/**
 	 * Adds a bytecode loader that can load bytecode using
@@ -86,7 +100,8 @@ public class BytecodePool extends CompoundLoader {
 	 * @throws Exception
 	 */
 	public byte[] instrumentIntoBytecode(String className, Instrumentor inst) throws Exception {
-		byte[] bytecode = inst.instrument(className, this, NoopMonitor.INSTANCE);
+		InstrumentationContext ctx = new InstrumentationContext(this, NoopMonitor.INSTANCE, scope);
+		byte[] bytecode = inst.instrument(className, ctx);
 		save(className, bytecode);
 		return bytecode;
 	}

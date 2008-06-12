@@ -20,9 +20,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import salve.Config;
 import salve.Instrumentor;
+import salve.Scope;
+import salve.config.XmlConfigReader.RTConfigException;
 
 /**
  * Simple packaged-scoped configuration that contains mappings of packages to
@@ -32,7 +36,9 @@ import salve.Instrumentor;
  * 
  */
 public class XmlConfig implements Config {
-	List<XmlPackageConfig> packageConfigs = new ArrayList<XmlPackageConfig>();
+	private final List<XmlPackageConfig> packageConfigs = new ArrayList<XmlPackageConfig>();
+	private final Map<String, Instrumentor> instrumentors = new ConcurrentHashMap<String, Instrumentor>();
+	private final Map<Instrumentor, PackageScope> scopes = new ConcurrentHashMap<Instrumentor, PackageScope>();
 
 	/**
 	 * Constructor
@@ -46,7 +52,7 @@ public class XmlConfig implements Config {
 	 * 
 	 * @param config
 	 */
-	public void add(XmlPackageConfig config) {
+	void add(XmlPackageConfig config) {
 		packageConfigs.add(config);
 	}
 
@@ -58,8 +64,13 @@ public class XmlConfig implements Config {
 		Collection<Instrumentor> inst = null;
 
 		if (conf != null) {
-			inst = conf.getInstrumentors();
-			if (inst == null) {
+			Collection<String> instClassNames = conf.getInstrumentors();
+			if (instClassNames != null) {
+				inst = new ArrayList<Instrumentor>(conf.getInstrumentors().size());
+				for (String instClassName : conf.getInstrumentors()) {
+					inst.add(instrumentors.get(instClassName));
+				}
+			} else {
 				inst = Collections.emptyList();
 			}
 		} else {
@@ -84,11 +95,71 @@ public class XmlConfig implements Config {
 		return null;
 	}
 
+	/** {@inheritDoc} */
+	public Scope getScope(Instrumentor instrumentor) {
+		Scope scope = scopes.get(instrumentor);
+		if (scope == null) {
+			scope = Scope.NONE;
+		}
+		return scope;
+	}
+
 	/**
-	 * @return all available package configurations
+	 * Initializes the config. This method should be called before
+	 * {@link Config} object is about to be used to resolve instrumentors and
+	 * after the last {@link #add(XmlPackageConfig)} call.
 	 */
-	public List<XmlPackageConfig> getPackageConfigs() {
-		return packageConfigs;
+	void initialize(ClassLoader instrumentorClassLoader) {
+		for (XmlPackageConfig config : packageConfigs) {
+
+			for (String instrumentorClassName : config.getInstrumentors()) {
+
+				Instrumentor instance = instrumentors.get(instrumentorClassName);
+
+				// instantiate instrumentor
+				if (instance == null) {
+					instance = instantiateInstrumentor(instrumentorClassName, instrumentorClassLoader);
+					instrumentors.put(instrumentorClassName, instance);
+				}
+
+				// update instrumentor scope
+				PackageScope scope = scopes.get(instance);
+				if (scope == null) {
+					scope = new PackageScope();
+					scopes.put(instance, scope);
+				}
+
+				scope.addPackage(config.getPackageName());
+			}
+
+		}
+
+	}
+
+	private Instrumentor instantiateInstrumentor(String instClassName, ClassLoader instrumentorClassLoader) {
+		Class<?> instClass = null;
+		try {
+			instClass = instrumentorClassLoader.loadClass(instClassName);
+		} catch (ClassNotFoundException e) {
+			throw new RTConfigException("Could not load instrumentor class " + instClassName
+					+ ", make sure it is available on the classpath at the time of instrumentation");
+		}
+
+		Object inst;
+		try {
+			inst = instClass.newInstance();
+		} catch (InstantiationException e) {
+			throw new RTConfigException("Could not instantiate instrumentor of class " + instClassName, e);
+		} catch (IllegalAccessException e) {
+			throw new RTConfigException("Could not access instrumentor of class " + instClassName, e);
+		}
+
+		if (!(inst instanceof Instrumentor)) {
+			throw new RTConfigException(String.format("Instrumentor class %s does not implement %s", instClassName,
+					Instrumentor.class.getName()));
+		}
+
+		return (Instrumentor) inst;
 	}
 
 }
