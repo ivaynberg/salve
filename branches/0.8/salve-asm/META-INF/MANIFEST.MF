@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: salve asm
+Bundle-SymbolicName: salve.asm
+Bundle-Version: 0.8
+Export-Package: salve.asmlib,
+ salve.util.asm

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Salve Eclipse Integration
+Bundle-SymbolicName: salve.eclipse; singleton:=true
+Bundle-Version: 0.8
+Bundle-Activator: salve.eclipse.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.jdt.core,
+ salve.asm;bundle-version="0.8.0",
+ salve.inst;bundle-version="0.8.0"
+Eclipse-LazyStart: true
