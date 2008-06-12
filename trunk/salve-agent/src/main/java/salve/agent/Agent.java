@@ -26,6 +26,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
+import salve.InstrumentationContext;
 import salve.InstrumentationException;
 import salve.Instrumentor;
 import salve.config.XmlConfig;
@@ -46,8 +47,6 @@ import salve.monitor.NoopMonitor;
  * @author ivaynberg
  */
 public class Agent {
-	private static Instrumentation INSTRUMENTATION;
-
 	private static class Transformer implements ClassFileTransformer {
 		/** set of classloaders that were already used to look for salve config */
 		private final Set<ClassLoader> seenLoaders = new HashSet<ClassLoader>();
@@ -57,25 +56,6 @@ public class Agent {
 
 		/** salve configuration */
 		private final XmlConfig config = new XmlConfig();
-
-		/**
-		 * {@inheritDoc}
-		 */
-		public byte[] transform(ClassLoader loader, String className,
-				Class<?> classBeingRedefined,
-				ProtectionDomain protectionDomain, byte[] classfileBuffer)
-				throws IllegalClassFormatException {
-
-			// see if this is a new classloader, and if it is try to load any
-			// salve config files
-			if (!seenLoaders.contains(loader)) {
-				mergeConfigs(loader);
-				seenLoaders.add(loader);
-			}
-
-			// instrument bytecode
-			return instrument(loader, className, classfileBuffer);
-		}
 
 		/**
 		 * Instruments class
@@ -95,8 +75,11 @@ public class Agent {
 					CompoundLoader bl = new CompoundLoader();
 					bl.addLoader(new MemoryLoader(className, bytecode));
 					bl.addLoader(new ClassLoaderLoader(loader));
-					bytecode = inst.instrument(className, bl,
-							NoopMonitor.INSTANCE);
+
+					InstrumentationContext ctx = new InstrumentationContext(bl,
+							NoopMonitor.INSTANCE, config.getScope(inst));
+
+					bytecode = inst.instrument(className, ctx);
 				}
 				return bytecode;
 			} catch (InstrumentationException e) {
@@ -152,7 +135,28 @@ public class Agent {
 				}
 			}
 		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		public byte[] transform(ClassLoader loader, String className,
+				Class<?> classBeingRedefined,
+				ProtectionDomain protectionDomain, byte[] classfileBuffer)
+				throws IllegalClassFormatException {
+
+			// see if this is a new classloader, and if it is try to load any
+			// salve config files
+			if (!seenLoaders.contains(loader)) {
+				mergeConfigs(loader);
+				seenLoaders.add(loader);
+			}
+
+			// instrument bytecode
+			return instrument(loader, className, classfileBuffer);
+		}
 	}
+
+	private static Instrumentation INSTRUMENTATION;
 
 	public static void premain(String agentArgs, Instrumentation inst) {
 		// ignore double agents

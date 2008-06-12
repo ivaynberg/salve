@@ -16,15 +16,13 @@
  */
 package salve.config;
 
-import salve.BytecodeLoader;
+import salve.InstrumentationContext;
 import salve.InstrumentationException;
 import salve.Instrumentor;
-import salve.InstrumentorMonitor;
 
 public class Instrumentor1 implements Instrumentor {
 
-	public byte[] instrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
-			throws InstrumentationException {
+	public byte[] instrument(String className, InstrumentationContext ctx) throws InstrumentationException {
 		return null;
 	}
 

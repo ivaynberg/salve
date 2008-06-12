@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import salve.Scope;
 import salve.depend.cache.NoopCacheProvider;
 import salve.loader.BytecodePool;
 import salve.loader.ClassLoaderLoader;
@@ -57,7 +58,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 
 	private static void loadBeans() throws Exception {
 		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool();
+		BytecodePool pool = new BytecodePool(Scope.ALL);
 		pool.addLoader(new ClassLoaderLoader(classLoader));
 		beanClass = pool.instrumentIntoClass(BEAN_NAME, new DependencyInstrumentor());
 
@@ -242,7 +243,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	@Test
 	public void testInterfaceInstrumentation() throws Exception {
 		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool();
+		BytecodePool pool = new BytecodePool(Scope.ALL);
 		pool.addLoader(new ClassLoaderLoader(classLoader));
 
 		@SuppressWarnings("unused")

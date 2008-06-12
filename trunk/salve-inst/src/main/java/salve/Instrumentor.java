@@ -27,9 +27,8 @@ public interface Instrumentor {
 	 * 
 	 * @param className
 	 *            binary class name (eg salve/asm/BytecodeLoader)
-	 * @param loader
-	 *            bytecodeLoader that can be used to load bytecode for specified
-	 *            class and any referenced classes
+	 * @param context
+	 *            instrumentation context within which the instrumentor runs
 	 * @return instrumented bytecode
 	 * 
 	 * @see BytecodeLoader
@@ -37,6 +36,5 @@ public interface Instrumentor {
 	 * @throws InstrumentationException
 	 *             if instrumentation fails
 	 */
-	byte[] instrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
-			throws InstrumentationException;
+	byte[] instrument(String className, InstrumentationContext context) throws InstrumentationException;
 }

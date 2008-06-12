@@ -27,10 +27,9 @@ public abstract class AbstractInstrumentor implements Instrumentor {
 	/**
 	 * {@inheritDoc}
 	 */
-	public byte[] instrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
-			throws InstrumentationException {
-		if (loader == null) {
-			throw new IllegalArgumentException("Argument `loader` cannot be null");
+	public byte[] instrument(String className, InstrumentationContext ctx) throws InstrumentationException {
+		if (ctx == null) {
+			throw new IllegalArgumentException("InstrumentationContext cannot be null");
 		}
 		if (className == null) {
 			throw new IllegalArgumentException("Argument `className` cannot be null");
@@ -42,12 +41,21 @@ public abstract class AbstractInstrumentor implements Instrumentor {
 			throw new IllegalArgumentException("Argument `className` cannot be an empty");
 		}
 
-		try {
-			return internalInstrument(className, loader, monitor);
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-			throw new InstrumentationException("Error instrumenting " + className + " with instrumentor "
-					+ getClass().getName(), e);
+		if (ctx.getScope().includes(className)) {
+
+			try {
+				return internalInstrument(className, ctx);
+			} catch (Exception e) {
+				e.printStackTrace(System.err);
+				throw new InstrumentationException("Error instrumenting " + className + " with instrumentor "
+						+ getClass().getName(), e);
+			}
+		} else {
+			byte[] bytecode = ctx.getLoader().loadBytecode(className);
+			if (bytecode == null) {
+				throw new CannotLoadBytecodeException(className);
+			}
+			return bytecode;
 		}
 	}
 
@@ -61,7 +69,6 @@ public abstract class AbstractInstrumentor implements Instrumentor {
 	 * @return
 	 * @throws Exception
 	 */
-	protected abstract byte[] internalInstrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
-			throws Exception;
+	protected abstract byte[] internalInstrument(String className, InstrumentationContext ctx) throws Exception;
 
 }

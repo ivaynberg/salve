@@ -43,8 +43,10 @@ import org.eclipse.jdt.core.JavaCore;
 import salve.BytecodeLoader;
 import salve.Config;
 import salve.ConfigException;
+import salve.InstrumentationContext;
 import salve.InstrumentationException;
 import salve.Instrumentor;
+import salve.Scope;
 import salve.asmlib.ClassReader;
 import salve.config.XmlConfig;
 import salve.config.XmlConfigReader;
@@ -160,7 +162,7 @@ public class SalveBuilder extends AbstractBuilder {
 
 		// we use a bytecode pool instead of bloader directly because the pool
 		// comes with a cache
-		BytecodePool bytecodePool = new BytecodePool();
+		BytecodePool bytecodePool = new BytecodePool(Scope.ALL);
 		bytecodePool.addLoader(bloader);
 
 		ResourceBuilder builder = new ResourceBuilder(config, bytecodePool,
@@ -267,7 +269,11 @@ public class SalveBuilder extends AbstractBuilder {
 				CompoundLoader cl = new CompoundLoader();
 				cl.addLoader(new FileBytecodeLoader(file));
 				cl.addLoader(bloader);
-				byte[] bytecode = inst.instrument(cn, cl, NoopMonitor.INSTANCE);
+
+				InstrumentationContext ctx = new InstrumentationContext(cl,
+						NoopMonitor.INSTANCE, config.getScope(inst));
+
+				byte[] bytecode = inst.instrument(cn, ctx);
 				file.setContents(new ByteArrayInputStream(bytecode), true,
 						false, null);
 			}

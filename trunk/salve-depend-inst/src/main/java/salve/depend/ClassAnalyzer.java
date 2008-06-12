@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
+import salve.InstrumentationContext;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassReader;
 import salve.asmlib.FieldVisitor;
@@ -121,15 +121,19 @@ class ClassAnalyzer implements Opcodes, Constants {
 			return new MethodVisitorAdapter() {
 				@Override
 				public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-					DependencyField field = getDependency(owner, name);
-					if (field != null) {
-						List<DependencyField> fields = methodKeyToFields.get(methodKey);
-						if (fields == null) {
-							fields = new ArrayList<DependencyField>(4);
-							fields.add(field);
-							methodKeyToFields.put(methodKey, fields);
-						} else if (!fields.contains(field)) {
-							fields.add(field);
+					if (ctx.getScope().includes(owner)) {
+						// only analyze field access for owners inside
+						// instrumentation scope
+						DependencyField field = getDependency(owner, name);
+						if (field != null) {
+							List<DependencyField> fields = methodKeyToFields.get(methodKey);
+							if (fields == null) {
+								fields = new ArrayList<DependencyField>(4);
+								fields.add(field);
+								methodKeyToFields.put(methodKey, fields);
+							} else if (!fields.contains(field)) {
+								fields.add(field);
+							}
 						}
 					}
 				}
@@ -165,7 +169,7 @@ class ClassAnalyzer implements Opcodes, Constants {
 		return className + "." + methodName + methodDescriptor;
 	}
 
-	private final BytecodeLoader loader;
+	private final InstrumentationContext ctx;
 
 	private final Set<String> scannedClasses = new HashSet<String>();
 
@@ -176,14 +180,11 @@ class ClassAnalyzer implements Opcodes, Constants {
 	/**
 	 * Constructor
 	 * 
-	 * @param loader
-	 *            bytecode loader
+	 * @param ctx
+	 * @param className
 	 */
-	public ClassAnalyzer(BytecodeLoader loader, String className) {
-		if (loader == null) {
-			throw new IllegalArgumentException("Argument `loader` cannot be null");
-		}
-		this.loader = loader;
+	public ClassAnalyzer(String className, InstrumentationContext ctx) {
+		this.ctx = ctx;
 		analyzeClass(className);
 	}
 
@@ -197,17 +198,13 @@ class ClassAnalyzer implements Opcodes, Constants {
 		if (!scannedClasses.contains(owner)) {
 			scannedClasses.add(owner);
 
-			byte[] bytecode = loader.loadBytecode(owner);
+			byte[] bytecode = ctx.getLoader().loadBytecode(owner);
 			if (bytecode == null) {
 				throw new CannotLoadBytecodeException(owner);
 			}
 			ClassReader reader = new ClassReader(bytecode);
 			reader.accept(new Analyzer(), ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES);
 		}
-	}
-
-	public boolean shouldInstrument() {
-		return fieldKeyToField.size() > 0 || methodKeyToFields.size() > 0;
 	}
 
 	/**
@@ -255,5 +252,9 @@ class ClassAnalyzer implements Opcodes, Constants {
 		// TODO check args
 		analyzeClass(owner);
 		return fieldKeyToField.get(generateFieldKey(owner, fieldName));
+	}
+
+	public boolean shouldInstrument() {
+		return fieldKeyToField.size() > 0 || methodKeyToFields.size() > 0;
 	}
 }

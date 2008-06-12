@@ -19,30 +19,28 @@ package salve.config;
 import java.util.ArrayList;
 import java.util.List;
 
-import salve.Instrumentor;
-
 /**
  * A package-scoped cofiguration
  * 
  * @author ivaynberg
  */
-public class XmlPackageConfig {
+class XmlPackageConfig {
 	private String packageName;
-	private final List<Instrumentor> instrumentors = new ArrayList<Instrumentor>();
+	private final List<String> instrumentors = new ArrayList<String>();
 
 	/**
 	 * Adds instrumentor to this package configuration
 	 * 
 	 * @param instrumentor
 	 */
-	public void add(Instrumentor instrumentor) {
+	public void add(String instrumentor) {
 		instrumentors.add(instrumentor);
 	}
 
 	/**
 	 * @return list of instrumentors in this config
 	 */
-	public List<Instrumentor> getInstrumentors() {
+	public List<String> getInstrumentors() {
 		return instrumentors;
 	}
 

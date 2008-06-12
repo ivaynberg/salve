@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import salve.Scope;
 import salve.depend.DependencyInstrumentor;
 import salve.depend.DependencyLibrary;
 import salve.depend.DependencyNotFoundException;
@@ -73,7 +74,7 @@ public class SpringBeanLocatorTest {
 		DependencyLibrary.addLocator(locator);
 
 		ClassLoader loader = SpringBeanLocatorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool().addLoaderFor(loader);
+		BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(loader);
 
 		injected = pool.instrumentIntoClass(BEAN_NAME,
 				new DependencyInstrumentor()).newInstance();

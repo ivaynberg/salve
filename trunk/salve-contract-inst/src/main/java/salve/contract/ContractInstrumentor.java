@@ -17,8 +17,8 @@
 package salve.contract;
 
 import salve.AbstractInstrumentor;
-import salve.BytecodeLoader;
 import salve.CannotLoadBytecodeException;
+import salve.InstrumentationContext;
 import salve.InstrumentationException;
 import salve.InstrumentorMonitor;
 import salve.asmlib.AnnotationVisitor;
@@ -97,10 +97,9 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 	}
 
 	@Override
-	protected byte[] internalInstrument(String className, BytecodeLoader loader, InstrumentorMonitor monitor)
-			throws InstrumentationException {
+	protected byte[] internalInstrument(String className, InstrumentationContext ctx) throws InstrumentationException {
 
-		byte[] bytecode = loader.loadBytecode(className);
+		byte[] bytecode = ctx.getLoader().loadBytecode(className);
 		if (bytecode == null) {
 			throw new CannotLoadBytecodeException(className);
 		}
@@ -109,8 +108,8 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 		Analyzer analyzer = new Analyzer();
 		reader.accept(analyzer, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 		if (analyzer.shouldInstrument()) {
-			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
-			reader.accept(new ConditionalChecksInstrumentor(writer, monitor), 0);
+			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx.getLoader());
+			reader.accept(new ConditionalChecksInstrumentor(writer, ctx.getMonitor()), 0);
 			bytecode = writer.toByteArray();
 		}
 		return bytecode;
