@@ -108,12 +108,7 @@ public class SalveBuilder extends AbstractBuilder {
 		removeMarks(configResource);
 
 		// load config
-		BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject()) {
-			@Override
-			protected BytecodeLoader newFilePathLoader(File file) {
-				return new CachingFilePathLoader(file);
-			}
-		};
+		BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject());
 		ClassLoader cloader = new FallbackBytecodeClassLoader(getClass()
 				.getClassLoader(), bloader);
 
