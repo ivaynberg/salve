@@ -14,37 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package salve;
+package salve.contract.pe.map;
 
-/**
- * Exception that represents a problem during the instrumentation process
- * 
- * @author ivaynberg
- * 
- */
-public class InstrumentationException extends Exception {
-	private static final long serialVersionUID = 1L;
+import org.junit.Test;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public InstrumentationException(Exception e) {
-		super(e);
+import salve.contract.AbstractContractInstrumentorTestSupport;
+import salve.contract.PE;
+
+public class PEMapsContractInstrumentorTest extends AbstractContractInstrumentorTestSupport {
+
+	public static class TestCode1 {
+		public void testCode() {
+			new PE(Family.class, "members.uncle.name", "r");
+		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 */
-	public InstrumentationException(String message) {
-		super(message);
+	@Test
+	public void test() throws Exception {
+		create("TestCode1");
 	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public InstrumentationException(String string, Exception e) {
-		super(string, e);
-	}
-
 }
