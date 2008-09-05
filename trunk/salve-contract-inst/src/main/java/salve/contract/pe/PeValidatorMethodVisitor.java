@@ -1,26 +1,17 @@
 package salve.contract.pe;
 
-import java.util.Map;
-
 import salve.InstrumentationContext;
 import salve.asmlib.Label;
 import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
-import salve.contract.PE;
+import salve.asmlib.Type;
 
-/**
- * Detects {@link PE} instantiations
- * 
- * @author igor.vaynberg
- * 
- */
-public class PeInstantiationValidator extends MethodAdapter {
-
+public class PeValidatorMethodVisitor extends MethodAdapter {
 	/*
 	 * NEW salve/contract/PE
 	 * 
-	 * (DUP)*
+	 * (DUP)
 	 * 
 	 * LDC Lsalve/contract/PEContractInstrumentorTest$TestBean;.class
 	 * 
@@ -29,7 +20,8 @@ public class PeInstantiationValidator extends MethodAdapter {
 	 * LDC "mode"
 	 * 
 	 * 
-	 * INVOKESPECIAL salve/contract/PE.<init>(Ljava/lang/Class;Ljava/lang/Class;Ljava
+	 * INVOKESPECIAL
+	 * salve/contract/PE.<init>(Ljava/lang/Class;Ljava/lang/Class;Ljava
 	 * /lang/String;)V
 	 */
 	private static enum PeState {
@@ -37,15 +29,18 @@ public class PeInstantiationValidator extends MethodAdapter {
 	}
 
 	private PeState state;
-	private String className;
+	private String classDesc;
 	private String expression;
 	private String mode;
 
 	private final InstrumentationContext ctx;
 
-	public PeInstantiationValidator(InstrumentationContext ctx, MethodVisitor mv) {
+	private final PeValidator validator;
+
+	public PeValidatorMethodVisitor(InstrumentationContext ctx, MethodVisitor mv) {
 		super(mv);
 		this.ctx = ctx;
+		validator = new PeValidator(ctx);
 	}
 
 	public String getMode() {
@@ -53,22 +48,7 @@ public class PeInstantiationValidator extends MethodAdapter {
 	}
 
 	protected void validatePeInstantiation(String className, String expression, String mode) {
-		AccessorCollector collector = new AccessorCollector(ctx);
-		Policy policy = new TestPolicy();
-		String[] parts = expression.split("\\.");
-		if (parts.length < 1) {
-			throw new IllegalArgumentException("PE Expression: " + expression + " must have at least one part");
-		}
-		String cn = className;
-		Accessor accessor = null;
-		for (String part : parts) {
-			Map<Accessor.Type, Accessor> accessors = collector.collect(cn, part, mode, accessor);
-			if (accessors.isEmpty()) {
-				throw new RuntimeException("Could not resolve expression part: " + part + " in class: " + cn);
-			}
-			accessor = policy.choose(accessors);
-			cn = accessor.getReturnTypeName();
-		}
+		validator.validate(className, expression, mode);
 	}
 
 	@Override
@@ -109,7 +89,7 @@ public class PeInstantiationValidator extends MethodAdapter {
 	@Override
 	public void visitLdcInsn(Object cst) {
 		if (state == PeState.LDC_CLASS) {
-			className = cst.toString();
+			classDesc = cst.toString();
 			state = PeState.LDC_EXPR;
 		} else if (state == PeState.LDC_EXPR) {
 			expression = cst.toString();
@@ -131,15 +111,17 @@ public class PeInstantiationValidator extends MethodAdapter {
 
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-		if (state == PeState.INVOKESPECIAL && opcode == Opcodes.INVOKESPECIAL && "salve/contract/PE".equals(owner)
-				&& "<init>".equals(name) && "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V".equals(desc)) {
-
-			if (!className.startsWith("L") || !className.endsWith(";")) {
-				throw new IllegalStateException("Invalid class name detected: " + className
-						+ ", expected class name in format Lpackage/classname;");
+		if (opcode == Opcodes.INVOKESPECIAL) {
+			if ("salve/contract/PE".equals(owner) && "<init>".equals(name)) {
+				if (state == PeState.LDC_MODE) {
+					// class/expr constructor used, default the mode to rw
+					mode = "rw";
+					state = PeState.INVOKESPECIAL;
+				}
+				if (state == PeState.INVOKESPECIAL && "salve/contract/PE".equals(owner)) {
+					validatePeInstantiation(Type.getType(classDesc).getInternalName(), expression, mode);
+				}
 			}
-
-			validatePeInstantiation(className.substring(1, className.length() - 1), expression, mode);
 		}
 		state = null;
 		mv.visitMethodInsn(opcode, owner, name, desc);
@@ -172,4 +154,5 @@ public class PeInstantiationValidator extends MethodAdapter {
 		state = null;
 		mv.visitVarInsn(opcode, var);
 	}
+
 }

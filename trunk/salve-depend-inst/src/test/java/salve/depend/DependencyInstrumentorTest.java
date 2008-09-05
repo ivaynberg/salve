@@ -33,7 +33,6 @@ import salve.loader.ClassLoaderLoader;
 import salve.util.EasyMockTemplate;
 
 public class DependencyInstrumentorTest extends Assert implements Constants {
-	private static String BEAN_NAME = "salve/depend/Bean";
 	private static Class<?> beanClass;
 
 	private static BlueDependency blue;
@@ -57,15 +56,14 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	}
 
 	private static void loadBeans() throws Exception {
+		final DependencyInstrumentor inst = new DependencyInstrumentor();
 		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
 		BytecodePool pool = new BytecodePool(Scope.ALL);
 		pool.addLoader(new ClassLoaderLoader(classLoader));
-		beanClass = pool.instrumentIntoClass(BEAN_NAME, new DependencyInstrumentor());
-
-		// FileOutputStream fos = new FileOutputStream(
-		// "target/test-classes/salve/dependency/Bean$Instrumented.class");
-		// fos.write(bytecode);
-		// fos.close();
+		beanClass = pool.instrumentIntoClass("salve/depend/Bean", inst);
+		// instrument inner and anonymous classes
+		pool.instrumentIntoClass("salve/depend/Bean$InnerBean", inst);
+		pool.instrumentIntoClass("salve/depend/Bean$1", inst);
 	}
 
 	@Before
@@ -89,6 +87,26 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 		assertEquals(1, annots.length);
 		assertEquals(Circle.class, annots[0].annotationType());
 
+	}
+
+	@Test
+	public void testAnonClassFieldRead() throws Exception {
+		new EasyMockTemplate(locator, red) {
+
+			@Override
+			protected void setupExpectations() {
+				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "red"))).andReturn(red);
+				red.method1();
+			}
+
+			@Override
+			protected void testExpectations() throws Exception {
+
+				Bean bean = (Bean) beanClass.newInstance();
+				bean.methodAnonymous();
+			}
+
+		}.test();
 	}
 
 	@SuppressWarnings("static-access")

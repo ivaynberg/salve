@@ -18,19 +18,46 @@ package salve.contract.pe.map;
 
 import org.junit.Test;
 
+import salve.InstrumentationException;
 import salve.contract.AbstractContractInstrumentorTestSupport;
 import salve.contract.PE;
 
 public class PEMapsContractInstrumentorTest extends AbstractContractInstrumentorTestSupport {
 
-	public static class TestCode1 {
-		public void testCode() {
-			new PE(Family.class, "members.uncle.name", "r");
+	public static class CorrectListAccess {
+		public void access() {
+			new PE(Family.class, "members.ancestors.0.name");
+		}
+	}
+
+	public static class CorrectMapAccess {
+		public void access() {
+			new PE(Family.class, "members.uncle.name");
+		}
+	}
+
+	public static class IncorrectMapAccess {
+		public void access() {
+			new PE(Family.class, "members.uncle.foo");
 		}
 	}
 
 	@Test
-	public void test() throws Exception {
-		create("TestCode1");
+	public void testCorrectListAccess() throws Exception {
+		instrument("CorrectListAccess");
+	}
+
+	public void testCorrectMapAccess() throws Exception {
+		instrument("CorrectMapAccess");
+	}
+
+	public void testIncorrectMapAccess() throws Exception {
+		try {
+			instrument("IncorrectMapAccess");
+			fail("Should have failed since Member does not have foo()");
+		} catch (InstrumentationException e) {
+			// noop
+		}
+
 	}
 }

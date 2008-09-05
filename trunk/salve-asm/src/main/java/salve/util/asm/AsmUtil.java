@@ -17,6 +17,8 @@
 package salve.util.asm;
 
 import salve.asmlib.Type;
+import salve.asmlib.signature.SignatureReader;
+import salve.asmlib.signature.SignatureVisitor;
 
 /**
  * Asm related utilities
@@ -25,6 +27,27 @@ import salve.asmlib.Type;
  * 
  */
 public class AsmUtil {
+	public static class Pair<K, V> {
+		private K key;
+		private V value;
+
+		public K getKey() {
+			return key;
+		}
+
+		public V getValue() {
+			return value;
+		}
+
+		public void setKey(K key) {
+			this.key = key;
+		}
+
+		public void setValue(V value) {
+			this.value = value;
+		}
+	}
+
 	public static class Types {
 		public static Type CLASS = Type.getType(Class.class);
 
@@ -39,6 +62,7 @@ public class AsmUtil {
 	private static final String INTEGERDESC = "Ljava/lang/Integer;";
 	private static final String SHORTDESC = "Ljava/lang/Short;";
 	private static final String BYTEDESC = "Ljava/lang/Byte;";
+
 	private static final String BOOLEANDESC = "Ljava/lang/Boolean;";
 
 	private static final String CHARDESC = "Ljava/lang/Character;";
@@ -123,6 +147,73 @@ public class AsmUtil {
 
 	public static boolean isShort(Type type) {
 		return Type.SHORT == type.getSort() || "Ljava/lang/Short;".equals(type.getDescriptor());
+	}
+
+	public static String parseListTypeFromSignature(final String signature) {
+		final Pair<String, String> types = new Pair<String, String>();
+
+		class Visitor extends SignatureVisitorAdapter {
+			private int mode;
+
+			@Override
+			public void visitClassType(String name) {
+				if (mode == 0) {
+					// do nothing
+				} else if (mode == 1) {
+					types.setKey(name);
+				} else {
+					throw new InvalidSignatureException(signature);
+				}
+			}
+
+			@Override
+			public SignatureVisitor visitTypeArgument(char wildcard) {
+				mode++;
+				return this;
+			}
+
+		}
+
+		SignatureReader reader = new SignatureReader(signature);
+		reader.accept(new Visitor());
+		if (types.getKey() == null) {
+			throw new InvalidSignatureException(signature);
+		}
+		return types.getKey();
+	}
+
+	public static Pair<String, String> parseMapTypesFromSignature(final String signature) {
+		final Pair<String, String> types = new Pair<String, String>();
+		class Visitor extends SignatureVisitorAdapter {
+			private int mode;
+
+			@Override
+			public void visitClassType(String name) {
+				if (mode == 0) {
+					// do nothing
+				} else if (mode == 1) {
+					types.setKey(name);
+				} else if (mode == 2) {
+					types.setValue(name);
+				} else {
+					throw new InvalidSignatureException(signature);
+				}
+			}
+
+			@Override
+			public SignatureVisitor visitTypeArgument(char wildcard) {
+				mode++;
+				return this;
+			}
+
+		}
+
+		SignatureReader reader = new SignatureReader(signature);
+		reader.accept(new Visitor());
+		if (types.getKey() == null || types.getValue() == null) {
+			throw new InvalidSignatureException(signature);
+		}
+		return types;
 	}
 
 	/**

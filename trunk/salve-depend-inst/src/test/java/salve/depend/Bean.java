@@ -41,7 +41,7 @@ public class Bean extends AbstractBean {
 	@Square
 	@Dependency
 	@Circle
-	private RedDependency red;
+	RedDependency red;
 
 	@Dependency(strategy = InstrumentationStrategy.INJECT_FIELD)
 	private BlueDependency blue;
@@ -89,6 +89,21 @@ public class Bean extends AbstractBean {
 		}
 		red.method1();
 
+	}
+
+	/**
+	 * Tests access to a dependency field from an anonymous class. Notice the
+	 * field has to have visibility of non-private for this test to work
+	 * properly.
+	 */
+	public void methodAnonymous() {
+		Runnable runnable = new Runnable() {
+
+			public void run() {
+				red.method1();
+			}
+		};
+		runnable.run();
 	}
 
 	public void methodInner() {

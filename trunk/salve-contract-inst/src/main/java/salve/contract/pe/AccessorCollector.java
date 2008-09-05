@@ -3,12 +3,16 @@ package salve.contract.pe;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import salve.InstrumentationContext;
 import salve.asmlib.ClassReader;
-import salve.util.asm.MapSignature;
+import salve.util.asm.AsmUtil;
+import salve.util.asm.AsmUtil.Pair;
 
 public class AccessorCollector {
+	private static final Pattern listIndexPattern = Pattern.compile("[0-9]+");
+
 	private final InstrumentationContext ctx;
 
 	public AccessorCollector(InstrumentationContext ctx) {
@@ -22,13 +26,17 @@ public class AccessorCollector {
 
 		for (EnhancedClassReader reader : new ClassHieararchy(ctx.getLoader(), className)) {
 			if (reader.isMap()) {
-				MapSignature sig = new MapSignature();
-				sig.parse(previous.getSig());
-				final String type = sig.getValueTypeClassName();
+				Pair<String, String> sig = AsmUtil.parseMapTypesFromSignature(previous.getSig());
+				final String type = sig.getValue();
 				final Accessor acc = new Accessor(Accessor.Type.MAP, part, "L" + type + ";", null);
 				accessors.put(acc.getType(), acc);
 			} else if (reader.isList()) {
-				throw new UnsupportedOperationException("lists are not yet supported");
+				if (!listIndexPattern.matcher(part).matches()) {
+					throw new RuntimeException("Invalid list index: " + part);
+				}
+				final String type = AsmUtil.parseListTypeFromSignature(previous.getSig());
+				final Accessor acc = new Accessor(Accessor.Type.LIST, part, "L" + type + ";", null);
+				accessors.put(acc.getType(), acc);
 			}
 
 			reader.accept(visitor, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
