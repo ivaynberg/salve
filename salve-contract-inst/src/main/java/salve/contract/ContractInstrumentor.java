@@ -29,7 +29,7 @@ import salve.asmlib.MethodVisitor;
 import salve.contract.impl.NotEmptyInstrumentor;
 import salve.contract.impl.NotNullInstrumentor;
 import salve.contract.impl.NumericalInstrumentor;
-import salve.contract.pe.PeAnalyzer;
+import salve.contract.pe.PeValidatorClassVisitor;
 import salve.util.BytecodeLoadingClassWriter;
 
 public class ContractInstrumentor extends AbstractInstrumentor {
@@ -69,8 +69,7 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 
 		ClassReader reader = new ClassReader(bytecode);
 		ContractAnalyzer analyzer = new ContractAnalyzer();
-		reader.accept(new PeAnalyzer(ctx, analyzer), /* ClassReader.SKIP_CODE | */ClassReader.SKIP_DEBUG
-				| ClassReader.SKIP_FRAMES);
+		reader.accept(new PeValidatorClassVisitor(ctx, analyzer), ClassReader.SKIP_FRAMES);
 
 		if (analyzer.shouldInstrument()) {
 			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx.getLoader());

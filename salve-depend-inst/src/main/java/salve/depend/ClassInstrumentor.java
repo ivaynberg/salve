@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import salve.InstrumentorMonitor;
+import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.FieldVisitor;
@@ -355,6 +356,14 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 				monitor.fieldAdded(owner, a, n, desc);
 
 				fv = cv.visitField(a, n, desc, signature, null);
+
+				// since we are removing the field we have to add SalveFieldInfo
+				// annotation so we do not lose field info for later bytecode
+				// passes
+
+				AnnotationVisitor annot = fv.visitAnnotation(FieldInfo.DESC, true);
+				annot.visit(FieldInfo.Params.NAME, name);
+				annot.visit(FieldInfo.Params.DESC, desc);
 			} else {
 				/*
 				 * using inject-field strategy, make field transient so object

@@ -6,10 +6,10 @@ import salve.asmlib.ClassVisitor;
 import salve.asmlib.MethodVisitor;
 import salve.util.asm.MethodVisitorAdapter;
 
-public class PeAnalyzer extends ClassAdapter {
+public class PeValidatorClassVisitor extends ClassAdapter {
 	private final InstrumentationContext ctx;
 
-	public PeAnalyzer(InstrumentationContext ctx, ClassVisitor cv) {
+	public PeValidatorClassVisitor(InstrumentationContext ctx, ClassVisitor cv) {
 		super(cv);
 		this.ctx = ctx;
 	}
@@ -20,7 +20,7 @@ public class PeAnalyzer extends ClassAdapter {
 		if (mv == null) {
 			mv = new MethodVisitorAdapter();
 		}
-		return new PeInstantiationValidator(ctx, mv);
+		return new PeValidatorMethodVisitor(ctx, mv);
 	}
 
 }

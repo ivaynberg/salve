@@ -70,6 +70,7 @@ class ClassAnalyzer implements Opcodes, Constants {
 		@Override
 		public FieldVisitor visitField(final int fieldAccess, final String fieldName, final String fieldDesc,
 				String signature, Object value) {
+
 			return new FieldVisitorAdapter() {
 
 				@Override
@@ -98,6 +99,26 @@ class ClassAnalyzer implements Opcodes, Constants {
 						}
 					}
 
+				};
+			} else if (FieldInfo.DESC.equals(annotDesc)) {
+				return new AnnotationVisitorAdapter() {
+					private String fieldName;
+					private String fieldDesc;
+
+					@Override
+					public void visit(String name, Object value) {
+						if (FieldInfo.Params.NAME.equals(name)) {
+							fieldName = (String) value;
+						} else if (FieldInfo.Params.DESC.equals(name)) {
+							fieldDesc = (String) value;
+						}
+					}
+
+					@Override
+					public void visitEnd() {
+						DependencyField field = new DependencyField(owner, fieldName, fieldDesc);
+						fieldKeyToField.put(generateFieldKey(owner, fieldName), field);
+					}
 				};
 			}
 			return null;

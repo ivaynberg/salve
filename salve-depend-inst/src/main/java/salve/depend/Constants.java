@@ -26,13 +26,23 @@ package salve.depend;
  * 
  */
 interface Constants {
+	public static interface FieldInfo {
+		public static interface Params {
+			public static final String NAME = "name";
+			public static final String DESC = "desc";
+		}
+
+		public static final String NAME = "salve/depend/DependencyFieldInfo";
+		public static final String DESC = "L" + NAME + ";";
+	}
+
 	public static final String NS = "_salve";
 	public static final String DEPNS = NS + "dep";
 	public static final String REMOVED_FIELD_PREFIX = DEPNS + "rmfld$";
 	public static final String KEY_FIELD_PREFIX = DEPNS + "key$";
 	public static final String FIELDINIT_METHOD_PREFIX = DEPNS + "fldinit$";
-	public static final String CLINIT_METHOD_PREFIX = DEPNS + "clinit$";
 
+	public static final String CLINIT_METHOD_PREFIX = DEPNS + "clinit$";
 	public static final String KEYIMPL_NAME = "salve/depend/FieldKey";
 	public static final String KEYIMPL_INIT_DESC = "(Ljava/lang/Class;Ljava/lang/String;)V";
 	public static final String DEPLIB_NAME = "salve/depend/DependencyLibrary";
@@ -41,11 +51,12 @@ interface Constants {
 	public static final String DEPLIB_LOCATE_METHOD_DESC = "(Lsalve/depend/Key;)Ljava/lang/Object;";
 	public static final String DEPLIB_LOCATE_METHOD = "locate";
 	public static final String IFWE_NAME = "salve/depend/IllegalFieldWriteException";
+
 	public static final String IFWE_INIT_DESC = "(Ljava/lang/String;Ljava/lang/String;)V";
 
 	public static final String DEP_DESC = "Lsalve/depend/Dependency;";
-
 	public static final String STRAT_REMOVE = "REMOVE_FIELD";
+
 	public static final String STRAT_INJECT = "INJECT_FIELD";
 
 }
