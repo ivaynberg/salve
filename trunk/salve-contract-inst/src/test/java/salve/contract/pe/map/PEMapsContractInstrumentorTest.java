@@ -26,13 +26,25 @@ public class PEMapsContractInstrumentorTest extends AbstractContractInstrumentor
 
 	public static class CorrectListAccess {
 		public void access() {
-			new PE(Family.class, "members.ancestors.0.name");
+			new PE(Family.class, "ancestors.0.name");
 		}
 	}
 
 	public static class CorrectMapAccess {
 		public void access() {
 			new PE(Family.class, "members.uncle.name");
+		}
+	}
+
+	public static class IncorrectListAccess_BadIndex1 {
+		public void access() {
+			new PE(Family.class, "ancestors.0a.name");
+		}
+	}
+
+	public static class IncorrectListAccess_BadIndex2 {
+		public void access() {
+			new PE(Family.class, "ancestors.a0.name");
 		}
 	}
 
@@ -47,10 +59,30 @@ public class PEMapsContractInstrumentorTest extends AbstractContractInstrumentor
 		instrument("CorrectListAccess");
 	}
 
+	@Test
 	public void testCorrectMapAccess() throws Exception {
 		instrument("CorrectMapAccess");
 	}
 
+	@Test
+	public void testIncorrectListAccess() throws Exception {
+		try {
+			instrument("IncorrectListAccess_BadIndex1");
+			fail("Should have failed because list index is bad");
+		} catch (InstrumentationException e) {
+			// noop
+		}
+
+		try {
+			instrument("IncorrectListAccess_BadIndex2");
+			fail("Should have failed because list index is bad");
+		} catch (InstrumentationException e) {
+			// noop
+		}
+
+	}
+
+	@Test
 	public void testIncorrectMapAccess() throws Exception {
 		try {
 			instrument("IncorrectMapAccess");
@@ -60,4 +92,5 @@ public class PEMapsContractInstrumentorTest extends AbstractContractInstrumentor
 		}
 
 	}
+
 }
