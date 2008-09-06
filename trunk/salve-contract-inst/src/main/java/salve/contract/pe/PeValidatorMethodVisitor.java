@@ -6,6 +6,7 @@ import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
+import salve.contract.impl.Constants;
 
 public class PeValidatorMethodVisitor extends MethodAdapter {
 	/*
@@ -29,10 +30,7 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 	}
 
 	private PeState state;
-	private String classDesc;
-	private String expression;
-	private String mode;
-
+	private final PeDefinition def = new PeDefinition();
 	private final InstrumentationContext ctx;
 
 	private final PeValidator validator;
@@ -43,12 +41,14 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 		validator = new PeValidator(ctx);
 	}
 
-	public String getMode() {
-		return mode;
+	private void clear() {
+		state = null;
+		def.clear();
 	}
 
-	protected void validatePeInstantiation(String className, String expression, String mode) {
-		validator.validate(className, expression, mode);
+	protected void validatePeInstantiation(PeDefinition data) {
+		validator.validate(data);
+		clear();
 	}
 
 	@Override
@@ -89,16 +89,17 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 	@Override
 	public void visitLdcInsn(Object cst) {
 		if (state == PeState.LDC_CLASS) {
-			classDesc = cst.toString();
+			def.setType(Type.getType(cst.toString()));
 			state = PeState.LDC_EXPR;
 		} else if (state == PeState.LDC_EXPR) {
-			expression = cst.toString();
+			def.setExpression(cst.toString());
 			state = PeState.LDC_MODE;
 		} else if (state == PeState.LDC_MODE) {
-			mode = cst.toString();
+			def.setMode(cst.toString());
 			state = PeState.INVOKESPECIAL;
 		} else {
 			state = null;
+			def.clear();
 		}
 		mv.visitLdcInsn(cst);
 	}
@@ -112,14 +113,14 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String desc) {
 		if (opcode == Opcodes.INVOKESPECIAL) {
-			if ("salve/contract/PE".equals(owner) && "<init>".equals(name)) {
+			if (Constants.PE.getInternalName().equals(owner) && "<init>".equals(name)) {
 				if (state == PeState.LDC_MODE) {
 					// class/expr constructor used, default the mode to rw
-					mode = "rw";
+					def.setMode("rw");
 					state = PeState.INVOKESPECIAL;
 				}
-				if (state == PeState.INVOKESPECIAL && "salve/contract/PE".equals(owner)) {
-					validatePeInstantiation(Type.getType(classDesc).getInternalName(), expression, mode);
+				if (state == PeState.INVOKESPECIAL && Constants.PE.getInternalName().equals(owner)) {
+					validatePeInstantiation(def);
 				}
 			}
 		}
@@ -151,7 +152,7 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 
 	@Override
 	public void visitVarInsn(int opcode, int var) {
-		state = null;
+		clear();
 		mv.visitVarInsn(opcode, var);
 	}
 
