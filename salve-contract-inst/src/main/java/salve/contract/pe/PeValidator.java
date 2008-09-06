@@ -11,18 +11,17 @@ public class PeValidator {
 		this.ctx = ctx;
 	}
 
-	public void validate(String className, String expression, String mode) {
-
+	public void validate(PeDefinition def) {
 		AccessorCollector collector = new AccessorCollector(ctx);
 		Policy policy = new TestPolicy();
-		String[] parts = expression.split("\\.");
+		String[] parts = def.getExpression().split("\\.");
 		if (parts.length < 1) {
-			throw new IllegalArgumentException("PE Expression: " + expression + " must have at least one part");
+			throw new IllegalArgumentException("PE Expression: " + def.getExpression() + " must have at least one part");
 		}
-		String cn = className;
+		String cn = def.getType().getInternalName();
 		Accessor accessor = null;
 		for (String part : parts) {
-			Map<Accessor.Type, Accessor> accessors = collector.collect(cn, part, mode, accessor);
+			Map<Accessor.Type, Accessor> accessors = collector.collect(cn, part, def.getMode(), accessor);
 			if (accessors.isEmpty()) {
 				throw new RuntimeException("Could not resolve expression part: " + part + " in class: " + cn);
 			}

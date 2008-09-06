@@ -40,5 +40,6 @@ public interface Constants {
 	static final Type GT0 = Type.getType("Lsalve/contract/GT0;");
 	static final Type LT0 = Type.getType("Lsalve/contract/LT0;");
 	static final Type LE0 = Type.getType("Lsalve/contract/LE0;");
+	static final Type PE = Type.getType("Lsalve/contract/PE;");
 
 }
