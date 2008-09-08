@@ -18,7 +18,7 @@ public class PeDefinition {
 	public void clear() {
 		type = null;
 		expression = null;
-		mode = null;
+		mode = "rw";
 		marker = null;
 	}
 
