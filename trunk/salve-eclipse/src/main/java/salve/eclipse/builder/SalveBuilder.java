@@ -37,10 +37,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 
 import salve.BytecodeLoader;
+import salve.CodeMarker;
+import salve.CodeMarkerAware;
 import salve.Config;
 import salve.ConfigException;
 import salve.InstrumentationContext;
@@ -80,7 +84,7 @@ public class SalveBuilder extends AbstractBuilder {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.eclipse.core.internal.events.InternalBuilder#build(int,
-	 *      java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
+	 * java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@SuppressWarnings("unchecked")
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
@@ -273,10 +277,46 @@ public class SalveBuilder extends AbstractBuilder {
 						false, null);
 			}
 		} catch (InstrumentationException e) {
-			log(IStatus.ERROR, "error instrumenting: " + file.getName(), e);
-			markError(resource, "Instrumentation error: " + e.getMessage()
-					+ " (" + e.getCause().getMessage() + ")");
+			log(IStatus.ERROR, "Error instrumenting: " + file.getName(), e);
+			int lineNumber = -1;
+			if (e instanceof CodeMarkerAware) {
+				// TODO make sure file names in the marker and resource match
+				final CodeMarker marker = ((CodeMarkerAware) e).getCodeMarker();
+				if (marker != null) {
+					lineNumber = marker.getLineNumber();
+				}
+			}
+			IResource res = findSourceResourceForClassResource(resource);
+			if (res == null) {
+				res = resource;
+			}
+			markError(res, "Salve: " + e.getMessage(), lineNumber);
 		}
+	}
+
+	private static IResource findSourceResourceForClassResource(
+			IResource classResource) {
+		IResource sourceResource = null;
+		IJavaProject jp = JavaCore.create(classResource.getProject());
+		int segs;
+		try {
+			segs = classResource.getProjectRelativePath()
+					.matchingFirstSegments(
+							jp.getOutputLocation().removeFirstSegments(1));
+
+			if (segs > 0) {
+				IPath res = classResource.getProjectRelativePath()
+						.removeFirstSegments(segs);
+				IJavaElement el = jp.findElement(res);
+				if (el != null) {
+					sourceResource = el.getCorrespondingResource();
+				}
+			}
+		} catch (JavaModelException e) {
+			// noop
+		}
+		return sourceResource;
+
 	}
 
 	private String readClassName(final IFile file) throws CoreException {

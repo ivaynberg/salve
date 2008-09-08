@@ -1,6 +1,8 @@
 package salve.contract.pe;
 
+import salve.CodeMarker;
 import salve.InstrumentationContext;
+import salve.InstrumentationException;
 import salve.asmlib.Label;
 import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
@@ -9,6 +11,7 @@ import salve.asmlib.Type;
 import salve.contract.impl.Constants;
 
 public class PeValidatorMethodVisitor extends MethodAdapter {
+
 	/*
 	 * NEW salve/contract/PE
 	 * 
@@ -29,14 +32,16 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 		LDC_CLASS, LDC_EXPR, LDC_MODE, INVOKESPECIAL
 	}
 
+	private final Type owner;
 	private PeState state;
 	private final PeDefinition def = new PeDefinition();
 	private final InstrumentationContext ctx;
-
+	private int lastVisitedLineNumber = 0;
 	private final PeValidator validator;
 
-	public PeValidatorMethodVisitor(InstrumentationContext ctx, MethodVisitor mv) {
+	public PeValidatorMethodVisitor(Type owner, InstrumentationContext ctx, MethodVisitor mv) {
 		super(mv);
+		this.owner = owner;
 		this.ctx = ctx;
 		validator = new PeValidator(ctx);
 	}
@@ -105,6 +110,12 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 	}
 
 	@Override
+	public void visitLineNumber(int line, Label start) {
+		lastVisitedLineNumber = line;
+		mv.visitLineNumber(line, start);
+	}
+
+	@Override
 	public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
 		state = null;
 		mv.visitLookupSwitchInsn(dflt, keys, labels);
@@ -120,7 +131,14 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 					state = PeState.INVOKESPECIAL;
 				}
 				if (state == PeState.INVOKESPECIAL && Constants.PE.getInternalName().equals(owner)) {
+					if (lastVisitedLineNumber > 0) {
+						CodeMarker marker = new CodeMarker(this.owner.getInternalName(), lastVisitedLineNumber);
+						def.setMarker(marker);
+						lastVisitedLineNumber = 0;
+					}
 					validatePeInstantiation(def);
+				} else {
+					throw new InstrumentationException("Invalid instantiation of " + owner);
 				}
 			}
 		}

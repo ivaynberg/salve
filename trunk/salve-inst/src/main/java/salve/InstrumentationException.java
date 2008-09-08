@@ -22,14 +22,24 @@ package salve;
  * @author ivaynberg
  * 
  */
-public class InstrumentationException extends Exception {
+public class InstrumentationException extends RuntimeException implements CodeMarkerAware {
 	private static final long serialVersionUID = 1L;
+	private CodeMarker marker;
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public InstrumentationException(Exception e) {
 		super(e);
+		copyMarker(e);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public InstrumentationException(Exception e, CodeMarker marker) {
+		super(e);
+		this.marker = marker;
 	}
 
 	/**
@@ -42,9 +52,38 @@ public class InstrumentationException extends Exception {
 
 	/**
 	 * {@inheritDoc}
+	 * 
+	 */
+	public InstrumentationException(String message, CodeMarker marker) {
+		super(message);
+		this.marker = marker;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	public InstrumentationException(String string, Exception e) {
 		super(string, e);
+		copyMarker(e);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public InstrumentationException(String string, Exception e, CodeMarker marker) {
+		super(string, e);
+		this.marker = marker;
+	}
+
+	private void copyMarker(Throwable e) {
+		if (e instanceof CodeMarkerAware) {
+			marker = ((CodeMarkerAware) e).getCodeMarker();
+		}
+	}
+
+	/** {@inheritDoc} */
+	public CodeMarker getCodeMarker() {
+		return marker;
 	}
 
 }
