@@ -40,6 +40,10 @@ public abstract class AbstractBuilder extends IncrementalProjectBuilder {
 		}
 	}
 
+	protected void markError(IResource resource, String message, int lineNumber) {
+		mark(resource, message, lineNumber, IMarker.SEVERITY_ERROR);
+	}
+
 	protected void markError(IResource resource, String message) {
 		mark(resource, message, -1, IMarker.SEVERITY_ERROR);
 	}
