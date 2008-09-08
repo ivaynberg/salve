@@ -8,102 +8,91 @@ import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
-import salve.contract.impl.Constants;
 
 public class PeValidatorMethodVisitor extends MethodAdapter {
-
-	/*
-	 * NEW salve/contract/PE
-	 * 
-	 * (DUP)
-	 * 
-	 * LDC Lsalve/contract/PEContractInstrumentorTest$TestBean;.class
-	 * 
-	 * LDC "expression"
-	 * 
-	 * LDC "mode"
-	 * 
-	 * 
-	 * INVOKESPECIAL
-	 * salve/contract/PE.<init>(Ljava/lang/Class;Ljava/lang/Class;Ljava
-	 * /lang/String;)V
-	 */
-	private static enum PeState {
-		LDC_CLASS, LDC_EXPR, LDC_MODE, INVOKESPECIAL
-	}
+	private final Type type;
+	private final Arg[] constructor;
+	private int state = -1;
 
 	private final Type owner;
-	private PeState state;
+
 	private final PeDefinition def = new PeDefinition();
 	private final InstrumentationContext ctx;
 	private int lastVisitedLineNumber = 0;
 	private final PeValidator validator;
 
-	public PeValidatorMethodVisitor(Type owner, InstrumentationContext ctx, MethodVisitor mv) {
+	public PeValidatorMethodVisitor(Type pe, Arg[] constructor, Type owner, InstrumentationContext ctx, MethodVisitor mv) {
 		super(mv);
+		this.type = pe;
+		this.constructor = constructor;
 		this.owner = owner;
 		this.ctx = ctx;
 		validator = new PeValidator(ctx);
 	}
 
-	private void clear() {
-		state = null;
-		def.clear();
-	}
-
 	protected void validatePeInstantiation(PeDefinition data) {
 		validator.validate(data);
-		clear();
+		state = -1;
 	}
 
 	@Override
 	public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-		state = null;
+		state = -1;
 		mv.visitFieldInsn(opcode, owner, name, desc);
 	}
 
 	@Override
 	public void visitIincInsn(int var, int increment) {
-		state = null;
+		state = -1;
 		mv.visitIincInsn(var, increment);
 	}
 
 	@Override
 	public void visitInsn(int opcode) {
-		if (state == PeState.LDC_CLASS && opcode == Opcodes.DUP) {
-			// dup is optional, do not reset state
+		if (state == 0 && opcode == Opcodes.DUP) {
+			// dup is optional after NEW, do not reset state
 			// noop
 		} else {
-			state = null;
+
+			state = -1;
 		}
 		mv.visitInsn(opcode);
 	}
 
 	@Override
 	public void visitIntInsn(int opcode, int operand) {
-		state = null;
+		state = -1;
 		mv.visitIntInsn(opcode, operand);
 	}
 
 	@Override
 	public void visitJumpInsn(int opcode, Label label) {
-		state = null;
+		state = -1;
 		mv.visitJumpInsn(opcode, label);
 	}
 
 	@Override
 	public void visitLdcInsn(Object cst) {
-		if (state == PeState.LDC_CLASS) {
-			def.setType(Type.getType(cst.toString()));
-			state = PeState.LDC_EXPR;
-		} else if (state == PeState.LDC_EXPR) {
-			def.setExpression(cst.toString());
-			state = PeState.LDC_MODE;
-		} else if (state == PeState.LDC_MODE) {
-			def.setMode(cst.toString());
-			state = PeState.INVOKESPECIAL;
+		if (state == 0) {
+			def.clear();
+		}
+		if (state >= 0) {
+			switch (constructor[state]) {
+				case EXPRESSION:
+					def.setExpression((String) cst);
+					break;
+				case MODE:
+					def.setMode((String) cst);
+					break;
+				case TYPE:
+					def.setType((Type) cst);
+					break;
+				case OTHER:
+					break;
+			}
+			state++;
 		} else {
-			state = null;
+			state = -1;
 			def.clear();
 		}
 		mv.visitLdcInsn(cst);
@@ -117,20 +106,22 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 
 	@Override
 	public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
-		state = null;
+		state = -1;
 		mv.visitLookupSwitchInsn(dflt, keys, labels);
 	}
 
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+
 		if (opcode == Opcodes.INVOKESPECIAL) {
-			if (Constants.PE.getInternalName().equals(owner) && "<init>".equals(name)) {
-				if (state == PeState.LDC_MODE) {
+			if (type.getInternalName().equals(owner) && "<init>".equals(name)) {
+
+				if (state == constructor.length - 1) {
 					// class/expr constructor used, default the mode to rw
 					def.setMode("rw");
-					state = PeState.INVOKESPECIAL;
+					state++;
 				}
-				if (state == PeState.INVOKESPECIAL && Constants.PE.getInternalName().equals(owner)) {
+				if (state == constructor.length && type.getInternalName().equals(owner)) {
 					if (lastVisitedLineNumber > 0) {
 						CodeMarker marker = new CodeMarker(this.owner.getInternalName(), lastVisitedLineNumber);
 						def.setMarker(marker);
@@ -142,36 +133,36 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 				}
 			}
 		}
-		state = null;
+
+		state = -1;
 		mv.visitMethodInsn(opcode, owner, name, desc);
 	}
 
 	@Override
 	public void visitMultiANewArrayInsn(String desc, int dims) {
-		state = null;
+		state = -1;
 		mv.visitMultiANewArrayInsn(desc, dims);
 	}
 
 	@Override
 	public void visitTableSwitchInsn(int min, int max, Label dflt, Label[] labels) {
-		state = null;
+		state = -1;
 		mv.visitTableSwitchInsn(min, max, dflt, labels);
 	}
 
 	@Override
 	public void visitTypeInsn(int opcode, String desc) {
-		if (opcode == Opcodes.NEW && desc.equals("salve/contract/PE")) {
-			state = PeState.LDC_CLASS;
+		if (opcode == Opcodes.NEW && desc.equals(type.getInternalName())) {
+			state = 0;
 		} else {
-			state = null;
+			state = -1;
 		}
 		mv.visitTypeInsn(opcode, desc);
 	}
 
 	@Override
 	public void visitVarInsn(int opcode, int var) {
-		clear();
+		state = -1;
 		mv.visitVarInsn(opcode, var);
 	}
-
 }

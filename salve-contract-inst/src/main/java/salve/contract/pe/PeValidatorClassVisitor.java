@@ -10,8 +10,10 @@ import salve.util.asm.MethodVisitorAdapter;
 public class PeValidatorClassVisitor extends ClassAdapter {
 	private final InstrumentationContext ctx;
 	private Type owner;
+	private Type pe;
+	private Arg[] constructor;
 
-	public PeValidatorClassVisitor(InstrumentationContext ctx, ClassVisitor cv) {
+	public PeValidatorClassVisitor(Type pe, Arg[] constructor, InstrumentationContext ctx, ClassVisitor cv) {
 		super(cv);
 		this.ctx = ctx;
 	}
@@ -28,7 +30,7 @@ public class PeValidatorClassVisitor extends ClassAdapter {
 		if (mv == null) {
 			mv = new MethodVisitorAdapter();
 		}
-		return new PeValidatorMethodVisitor(owner, ctx, mv);
+		return new PeValidatorMethodVisitor(pe, constructor, owner, ctx, mv);
 	}
 
 }
