@@ -18,6 +18,7 @@ package salve.contract.impl;
 
 import salve.asmlib.Method;
 import salve.asmlib.Type;
+import salve.contract.pe.Arg;
 
 public interface Constants {
 	static final Type NOTNULL = Type.getType("Lsalve/contract/NotNull;");
@@ -41,5 +42,6 @@ public interface Constants {
 	static final Type LT0 = Type.getType("Lsalve/contract/LT0;");
 	static final Type LE0 = Type.getType("Lsalve/contract/LE0;");
 	static final Type PE = Type.getType("Lsalve/contract/PE;");
+	static final Arg[] PE_INIT = new Arg[] { Arg.TYPE, Arg.EXPRESSION, Arg.MODE };
 
 }

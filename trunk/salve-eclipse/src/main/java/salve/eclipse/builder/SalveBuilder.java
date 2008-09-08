@@ -257,7 +257,12 @@ public class SalveBuilder extends AbstractBuilder {
 
 		final IFile file = (IFile) resource;
 
+		final IResource source = findSourceResourceForClassResource(file);
+
 		removeMarks(resource);
+		if (source != null) {
+			removeMarks(source);
+		}
 		try {
 
 			final String cn = readClassName(file);
@@ -286,10 +291,7 @@ public class SalveBuilder extends AbstractBuilder {
 					lineNumber = marker.getLineNumber();
 				}
 			}
-			IResource res = findSourceResourceForClassResource(resource);
-			if (res == null) {
-				res = resource;
-			}
+			final IResource res = (source != null) ? source : file;
 			markError(res, "Salve: " + e.getMessage(), lineNumber);
 		}
 	}

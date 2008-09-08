@@ -58,7 +58,7 @@ public abstract class AbstractBuilder extends IncrementalProjectBuilder {
 			IMarker marker = resource.createMarker(markerType);
 			marker.setAttribute(IMarker.MESSAGE, message);
 			marker.setAttribute(IMarker.SEVERITY, severity);
-			lineNumber = Math.min(1, lineNumber);
+			lineNumber = Math.max(1, lineNumber);
 			marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 		} catch (CoreException e) {
 		}
