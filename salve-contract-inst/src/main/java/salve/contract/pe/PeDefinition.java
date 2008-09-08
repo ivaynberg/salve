@@ -15,6 +15,10 @@ public class PeDefinition {
 	private String mode;
 	private CodeMarker marker;
 
+	public PeDefinition() {
+		clear();
+	}
+
 	public void clear() {
 		type = null;
 		expression = null;
