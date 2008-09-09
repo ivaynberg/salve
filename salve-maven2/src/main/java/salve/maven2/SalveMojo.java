@@ -26,6 +26,8 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
+import salve.CodeMarker;
+import salve.CodeMarkerAware;
 import salve.ConfigException;
 import salve.InstrumentationContext;
 import salve.Instrumentor;
@@ -121,7 +123,19 @@ public class SalveMojo extends AbstractMojo {
 				instrumented++;
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("Could not instrument " + className, e);
+			int line = 0;
+			if (e instanceof CodeMarkerAware) {
+				CodeMarker marker = ((CodeMarkerAware) e).getCodeMarker();
+				if (marker != null) {
+					line = Math.max(0, marker.getLineNumber());
+				}
+			}
+			StringBuilder message = new StringBuilder();
+			message.append("Could not instrument ").append(className).append(".");
+			if (line > 0) {
+				message.append(" Error on line: ").append(line);
+			}
+			throw new RuntimeException(message.toString(), e);
 		}
 	}
 
