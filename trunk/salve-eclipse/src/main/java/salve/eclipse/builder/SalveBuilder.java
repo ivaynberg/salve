@@ -291,6 +291,7 @@ public class SalveBuilder extends AbstractBuilder {
 					lineNumber = marker.getLineNumber();
 				}
 			}
+			// e.printStackTrace();
 			final IResource res = (source != null) ? source : file;
 			markError(res, "Salve: " + e.getMessage(), lineNumber);
 		}
