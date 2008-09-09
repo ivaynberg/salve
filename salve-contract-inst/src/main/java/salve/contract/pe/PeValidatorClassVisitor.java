@@ -10,12 +10,14 @@ import salve.util.asm.MethodVisitorAdapter;
 public class PeValidatorClassVisitor extends ClassAdapter {
 	private final InstrumentationContext ctx;
 	private Type owner;
-	private Type pe;
-	private Arg[] constructor;
+	private final Type pe;
+	private final Arg[] constructor;
 
 	public PeValidatorClassVisitor(Type pe, Arg[] constructor, InstrumentationContext ctx, ClassVisitor cv) {
 		super(cv);
 		this.ctx = ctx;
+		this.pe = pe;
+		this.constructor = constructor;
 	}
 
 	@Override
