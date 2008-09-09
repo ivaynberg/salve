@@ -73,7 +73,7 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 	 * @return class reader that will be used to analyze classes before
 	 *         instrumentation
 	 */
-	protected ClassVisitor filter(ClassVisitor reader) {
+	protected ClassVisitor filter(InstrumentationContext ctx, ClassVisitor reader) {
 		return reader;
 	}
 
@@ -89,7 +89,7 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 		ClassReader reader = new ClassReader(bytecode);
 		ContractAnalyzer analyzer = new ContractAnalyzer();
 
-		reader.accept(filter(new PeValidatorClassVisitor(Constants.PE, Constants.PE_INIT, ctx, analyzer)),
+		reader.accept(filter(ctx, new PeValidatorClassVisitor(Constants.PE, Constants.PE_INIT, ctx, analyzer)),
 				ClassReader.SKIP_FRAMES);
 
 		if (analyzer.shouldInstrument()) {

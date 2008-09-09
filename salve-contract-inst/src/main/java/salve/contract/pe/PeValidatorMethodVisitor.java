@@ -93,7 +93,6 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 			state++;
 		} else {
 			state = -1;
-			def.clear();
 		}
 		mv.visitLdcInsn(cst);
 	}
@@ -129,7 +128,8 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 					}
 					validatePeInstantiation(def);
 				} else {
-					throw new InstrumentationException("Invalid instantiation of " + owner);
+					CodeMarker marker = new CodeMarker(this.owner.getInternalName(), lastVisitedLineNumber);
+					throw new InstrumentationException("Invalid instantiation of " + owner, marker);
 				}
 			}
 		}
@@ -162,7 +162,24 @@ public class PeValidatorMethodVisitor extends MethodAdapter {
 
 	@Override
 	public void visitVarInsn(int opcode, int var) {
-		state = -1;
+		if (state == 0) {
+			def.clear();
+		}
+		if (state >= 0) {
+			switch (constructor[state]) {
+				case OTHER:
+					break;
+				case EXPRESSION:
+				case MODE:
+				case TYPE:
+					CodeMarker marker = new CodeMarker(this.owner.getInternalName(), lastVisitedLineNumber);
+					throw new InstrumentationException("Constructor argument of class: " + owner.getClassName()
+							+ " cannot be a variable", marker);
+			}
+			state++;
+		} else {
+			state = -1;
+		}
 		mv.visitVarInsn(opcode, var);
 	}
 }
