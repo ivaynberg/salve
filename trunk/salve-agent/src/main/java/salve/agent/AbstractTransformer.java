@@ -4,6 +4,8 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
+import salve.CodeMarker;
+import salve.CodeMarkerAware;
 import salve.Config;
 import salve.InstrumentationContext;
 import salve.InstrumentationException;
@@ -57,8 +59,20 @@ public abstract class AbstractTransformer implements ClassFileTransformer {
 			}
 			return bytecode;
 		} catch (InstrumentationException e) {
-			throw new RuntimeException("Error instrumenting class: "
-					+ className, e);
+			int line = 0;
+			if (e instanceof CodeMarkerAware) {
+				CodeMarker marker = ((CodeMarkerAware) e).getCodeMarker();
+				if (marker != null) {
+					line = Math.max(0, marker.getLineNumber());
+				}
+			}
+			StringBuilder message = new StringBuilder();
+			message.append("Could not instrument ").append(className).append(
+					".");
+			if (line > 0) {
+				message.append(" Error on line: ").append(line);
+			}
+			throw new RuntimeException(message.toString(), e);
 		}
 	}
 
