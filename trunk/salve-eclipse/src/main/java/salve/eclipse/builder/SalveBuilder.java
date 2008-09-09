@@ -20,7 +20,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.jar.JarEntry;
 
@@ -75,6 +77,8 @@ public class SalveBuilder extends AbstractBuilder {
 	private final ReentrantReadWriteLock jarEntryCacheLock = new ReentrantReadWriteLock();
 	private final JarEntry NOT_IN_JAR;
 
+	private final Set<String> clearedMarkers = new HashSet<String>();
+
 	public SalveBuilder() {
 		super(MARKER_ID);
 		NOT_IN_JAR = new JarEntry("string");
@@ -100,6 +104,7 @@ public class SalveBuilder extends AbstractBuilder {
 		}
 
 		removeMarks(getProject());
+		clearedMarkers.clear();
 
 		// find config resource
 		final IResource configResource = findConfig();
@@ -190,6 +195,8 @@ public class SalveBuilder extends AbstractBuilder {
 
 		mark(getProject(), info, IMarker.SEVERITY_INFO);
 
+		clearedMarkers.clear();
+
 		return null;
 	}
 
@@ -259,9 +266,18 @@ public class SalveBuilder extends AbstractBuilder {
 
 		final IResource source = findSourceResourceForClassResource(file);
 
-		removeMarks(resource);
+		final String path = resource.getLocation().toOSString();
+		if (!clearedMarkers.contains(path)) {
+			removeMarks(resource);
+			clearedMarkers.add(path);
+		}
+
 		if (source != null) {
-			removeMarks(source);
+			final String srcPath = source.getLocation().toOSString();
+			if (!clearedMarkers.contains(srcPath)) {
+				removeMarks(source);
+				clearedMarkers.add(srcPath);
+			}
 		}
 		try {
 
@@ -310,6 +326,15 @@ public class SalveBuilder extends AbstractBuilder {
 			if (segs > 0) {
 				IPath res = classResource.getProjectRelativePath()
 						.removeFirstSegments(segs);
+
+				// strip any inner class name from the top level class name
+				String cn = res.segment(res.segmentCount() - 1);
+				int end = cn.indexOf("$");
+				if (end > 0) {
+					res = res.removeLastSegments(1);
+					res = res.append(cn.substring(0, end) + ".class");
+				}
+
 				IJavaElement el = jp.findElement(res);
 				if (el != null) {
 					sourceResource = el.getCorrespondingResource();
