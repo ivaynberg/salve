@@ -1,5 +1,7 @@
 package salve.contract.pe;
 
+import salve.util.asm.AsmUtil;
+
 public class Accessor {
 	public static enum Type {
 		FIELD, GETTER, SETTER, MAP, LIST
@@ -26,13 +28,23 @@ public class Accessor {
 	}
 
 	public String getReturnTypeName() {
+
 		switch (type) {
 			case FIELD:
 			case MAP:
 			case LIST:
-				return salve.asmlib.Type.getType(desc).getInternalName();
+				if (AsmUtil.isPrimitive(salve.asmlib.Type.getType(desc))) {
+					return desc;
+				} else {
+					return salve.asmlib.Type.getType(desc).getInternalName();
+				}
 			case GETTER:
-				return salve.asmlib.Type.getReturnType(desc).getInternalName();
+				// getter sigs are ()return_type
+				if (AsmUtil.isPrimitive(salve.asmlib.Type.getType(desc.substring(2)))) {
+					return desc.substring(2);
+				} else {
+					return salve.asmlib.Type.getReturnType(desc).getInternalName();
+				}
 			case SETTER:
 				return desc.substring(2, desc.length() - 3);
 			default:
