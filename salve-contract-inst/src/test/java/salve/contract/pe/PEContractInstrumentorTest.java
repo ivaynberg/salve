@@ -24,6 +24,18 @@ import salve.contract.PE;
 
 public class PEContractInstrumentorTest extends AbstractContractInstrumentorTestSupport {
 
+	public static class TestField__Primitive {
+		public void testCode() {
+			new PE(Person.class, "address.city.id", "r");
+		}
+	}
+
+	public static class TestGetter__Primitive {
+		public void testCode() {
+			new PE(Person.class, "address.city.idInteger", "r");
+		}
+	}
+
 	public static class TestGettersCode1 {
 		public void testCode() {
 			new PE(Person.class, "address.city.name", "r");
@@ -67,9 +79,15 @@ public class PEContractInstrumentorTest extends AbstractContractInstrumentorTest
 	}
 
 	@Test
+	public void testFields() throws Exception {
+		create("TestField__Primitive");
+	}
+
+	@Test
 	public void testGetters() throws Exception {
 		create("TestGettersCode1");
 		create("TestGettersCode2");
+		create("TestGetter__Primitive");
 		try {
 			create("TestGettersCodeBad1");
 			fail("Should have failed...");
