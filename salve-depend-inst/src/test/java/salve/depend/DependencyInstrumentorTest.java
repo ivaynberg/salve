@@ -117,6 +117,17 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	}
 
 	@Test
+	public void testDoubleInstrumentation() throws Exception {
+		final DependencyInstrumentor inst = new DependencyInstrumentor();
+		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
+		BytecodePool pool = new BytecodePool(Scope.ALL);
+		pool.addLoader(new ClassLoaderLoader(classLoader));
+		pool.instrumentIntoBytecode("salve/depend/Bean2", inst);
+		pool.instrumentIntoBytecode("salve/depend/Bean2", inst);
+		pool.loadClass("salve/depend/Bean2");
+	}
+
+	@Test
 	public void testFieldAccessInConstructor() throws Exception {
 
 		new EasyMockTemplate(locator) {

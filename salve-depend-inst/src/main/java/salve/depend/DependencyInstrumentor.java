@@ -93,13 +93,15 @@ public class DependencyInstrumentor extends AbstractInstrumentor {
 			// skip enums
 
 		} else {
+
 			ClassAnalyzer analyzer = new ClassAnalyzer(className, ctx);
-			if (analyzer.shouldInstrument()) {
+			if (analyzer.shouldInstrument() && !analyzer.isInstrumented(className)) {
 				ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
 				ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, ctx.getMonitor());
 				reader.accept(inst, ClassReader.EXPAND_FRAMES);
 				instrumented = writer.toByteArray();
 			}
+
 		}
 		return instrumented;
 	}

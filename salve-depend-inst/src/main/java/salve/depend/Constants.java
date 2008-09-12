@@ -36,6 +36,8 @@ interface Constants {
 		public static final String DESC = "L" + NAME + ";";
 	}
 
+	public static final String INSTRUMENTED_DESC = "Lsalve/depend/Instrumented;";
+
 	public static final String NS = "_salve";
 	public static final String DEPNS = NS + "dep";
 	public static final String REMOVED_FIELD_PREFIX = DEPNS + "rmfld$";

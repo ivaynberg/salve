@@ -320,6 +320,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	 */
 	@Override
 	public void visitEnd() {
+		cv.visitAnnotation(INSTRUMENTED_DESC, true);
 		addClinit();
 		super.visitEnd();
 	}
@@ -330,6 +331,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	@Override
 	public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
 			final Object value) {
+
 		final DependencyField field = analyzer.getDependency(owner, name);
 		if (field != null) {
 			{
