@@ -64,6 +64,14 @@ class ClassAnalyzer implements Opcodes, Constants {
 			owner = name;
 		}
 
+		@Override
+		public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+			if (Constants.INSTRUMENTED_DESC.equals(desc)) {
+				instrumentedClasses.add(owner);
+			}
+			return super.visitAnnotation(desc, visible);
+		}
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -193,7 +201,7 @@ class ClassAnalyzer implements Opcodes, Constants {
 	private final InstrumentationContext ctx;
 
 	private final Set<String> scannedClasses = new HashSet<String>();
-
+	private final Set<String> instrumentedClasses = new HashSet<String>();
 	private final Map<String, DependencyField> fieldKeyToField = new HashMap<String, DependencyField>();
 
 	private final Map<String, List<DependencyField>> methodKeyToFields = new HashMap<String, List<DependencyField>>();
@@ -273,6 +281,10 @@ class ClassAnalyzer implements Opcodes, Constants {
 		// TODO check args
 		analyzeClass(owner);
 		return fieldKeyToField.get(generateFieldKey(owner, fieldName));
+	}
+
+	public boolean isInstrumented(String cn) {
+		return instrumentedClasses.contains(cn);
 	}
 
 	public boolean shouldInstrument() {
