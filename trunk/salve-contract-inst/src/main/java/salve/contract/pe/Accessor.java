@@ -46,7 +46,7 @@ public class Accessor {
 					return salve.asmlib.Type.getReturnType(desc).getInternalName();
 				}
 			case SETTER:
-				return desc.substring(2, desc.length() - 3);
+				return desc.substring(2, desc.length() - 2);
 			default:
 				throw new IllegalStateException("Unhandled accessor type: " + type);
 		}
