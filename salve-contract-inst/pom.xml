@@ -20,7 +20,6 @@
 			<groupId>salve</groupId>
 			<artifactId>salve-contract</artifactId>
 			<version>0.10-SNAPSHOT</version>
-			
 		</dependency>
 
 	</dependencies>
