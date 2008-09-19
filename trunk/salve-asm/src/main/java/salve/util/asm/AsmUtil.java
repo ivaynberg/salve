@@ -149,6 +149,17 @@ public class AsmUtil {
 		return Type.SHORT == type.getSort() || "Ljava/lang/Short;".equals(type.getDescriptor());
 	}
 
+	/**
+	 * Checks if type is BigInteger.
+	 * 
+	 * @param type
+	 *            type to check
+	 * @return true if the type is BigInteger, false otherwise
+	 */
+	public static boolean isBigInteger(Type type) {
+		return "Ljava/math/BigInteger;".equals(type.getDescriptor());
+	}
+
 	public static String parseListTypeFromSignature(final String signature) {
 		final Pair<String, String> types = new Pair<String, String>();
 

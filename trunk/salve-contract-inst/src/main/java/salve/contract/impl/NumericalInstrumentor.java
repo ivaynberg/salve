@@ -16,9 +16,12 @@
  */
 package salve.contract.impl;
 
+import java.math.BigInteger;
+
 import salve.InstrumentorMonitor;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Label;
+import salve.asmlib.Method;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
 import salve.contract.IllegalAnnotationUseException;
@@ -69,8 +72,8 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 				if (argannots[i] > 0) {
 					final int mode = argannots[i];
 					final Type type = getParamType(i);
-					loadArg(i);
 					final Label end = new Label();
+					loadArg(i);
 					if (!AsmUtil.isPrimitive(type)) {
 						// null check of non-primitive type before value check
 						dup(type);
@@ -80,7 +83,15 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 						mark(notnull);
 
 					}
-					checkValue(mode, type, end);
+					if (AsmUtil.isBigInteger(type)) {
+						// Compare to BigInteger.ZERO.
+						compareToZero();
+						// Check return value set by compareToZero().
+						checkValue(mode, Type.INT_TYPE, end);
+					} else {
+						// Use the default check.
+						checkValue(mode, type, end);
+					}
 					// FIXME message
 					throwIllegalArgumentException(i, modeToErrorString(mode));
 					mark(end);
@@ -107,8 +118,15 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 				throwIllegalStateException("Method " + getMethodDefinitionString() + " cannot return null");
 				mark(notnull);
 			}
-
-			checkValue(annot, getReturnType(), end);
+			if (AsmUtil.isBigInteger(type)) {
+				// Compare to BigInteger.ZERO.
+				compareToZero();
+				// Check return value set by compareToZero().
+				checkValue(annot, Type.INT_TYPE, end);
+			} else {
+				// Use the default check.
+				checkValue(annot, getReturnType(), end);
+			}
 			throwIllegalStateException(msg);
 			mark(end);
 			returnValue();
@@ -161,7 +179,7 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 
 	private boolean acceptType(Type type) {
 		return AsmUtil.isDouble(type) || AsmUtil.isFloat(type) || AsmUtil.isLong(type) || AsmUtil.isInteger(type)
-				|| AsmUtil.isShort(type) || AsmUtil.isByte(type);
+				|| AsmUtil.isShort(type) || AsmUtil.isByte(type) || AsmUtil.isBigInteger(type);
 	}
 
 	private void checkValue(int mode, final Type type, Label end) {
@@ -206,6 +224,14 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 
 	}
 
+	// The BigInteger should be loaded already.
+	private void compareToZero() {
+		// Generate the BigInteger.compareTo(BigInteger.ZERO).
+		Type bigInt = Type.getType(BigInteger.class);
+		getStatic(bigInt, "ZERO", bigInt);
+		invokeVirtual(bigInt, Method.getMethod("int compareTo (java.math.BigInteger)"));
+	}
+
 	private int descToMode(String desc) {
 		if (GT0.getDescriptor().equals(desc)) {
 			return GT;
@@ -241,4 +267,5 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 				throw new IllegalStateException("Unknown mode");
 		}
 	}
+
 }
