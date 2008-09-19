@@ -16,11 +16,15 @@
  */
 package salve.contract;
 
+import java.math.BigInteger;
+
 import org.junit.Test;
 
 import salve.InstrumentationException;
 
 public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestSupport {
+	private static final BigInteger HUGE_INTEGER = new BigInteger("10000000000000000000000000000000");
+
 	@Test
 	public void testArgumentTypeErrorChecking() throws Exception {
 		try {
@@ -31,6 +35,38 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestS
 				fail();
 			}
 		}
+	}
+
+	@Test
+	public void testBigIntegerReturnTypes() throws Exception {
+		Bean bean = (Bean) create("Bean");
+		assertTrue(HUGE_INTEGER.equals(bean.test19(HUGE_INTEGER)));
+		assertTrue(BigInteger.ONE.equals(bean.test19(BigInteger.ONE)));
+
+		try {
+			bean.test19(BigInteger.valueOf(0));
+			fail("Expected IllegalStateException - GT0 violated");
+		} catch (IllegalStateException e) {
+			// expected
+		}
+
+	}
+
+	@Test
+	public void testBigIntegers() throws Exception {
+		Bean bean = (Bean) create("Bean");
+
+		// It *is* a BigInteger.
+		bean.test18(HUGE_INTEGER);
+		bean.test18(BigInteger.ONE);
+		bean.test18(BigInteger.ZERO);
+		try {
+			bean.test18(BigInteger.valueOf(-1L));
+			fail("Expected IllegalArgumentException - GE0 violated");
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+
 	}
 
 	@Test
@@ -336,6 +372,11 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestS
 			return a;
 		}
 
+		@GT0
+		BigInteger test19(BigInteger a) {
+			return a;
+		}
+
 		void test2(@GE0 Integer b) {
 		}
 
@@ -358,6 +399,9 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestS
 		}
 
 		void test9(@LT0 int a, @LE0 int b, @GT0 int c, @GE0 int d) {
+		}
+
+		void test18(@GE0 BigInteger a) {
 		}
 	}
 
