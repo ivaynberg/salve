@@ -5,7 +5,11 @@ import java.util.Map;
 public class TestPolicy implements Policy {
 
 	public Accessor choose(Map<Accessor.Type, Accessor> accessors) {
-		return accessors.values().iterator().next();
+		Accessor getter = accessors.get(Accessor.Type.GETTER);
+		if (getter != null) {
+			return getter;
+		} else {
+			return accessors.values().iterator().next();
+		}
 	}
-
 }

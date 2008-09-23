@@ -1,5 +1,6 @@
 package salve.contract.pe;
 
+import salve.asmlib.Method;
 import salve.util.asm.AsmUtil;
 
 public class Accessor {
@@ -46,7 +47,9 @@ public class Accessor {
 					return salve.asmlib.Type.getReturnType(desc).getInternalName();
 				}
 			case SETTER:
-				return desc.substring(2, desc.length() - 2);
+				final Method method = new Method(name, desc);
+				final String cn = method.getArgumentTypes()[0].getInternalName();
+				return cn;
 			default:
 				throw new IllegalStateException("Unhandled accessor type: " + type);
 		}
