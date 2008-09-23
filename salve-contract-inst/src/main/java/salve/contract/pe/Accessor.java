@@ -29,7 +29,6 @@ public class Accessor {
 	}
 
 	public String getReturnTypeName() {
-
 		switch (type) {
 			case FIELD:
 			case MAP:
@@ -48,8 +47,12 @@ public class Accessor {
 				}
 			case SETTER:
 				final Method method = new Method(name, desc);
-				final String cn = method.getArgumentTypes()[0].getInternalName();
-				return cn;
+				final salve.asmlib.Type arg0 = method.getArgumentTypes()[0];
+				if (AsmUtil.isPrimitive(arg0)) {
+					return arg0.getDescriptor();
+				} else {
+					return arg0.getInternalName();
+				}
 			default:
 				throw new IllegalStateException("Unhandled accessor type: " + type);
 		}
