@@ -30,6 +30,8 @@ import salve.contract.impl.Constants;
 import salve.contract.impl.NotEmptyInstrumentor;
 import salve.contract.impl.NotNullInstrumentor;
 import salve.contract.impl.NumericalInstrumentor;
+import salve.contract.initonce.ClassAnalyzer;
+import salve.contract.initonce.ClassInstrumentor;
 import salve.contract.pe.PeValidatorClassVisitor;
 import salve.util.BytecodeLoadingClassWriter;
 
@@ -87,14 +89,17 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 		}
 
 		ClassReader reader = new ClassReader(bytecode);
-		ContractAnalyzer analyzer = new ContractAnalyzer();
+
+		final ClassAnalyzer initOnceAnalyzer = new ClassAnalyzer(ctx);
+		ContractAnalyzer analyzer = new ContractAnalyzer(initOnceAnalyzer);
 
 		reader.accept(filter(ctx, new PeValidatorClassVisitor(Constants.PE, Constants.PE_INIT, ctx, analyzer)),
 				ClassReader.SKIP_FRAMES);
 
 		if (analyzer.shouldInstrument()) {
 			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx.getLoader());
-			reader.accept(new ConditionalChecksInstrumentor(writer, ctx.getMonitor()), 0);
+			reader.accept(new ClassInstrumentor(new ConditionalChecksInstrumentor(writer, ctx.getMonitor()),
+					initOnceAnalyzer), 0);
 			bytecode = writer.toByteArray();
 		}
 		return bytecode;
