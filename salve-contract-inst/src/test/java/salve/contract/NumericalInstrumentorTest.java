@@ -16,6 +16,7 @@
  */
 package salve.contract;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.junit.Test;
@@ -24,6 +25,7 @@ import salve.InstrumentationException;
 
 public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestSupport {
 	private static final BigInteger HUGE_INTEGER = new BigInteger("10000000000000000000000000000000");
+	private static final BigDecimal HUGE_DECIMAL = new BigDecimal("10000000000000000000000000000000.0");
 
 	@Test
 	public void testArgumentTypeErrorChecking() throws Exception {
@@ -35,6 +37,37 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestS
 				fail();
 			}
 		}
+	}
+
+	@Test
+	public void testBigDecimalReturnTypes() throws Exception {
+		Bean bean = (Bean) create("Bean");
+		assertTrue(HUGE_DECIMAL.equals(bean.test20(HUGE_DECIMAL)));
+		assertTrue(BigDecimal.ONE.equals(bean.test20(BigDecimal.ONE)));
+
+		try {
+			bean.test20(BigDecimal.ZERO);
+			fail("Expected IllegalStateException - GT0 violated");
+		} catch (IllegalStateException e) {
+			// expected
+		}
+
+	}
+
+	@Test
+	public void testBigDecimals() throws Exception {
+		Bean bean = (Bean) create("Bean");
+
+		bean.test21(HUGE_DECIMAL);
+		bean.test21(BigDecimal.ONE);
+		bean.test21(BigDecimal.ZERO);
+		try {
+			bean.test21(BigDecimal.valueOf(-1L));
+			fail("Expected IllegalArgumentException - GE0 violated");
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+
 	}
 
 	@Test
@@ -56,7 +89,6 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestS
 	public void testBigIntegers() throws Exception {
 		Bean bean = (Bean) create("Bean");
 
-		// It *is* a BigInteger.
 		bean.test18(HUGE_INTEGER);
 		bean.test18(BigInteger.ONE);
 		bean.test18(BigInteger.ZERO);
@@ -377,6 +409,11 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestS
 			return a;
 		}
 
+		@GT0
+		BigDecimal test20(BigDecimal a) {
+			return a;
+		}
+
 		void test2(@GE0 Integer b) {
 		}
 
@@ -402,6 +439,9 @@ public class NumericalInstrumentorTest extends AbstractContractInstrumentorTestS
 		}
 
 		void test18(@GE0 BigInteger a) {
+		}
+
+		void test21(@GE0 BigDecimal a) {
 		}
 	}
 

@@ -160,6 +160,17 @@ public class AsmUtil {
 		return "Ljava/math/BigInteger;".equals(type.getDescriptor());
 	}
 
+	/**
+	 * Checks if type is BigDecimal.
+	 * 
+	 * @param type
+	 *            type to check
+	 * @return true if the type is BigDecimal, false otherwise
+	 */
+	public static boolean isBigDecimal(Type type) {
+		return "Ljava/math/BigDecimal;".equals(type.getDescriptor());
+	}
+
 	public static String parseListTypeFromSignature(final String signature) {
 		final Pair<String, String> types = new Pair<String, String>();
 
