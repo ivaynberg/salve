@@ -36,14 +36,14 @@ public class AnnotationVisitorAdapter implements AnnotationVisitor {
 	 * {@inheritDoc}
 	 */
 	public AnnotationVisitor visitAnnotation(String name, String desc) {
-		return null;
+		return new AnnotationVisitorAdapter();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public AnnotationVisitor visitArray(String name) {
-		return null;
+		return new AnnotationVisitorAdapter();
 	}
 
 	/**

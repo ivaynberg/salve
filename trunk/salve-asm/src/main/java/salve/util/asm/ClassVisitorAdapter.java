@@ -41,7 +41,7 @@ public class ClassVisitorAdapter implements ClassVisitor {
 	 * {@inheritDoc}
 	 */
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-		return null;
+		return new AnnotationVisitorAdapter();
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class ClassVisitorAdapter implements ClassVisitor {
 	 * {@inheritDoc}
 	 */
 	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-		return null;
+		return new FieldVisitorAdapter();
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class ClassVisitorAdapter implements ClassVisitor {
 	 * {@inheritDoc}
 	 */
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		return null;
+		return new MethodVisitorAdapter();
 	}
 
 	/**

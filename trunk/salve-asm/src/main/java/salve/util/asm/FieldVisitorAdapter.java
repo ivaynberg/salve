@@ -33,7 +33,7 @@ public class FieldVisitorAdapter implements FieldVisitor {
 	 */
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 
-		return null;
+		return new AnnotationVisitorAdapter();
 	}
 
 	/**

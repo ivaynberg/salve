@@ -4,21 +4,28 @@
 package salve.contract;
 
 import salve.asmlib.AnnotationVisitor;
+import salve.asmlib.ClassAdapter;
+import salve.asmlib.ClassVisitor;
+import salve.asmlib.MethodAdapter;
+import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.contract.initonce.ClassAnalyzer;
 import salve.util.asm.ClassVisitorAdapter;
-import salve.util.asm.MethodVisitorAdapter;
 
-public class ContractAnalyzer extends ClassVisitorAdapter {
+public class ContractAnalyzer extends ClassAdapter {
 
-	private class MethodVisitor extends MethodVisitorAdapter {
+	private class MethodAnalyzer extends MethodAdapter {
+
+		public MethodAnalyzer(salve.asmlib.MethodVisitor mv) {
+			super(mv);
+		}
 
 		@Override
 		public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 			if (desc.startsWith("Lsalve/contract/")) {
 				instrument = true;
 			}
-			return null;
+			return super.visitAnnotation(desc, visible);
 		}
 
 		@Override
@@ -36,7 +43,7 @@ public class ContractAnalyzer extends ClassVisitorAdapter {
 			if (desc.startsWith("Lsalve/contract/")) {
 				instrument = true;
 			}
-			return null;
+			return super.visitParameterAnnotation(parameter, desc, visible);
 		}
 	}
 
@@ -44,6 +51,11 @@ public class ContractAnalyzer extends ClassVisitorAdapter {
 	private boolean instrument = false;
 
 	public ContractAnalyzer(ClassAnalyzer initOnceAnalyzer) {
+		this(new ClassVisitorAdapter(), initOnceAnalyzer);
+	}
+
+	public ContractAnalyzer(ClassVisitor cv, ClassAnalyzer initOnceAnalyzer) {
+		super(cv);
 		this.initOnceAnalyzer = initOnceAnalyzer;
 	}
 
@@ -54,9 +66,9 @@ public class ContractAnalyzer extends ClassVisitorAdapter {
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 		if (!instrument) {
-			return new MethodVisitor();
+			return new MethodAnalyzer(super.visitMethod(access, name, desc, signature, exceptions));
 		} else {
-			return null;
+			return super.visitMethod(access, name, desc, signature, exceptions);
 		}
 	}
 }

@@ -34,7 +34,7 @@ public class MethodVisitorAdapter implements MethodVisitor {
 	 */
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
 
-		return null;
+		return new AnnotationVisitorAdapter();
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class MethodVisitorAdapter implements MethodVisitor {
 	 */
 	public AnnotationVisitor visitAnnotationDefault() {
 
-		return null;
+		return new AnnotationVisitorAdapter();
 	}
 
 	/**
@@ -169,7 +169,7 @@ public class MethodVisitorAdapter implements MethodVisitor {
 	 */
 	public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
 
-		return null;
+		return new AnnotationVisitorAdapter();
 	}
 
 	/**
