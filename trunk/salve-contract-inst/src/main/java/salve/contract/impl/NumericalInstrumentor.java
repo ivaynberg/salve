@@ -16,6 +16,7 @@
  */
 package salve.contract.impl;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import salve.InstrumentorMonitor;
@@ -85,8 +86,13 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 					}
 					if (AsmUtil.isBigInteger(type)) {
 						// Compare to BigInteger.ZERO.
-						compareToZero();
-						// Check return value set by compareToZero().
+						bigIntCompareToZero();
+						// Check return value set by bigIntCompareToZero().
+						checkValue(mode, Type.INT_TYPE, end);
+					} else if (AsmUtil.isBigDecimal(type)) {
+						// Compare to BigDecimal.ZERO.
+						bigDecCompareToZero();
+						// Check return value set by bigDecCompareToZero().
 						checkValue(mode, Type.INT_TYPE, end);
 					} else {
 						// Use the default check.
@@ -120,8 +126,13 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 			}
 			if (AsmUtil.isBigInteger(type)) {
 				// Compare to BigInteger.ZERO.
-				compareToZero();
-				// Check return value set by compareToZero().
+				bigIntCompareToZero();
+				// Check return value set by bigIntCompareToZero().
+				checkValue(annot, Type.INT_TYPE, end);
+			} else if (AsmUtil.isBigDecimal(type)) {
+				// Compare to BigDecimal.ZERO.
+				bigDecCompareToZero();
+				// Check return value set by bigDecCompareToZero().
 				checkValue(annot, Type.INT_TYPE, end);
 			} else {
 				// Use the default check.
@@ -179,7 +190,8 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 
 	private boolean acceptType(Type type) {
 		return AsmUtil.isDouble(type) || AsmUtil.isFloat(type) || AsmUtil.isLong(type) || AsmUtil.isInteger(type)
-				|| AsmUtil.isShort(type) || AsmUtil.isByte(type) || AsmUtil.isBigInteger(type);
+				|| AsmUtil.isShort(type) || AsmUtil.isByte(type) || AsmUtil.isBigInteger(type)
+				|| AsmUtil.isBigDecimal(type);
 	}
 
 	private void checkValue(int mode, final Type type, Label end) {
@@ -225,11 +237,19 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 	}
 
 	// The BigInteger should be loaded already.
-	private void compareToZero() {
+	private void bigIntCompareToZero() {
 		// Generate the BigInteger.compareTo(BigInteger.ZERO).
 		Type bigInt = Type.getType(BigInteger.class);
 		getStatic(bigInt, "ZERO", bigInt);
 		invokeVirtual(bigInt, Method.getMethod("int compareTo (java.math.BigInteger)"));
+	}
+
+	// The BigDecimal should be loaded already.
+	private void bigDecCompareToZero() {
+		// Generate the BigDecimal.compareTo(BigDecimal.ZERO).
+		Type bigDec = Type.getType(BigDecimal.class);
+		getStatic(bigDec, "ZERO", bigDec);
+		invokeVirtual(bigDec, Method.getMethod("int compareTo (java.math.BigDecimal)"));
 	}
 
 	private int descToMode(String desc) {
