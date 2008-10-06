@@ -14,10 +14,10 @@ public class ClassInstrumentor extends ClassAdapter {
 	private class MethodInstrumentor extends MethodAdapter {
 		private final GeneratorAdapter ge;
 
-		public MethodInstrumentor(MethodVisitor mv, int access, String name, String desc) {
+		public MethodInstrumentor(final MethodVisitor mv, int access, String name, String desc) {
 			super(mv);
 			ge = new GeneratorAdapter(mv, access, name, desc);
-			mv = ge;
+			super.mv = ge;
 		}
 
 		@Override
