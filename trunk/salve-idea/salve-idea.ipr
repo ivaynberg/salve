@@ -303,6 +303,28 @@
         <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.9/salve-asm-0.9-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Maven: salve:salve-inst:0.10-SNAPSHOT">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/0.10-SNAPSHOT/salve-inst-0.10-SNAPSHOT.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/0.10-SNAPSHOT/salve-inst-0.10-SNAPSHOT-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/0.10-SNAPSHOT/salve-inst-0.10-SNAPSHOT-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: salve:salve-asm:0.10-SNAPSHOT">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.10-SNAPSHOT/salve-asm-0.10-SNAPSHOT.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.10-SNAPSHOT/salve-asm-0.10-SNAPSHOT-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.10-SNAPSHOT/salve-asm-0.10-SNAPSHOT-sources.jar!/" />
+      </SOURCES>
+    </library>
   </component>
   <UsedPathMacros>
     <macro name="MAVEN_REPOSITORY" />

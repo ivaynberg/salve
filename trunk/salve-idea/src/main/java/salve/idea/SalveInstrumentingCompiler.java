@@ -71,25 +71,29 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
 
       public ValidityState getValidityState()
       {
-        // TODO is this the right timestamp?
         return new TimestampValidityState(file.getModificationStamp());
       }
     };
   }
 
   /**
-   * create salve bytecode loader for current compile context
+   * create salve bytecode loader for current compilation context
+   * <p/>
+   * this loader will be able to load compiled classes from the project and its attached libraries
    *
    * @param context compile context for current compilation
-   * @return bytecode loader for salve instrumentation
+   * @return bytecode loader for instrumentation
    */
   private static BytecodeLoader createBytecodeLoader(final CompileContext context)
   {
+    // compound loaders aggregate several bytecode loaders
     final CompoundLoader loader = new CompoundLoader();
 
+    // add bytecode loaders for compiled classes
     for (VirtualFile rootDirectory : context.getAllOutputDirectories())
       loader.addLoader(new VirtualFileSystemBytecodeLoader(rootDirectory));
 
+    // add bytecode loaders for libraries
     for (VirtualFile libroot : LibraryUtil.getLibraryRoots(context.getProject(), false, true))
       loader.addLoader(new VirtualFileSystemBytecodeLoader(libroot));
 
@@ -107,8 +111,10 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
    */
   private static VirtualFile getClassFile(final CompileContext context, final String classPath) throws IOException
   {
+    // scan output directories
     for (VirtualFile outputDirectory : context.getAllOutputDirectories())
     {
+      // check if output dir contains class file
       final VirtualFile classFile = VfsUtil.findRelativeFile(classPath + CLASS_FILE_EXTENSION, outputDirectory);
 
       if (classFile != null)
@@ -122,6 +128,14 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
     throw new IOException(message);
   }
 
+  /**
+   * make sure the specified file has the given file type (paranoia mode = true)
+   *
+   * @param context compilation context
+   * @param file    file to check
+   * @param type    expected file type
+   * @throws IOException on wrong file type
+   */
   private static void ensureFileType(final CompileContext context, final VirtualFile file, final FileType type) throws IOException
   {
     if (!file.getFileType().equals(type))
@@ -133,13 +147,25 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
     }
   }
 
-  private static String format(final String messageKey, Object... args)
+  /**
+   * format message from message bundle
+   *
+   * @param key  message key
+   * @param args message arguments
+   * @return formatted message string
+   */
+  private static String format(final String key, Object... args)
   {
-    return MessageFormat.format(MESSAGES.getString(messageKey), args);
+    return MessageFormat.format(MESSAGES.getString(key), args);
   }
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
+  /**
+   * create instance of salve instrumenting compiler
+   *
+   * @param configuration plugin configuraton
+   */
   public SalveInstrumentingCompiler(final SalveConfiguration configuration)
   {
     this.configuration = configuration;
@@ -168,7 +194,7 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
     if (!configuration.isEnabled())
       return NO_PROCESSING_ITEMS;
 
-    // get all java source files
+    // get all java source files and report them for processing
     final VirtualFile[] files = context.getCompileScope().getFiles(StdFileTypes.JAVA, true);
     final ProcessingItem[] items = new ProcessingItem[files.length];
 
@@ -183,15 +209,15 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
     // prepare processing
     final Collection<ProcessingItem> processedItems = new ArrayList<ProcessingItem>(items.length);
 
-    context.getProgressIndicator().pushState();
-
     try
     {
+      // set progress indicator state
+      context.getProgressIndicator().pushState();
       context.getProgressIndicator().setText(format("status.instrumenting"));
 
       // setup salve
       final BytecodeLoader bytecodeLoader = createBytecodeLoader(context);
-      final Map<Module, XmlConfig> salveConfigs = getSalveConfigs(context, bytecodeLoader);
+      final Map<Module, XmlConfig> salveConfigs = getSalveXMLs(context, bytecodeLoader);
       final ModificationMonitor monitor = new ModificationMonitor();
 
       // process each item
@@ -199,54 +225,63 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
       {
         try
         {
+          // get source file
           final VirtualFile sourceFile = item.getFile();
 
-          // safety check
+          // paranoia check
           ensureFileType(context, sourceFile, StdFileTypes.JAVA);
 
           // get related class path for the current java file
           final String classPath = getSlashDelimitedClassPath(context, sourceFile);
 
           // check if current file has salve.xml
-          final XmlConfig config = salveConfigs.get(context.getModuleByFile(sourceFile));
+          final Module module = context.getModuleByFile(sourceFile);
+          final XmlConfig salveConfig = salveConfigs.get(module);
 
-          // no instrumentation requested
-          if (config == null)
+          if (salveConfig == null)
             continue;
 
-          // file needs to be instrumented
-          for (Instrumentor instrumentor : config.getInstrumentors(classPath))
+          // file has related configuration in its module so it needs to be instrumented
+          final Collection<Instrumentor> instrumentors = salveConfig.getInstrumentors(classPath);
+
+          if (!instrumentors.isEmpty())
           {
-            // setup context
-            final InstrumentationContext ctx = new InstrumentationContext(bytecodeLoader, monitor, config.getScope(instrumentor));
+            final VirtualFile classFile = getClassFile(context, classPath);
 
-            // instrument class
-            final byte[] bytecode = instrumentor.instrument(classPath, ctx);
+            for (Instrumentor instrumentor : instrumentors)
+            {
+              // setup context
+              final Scope scope = salveConfig.getScope(instrumentor);
+              final InstrumentationContext ctx = new InstrumentationContext(bytecodeLoader, monitor, scope);
 
-            // save bytecode
-            getClassFile(context, classPath).setBinaryContent(bytecode);
+              try
+              {
+                // instrument class
+                classFile.setBinaryContent(instrumentor.instrument(classPath, ctx));
+              }
+              catch (InstrumentationException e)
+              {
+                final StringBuilder message = new StringBuilder();
+                message.append("Could not instrument ");
+                message.append(classPath.replace('/', '.'));
+                message.append('.');
+
+                CodeMarker marker = e.getCodeMarker();
+                int line = -1;
+
+                if (marker != null)
+                  line = Math.max(-1, marker.getLineNumber());
+
+                if (line > -1)
+                {
+                  message.append(" Error on line: ").append(line);
+                }
+                final Navigatable location = new OpenFileDescriptor(context.getProject(), sourceFile, line, 0);
+                context.addMessage(CompilerMessageCategory.ERROR, message.toString(), sourceFile.getUrl(), line, 0, location);
+                log.error(e.getMessage(), e);
+              }
+            }
           }
-        }
-        catch (InstrumentationException e)
-        {
-//        if (e instanceof salve.CodeMarkerAware)
-//        {
-//          CodeMarker marker = ((CodeMarkerAware) e).getCodeMarker();
-//          if (marker != null)
-//          {
-//            line = Math.max(0, marker.getLineNumber());
-//          }
-//        }
-//        StringBuilder message = new StringBuilder();
-//        message.append("Could not instrument ").append(className).append(".");
-//        if (line > 0)
-//        {
-//          message.append(" Error on line: ").append(line);
-//        }
-          // report some nice error
-//        context.addMessage(CompilerMessageCategory.ERROR, );
-          log.error(e.getMessage(), e);
-          continue;
         }
         catch (IOException e)
         {
@@ -265,6 +300,7 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
     }
     finally
     {
+      // restore progress indicator state
       context.getProgressIndicator().popState();
     }
     return processedItems.toArray(new ProcessingItem[processedItems.size()]);
@@ -279,7 +315,7 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
 
 // -------------------------- OTHER METHODS --------------------------
 
-  private Map<Module, XmlConfig> getSalveConfigs(final CompileContext context, final BytecodeLoader loader) throws ConfigException
+  private Map<Module, XmlConfig> getSalveXMLs(final CompileContext context, final BytecodeLoader loader) throws ConfigException
   {
     // allows loading of instrumentors from project libraries
     final SalveClassLoader classLoader = new SalveClassLoader(getClass().getClassLoader(), loader);
@@ -333,7 +369,6 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
     return map;
   }
 
-  // TODO this methods seems a little awkward - can this be done better?
   private String getSlashDelimitedClassPath(final CompileContext context, final VirtualFile javaFile) throws IOException
   {
     // get associated module for java file
