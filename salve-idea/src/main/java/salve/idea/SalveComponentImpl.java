@@ -22,7 +22,7 @@ import javax.swing.*;
  *
  * @author Peter Ertl
  */
-// TODO this is probably not correct?!
+
 // find the documentation for this stuff
 @State(name = "SalveComponent", storages = {@Storage(id = "other", file = "$WORKSPACE_FILE$")})
 public final class SalveComponentImpl implements SalveComponent,
@@ -116,14 +116,12 @@ public final class SalveComponentImpl implements SalveComponent,
 
   public void projectOpened()
   {
-    // TODO do we need this?
-    log.debug("project opened");
+    // log.debug("project opened");
   }
 
   public void projectClosed()
   {
-    // TODO do we need this?
-    log.debug("project closed");
+    // log.debug("project closed");
   }
 
 // --------------------- Interface SalveComponent ---------------------
@@ -153,13 +151,13 @@ public final class SalveComponentImpl implements SalveComponent,
   public void apply() throws ConfigurationException
   {
     // move stuff: form -> state
-    log.debug("apply settings");
+    // log.debug("apply settings");
   }
 
   public void reset()
   {
     // move stuff: state -> form
-    log.debug("reset settings");
+    // log.debug("reset settings");
   }
 
   public void disposeUIResources()

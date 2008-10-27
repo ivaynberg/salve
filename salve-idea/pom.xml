@@ -9,17 +9,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <repositories>
-        <repository>
-            <id>mevenide</id>
-            <name>Mevenide's M2 repo</name>
-            <url>http://mevenide.codehaus.org/m2-repository</url>
-            <!--snapshots>
-                <updatePolicy>always</updatePolicy>
-            </snapshots-->
-        </repository>
-    </repositories>
-
     <artifactId>salve-idea</artifactId>
     <name>Salve IDEA Plugin</name>
 
@@ -27,32 +16,8 @@
         <dependency>
             <groupId>salve</groupId>
             <artifactId>salve-inst</artifactId>
-            <version>0.9</version>
+            <version>0.10-SNAPSHOT</version>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>com.intellij.idea</groupId>-->
-        <!--<artifactId>openapi</artifactId>-->
-        <!--<version>7.0</version>-->
-        <!--<scope>provided</scope>-->
-        <!--<classifier>8940</classifier>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>salve</groupId>-->
-        <!--<artifactId>salve-inst</artifactId>-->
-        <!--<version>0.10-SNAPSHOT</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>salve</groupId>-->
-        <!--<artifactId>salve-depend</artifactId>-->
-        <!--<version>0.10-SNAPSHOT</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>salve</groupId>-->
-        <!--<artifactId>salve-test</artifactId>-->
-        <!--<version>0.10-SNAPSHOT</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>-->
     </dependencies>
 
 </project>
