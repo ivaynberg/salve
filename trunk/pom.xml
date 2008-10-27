@@ -31,7 +31,8 @@
         <module>salve-depend-spring-inst</module>
         <module>salve-depend-guice</module>
         <module>salve-test</module>
-        <module>salve-idea</module>
+        <!-- still need to figure out how to make the maven build run -->
+        <!--<module>salve-idea</module>-->
     </modules>
 
 
