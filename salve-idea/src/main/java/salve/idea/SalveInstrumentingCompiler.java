@@ -38,7 +38,7 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
 
   private static final Logger log = Logger.getInstance(SalveInstrumentingCompiler.class.getName());
 
-  private static ResourceBundle MESSAGES = ResourceBundle.getBundle("salve.plugin.idea.Messages");
+  private static ResourceBundle MESSAGES = ResourceBundle.getBundle("salve.idea.Messages");
 
   private static final ProcessingItem[] NO_PROCESSING_ITEMS = new ProcessingItem[0];
 
