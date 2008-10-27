@@ -1,0 +1,15 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin>
+    <name>Salve Integration</name>
+    <!--<resource-bundle>moreinput.idea.salve.Messages</resource-bundle>-->
+    <description>Idea integration for Salve</description>
+    <version>0.1</version>
+    <vendor>Peter Ertl</vendor>
+    <idea-version since-build="8940"/>
+    <project-components>
+        <component>
+            <interface-class>salve.idea.SalveComponent</interface-class>
+            <implementation-class>salve.idea.SalveComponentImpl</implementation-class>
+        </component>
+    </project-components>
+</idea-plugin>
