@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>salve</groupId>
+        <artifactId>salve</artifactId>
+        <version>0.10-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <repositories>
+        <repository>
+            <id>mevenide</id>
+            <name>Mevenide's M2 repo</name>
+            <url>http://mevenide.codehaus.org/m2-repository</url>
+            <!--snapshots>
+                <updatePolicy>always</updatePolicy>
+            </snapshots-->
+        </repository>
+    </repositories>
+
+    <artifactId>salve-idea</artifactId>
+    <name>Salve IDEA Plugin</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>salve</groupId>
+            <artifactId>salve-inst</artifactId>
+            <version>0.9</version>
+        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>com.intellij.idea</groupId>-->
+        <!--<artifactId>openapi</artifactId>-->
+        <!--<version>7.0</version>-->
+        <!--<scope>provided</scope>-->
+        <!--<classifier>8940</classifier>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>salve</groupId>-->
+        <!--<artifactId>salve-inst</artifactId>-->
+        <!--<version>0.10-SNAPSHOT</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>salve</groupId>-->
+        <!--<artifactId>salve-depend</artifactId>-->
+        <!--<version>0.10-SNAPSHOT</version>-->
+        <!--<scope>test</scope>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>salve</groupId>-->
+        <!--<artifactId>salve-test</artifactId>-->
+        <!--<version>0.10-SNAPSHOT</version>-->
+        <!--<scope>test</scope>-->
+        <!--</dependency>-->
+    </dependencies>
+
+</project>
