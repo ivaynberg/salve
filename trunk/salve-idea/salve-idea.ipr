@@ -218,6 +218,130 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
   <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://salve.googlecode.com/svn/branches">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1213244282088" />
+                          <option name="revision" value="306" />
+                          <option name="url" value="https://salve.googlecode.com/svn/branches/0.8" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://salve.googlecode.com/svn/maven2">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1216596179282" />
+                          <option name="revision" value="316" />
+                          <option name="url" value="https://salve.googlecode.com/svn/maven2/salve" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://salve.googlecode.com/svn/sandbox">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1221079631929" />
+                          <option name="revision" value="335" />
+                          <option name="url" value="https://salve.googlecode.com/svn/sandbox/myproject" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://salve.googlecode.com/svn/tags">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1216595328851" />
+                          <option name="revision" value="314" />
+                          <option name="url" value="https://salve.googlecode.com/svn/tags/salve-0.9" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1197443456716" />
+                          <option name="revision" value="261" />
+                          <option name="url" value="https://salve.googlecode.com/svn/tags/salve-0.7" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1195012780325" />
+                          <option name="revision" value="246" />
+                          <option name="url" value="https://salve.googlecode.com/svn/tags/0.7.1" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1187200653828" />
+                          <option name="revision" value="216" />
+                          <option name="url" value="https://salve.googlecode.com/svn/tags/salve-0.6" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1186463739940" />
+                          <option name="revision" value="189" />
+                          <option name="url" value="https://salve.googlecode.com/svn/tags/salve-0.5" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://salve.googlecode.com/svn/wiki">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1222669340759" />
+                          <option name="revision" value="348" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/DesignByContract.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1203202667842" />
+                          <option name="revision" value="279" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/WhySalve.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1195587295092" />
+                          <option name="revision" value="254" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/ConfiguringInstrumentation.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1186461206658" />
+                          <option name="revision" value="181" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/ConfiguringDependencyLibrary.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1183704210329" />
+                          <option name="revision" value="39" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/BuildingSalve.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1183693262675" />
+                          <option name="revision" value="28" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/ComparisonWithConfigurable.wiki" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://salve.googlecode.com/svn/branches" />
+                  <option value="https://salve.googlecode.com/svn/maven2" />
+                  <option value="https://salve.googlecode.com/svn/sandbox" />
+                  <option value="https://salve.googlecode.com/svn/tags" />
+                  <option value="https://salve.googlecode.com/svn/wiki" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://salve.googlecode.com/svn/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="myVersion" value="124" />
   </component>
   <component name="VcsDirectoryMappings">
