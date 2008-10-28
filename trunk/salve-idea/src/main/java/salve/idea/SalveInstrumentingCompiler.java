@@ -243,7 +243,6 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 
           // file has related configuration in its module so it needs to be instrumented
           final Collection<Instrumentor> instrumentors = salveConfig.getInstrumentors(classPath);
-          boolean instrumented = false;
 
           if (!instrumentors.isEmpty())
           {
@@ -265,11 +264,11 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
                   classFile = getClassFile(context, classPath);
 
                 // instrument class
-                final long now = System.currentTimeMillis();
-                classFile.setBinaryContent(instrumentor.instrument(classPath, ctx), now, now);
+                final byte[] bytes = instrumentor.instrument(classPath, ctx);
 
-                // class has been changed
-                instrumented = true;
+                // save class
+                final long now = System.currentTimeMillis();
+                classFile.setBinaryContent(bytes, now, now);
               }
               catch (InstrumentationException e)
               {
