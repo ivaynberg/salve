@@ -43,13 +43,13 @@ public final class SalveComponentImpl implements SalveComponent,
   private SalveConfigurationForm configurationForm;
 
   // related project
-  private Project project;
+  private final Project project;
 
   // configuration state
   private SalveMutableConfiguration configuration;
 
   // salve bytecode transformer
-  private SalveInstrumentingCompiler instrumentor;
+  private final SalveInstrumentingCompiler instrumentor;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 

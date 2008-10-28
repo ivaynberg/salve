@@ -20,7 +20,7 @@ public final class SalveMutableConfiguration implements SalveConfiguration
     out.writeBoolean(enabled);
   }
 
-  public void readExternal(final ObjectInput in) throws IOException, ClassNotFoundException
+  public void readExternal(final ObjectInput in) throws IOException
   {
     version = in.readInt();
     enabled = in.readBoolean();

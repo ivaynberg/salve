@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class SalveClassLoader extends ClassLoader
 {
-  private BytecodeLoader bytecodeLoader;
-  private ConcurrentHashMap<String, Class<?>> definedClasses;
+  private final BytecodeLoader bytecodeLoader;
+  private final ConcurrentHashMap<String, Class<?>> definedClasses;
 
   public SalveClassLoader(final ClassLoader parent, final BytecodeLoader bytecodeLoader)
   {
