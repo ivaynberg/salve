@@ -208,7 +208,6 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
   {
     // prepare processing
     final Collection<ProcessingItem> processedItems = new ArrayList<ProcessingItem>(items.length);
-    int instrumentedCount = 0;
 
     try
     {
@@ -266,7 +265,8 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
                   classFile = getClassFile(context, classPath);
 
                 // instrument class
-                classFile.setBinaryContent(instrumentor.instrument(classPath, ctx));
+                final long now = System.currentTimeMillis();
+                classFile.setBinaryContent(instrumentor.instrument(classPath, ctx), now, now);
 
                 // class has been changed
                 instrumented = true;
@@ -295,8 +295,6 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
                 log.error(e.getMessage(), e);
               }
             }
-            if (instrumented)
-              instrumentedCount++;
           }
         }
         catch (IOException e)
@@ -307,7 +305,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
         // file has been instrumented successfully
         processedItems.add(item);
       }
-      final String message = format("instrumentation.done", processedItems.size(), instrumentedCount);
+      final String message = format("instrumentation.done", processedItems.size());
       context.addMessage(CompilerMessageCategory.INFORMATION, message, null, -1, -1);
     }
     catch (ConfigException e)
