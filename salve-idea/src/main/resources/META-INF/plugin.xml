@@ -4,7 +4,7 @@
     <name>Salve Integration</name>
     <!-- to be done -->
     <!--<resource-bundle>salve.idea.Messages</resource-bundle>-->
-    <version>0.10.1</version>
+    <version>0.10.3</version>
     <vendor email="peter@moreinput.de" url="http://salve.googlecode.com">Peter Ertl</vendor>
     <idea-version since-build="8940"/>
     <project-components>
@@ -17,6 +17,7 @@
         Idea integration for Salve
     </description>
     <change-notes>
-        fix wrong count for number of instrumented classes
+        fixed: wrong handling of source / test modules. some files may stay unprocessed
+        enhanced checking of last-modified files
     </change-notes>
 </idea-plugin>

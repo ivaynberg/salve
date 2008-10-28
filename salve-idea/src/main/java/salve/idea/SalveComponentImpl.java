@@ -5,7 +5,6 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -31,8 +30,6 @@ public final class SalveComponentImpl implements SalveComponent,
 {
 // ------------------------------ FIELDS ------------------------------
 
-  private static final Logger log = Logger.getInstance(SalveComponentImpl.class.getName());
-
   @NonNls
   private static final String COMPONENT_NAME = "salve.integration.idea";
 
@@ -53,7 +50,7 @@ public final class SalveComponentImpl implements SalveComponent,
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public SalveComponentImpl(Project project)
+  public SalveComponentImpl(final Project project)
   {
     this.project = project;
     configuration = new SalveMutableConfiguration();
