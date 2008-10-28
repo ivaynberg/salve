@@ -23,19 +23,6 @@ public class SalveConfigurationForm
     return false;
   }
 
-  public void setData(SalveComponentImpl data)
-  {
-  }
-
-  public void getData(SalveComponentImpl data)
-  {
-  }
-
-  public boolean isModified(SalveComponentImpl data)
-  {
-    return false;
-  }
-
   public JPanel getRootComponent()
   {
     return rootComponent;

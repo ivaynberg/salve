@@ -32,13 +32,13 @@ import java.util.*;
  *
  * @author Peter Ertl
  */
-public final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
+final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger log = Logger.getInstance(SalveInstrumentingCompiler.class.getName());
 
-  private static ResourceBundle MESSAGES = ResourceBundle.getBundle("salve.idea.Messages");
+  private static final ResourceBundle MESSAGES = ResourceBundle.getBundle("salve.idea.Messages");
 
   private static final ProcessingItem[] NO_PROCESSING_ITEMS = new ProcessingItem[0];
 
@@ -246,36 +246,45 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
 
           if (!instrumentors.isEmpty())
           {
-            final VirtualFile classFile = getClassFile(context, classPath);
+            VirtualFile classFile = null;
 
             for (Instrumentor instrumentor : instrumentors)
             {
               // setup context
               final Scope scope = salveConfig.getScope(instrumentor);
+
+              if (!scope.includes(classPath))
+                continue;
+
               final InstrumentationContext ctx = new InstrumentationContext(bytecodeLoader, monitor, scope);
 
               try
               {
+                if (classFile == null)
+                  classFile = getClassFile(context, classPath);
+
                 // instrument class
                 classFile.setBinaryContent(instrumentor.instrument(classPath, ctx));
               }
               catch (InstrumentationException e)
               {
+                final String className = classPath.replace('/', '.');
+
                 final StringBuilder message = new StringBuilder();
-                message.append("Could not instrument ");
-                message.append(classPath.replace('/', '.'));
-                message.append('.');
+                message.append(format("instrumentation.failed", className));
 
                 CodeMarker marker = e.getCodeMarker();
+
                 int line = -1;
 
                 if (marker != null)
+                {
                   line = Math.max(-1, marker.getLineNumber());
 
-                if (line > -1)
-                {
-                  message.append(" Error on line: ").append(line);
+                  if (line > -1)
+                    message.append(' ').append(format("instrumentation.failed.lineNumber", line));
                 }
+
                 final Navigatable location = new OpenFileDescriptor(context.getProject(), sourceFile, line, 0);
                 context.addMessage(CompilerMessageCategory.ERROR, message.toString(), sourceFile.getUrl(), line, 0, location);
                 log.error(e.getMessage(), e);
@@ -291,7 +300,7 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
         // file has been instrumented successfully
         processedItems.add(item);
       }
-      final String message = processedItems.size() + " files were instrumented with Salve";
+      final String message = format("instrumentation.done", processedItems.size());
       context.addMessage(CompilerMessageCategory.INFORMATION, message, null, -1, -1);
     }
     catch (ConfigException e)
@@ -385,14 +394,14 @@ public final class SalveInstrumentingCompiler implements ClassInstrumentingCompi
       {
         if (!javaFilePath.endsWith(JAVA_FILE_EXTENSION))
         {
-          final String message = "file does not end with " + JAVA_FILE_EXTENSION;
+          final String message = format("file.wrong.extension", JAVA_FILE_EXTENSION);
           context.addMessage(CompilerMessageCategory.ERROR, message, javaFile.getUrl(), -1, -1);
           throw new IOException(message);
         }
         return javaFilePath.substring(0, javaFilePath.length() - JAVA_FILE_EXTENSION.length());
       }
     }
-    final String message = "unable to get path to java file: " + javaFile.getPresentableUrl();
+    final String message = format("filepath.unresolvable", javaFile.getPresentableUrl());
     context.addMessage(CompilerMessageCategory.ERROR, message, null, -1, -1);
     throw new IOException(message);
   }
