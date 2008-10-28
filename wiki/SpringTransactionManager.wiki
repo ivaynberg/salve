@@ -31,5 +31,7 @@ Salve provides bytecode instrumentiation of methods with the @Transactional attr
     <property name="transactionInterceptor" ref="txInterceptor"/>
   </bean>
 
+<!-- define 'dataSource' and 'transactionManager' here -->
+
 </beans>
 }}}
