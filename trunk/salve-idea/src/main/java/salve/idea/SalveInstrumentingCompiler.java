@@ -123,7 +123,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
         return classFile;
       }
     }
-    final String message = format("classfile.locate.error", classPath);
+    final String message = format("classfile.locate.error", classPath.replace('/', '.'));
     context.addMessage(CompilerMessageCategory.ERROR, message, null, -1, -1, null);
     throw new IOException(message);
   }
@@ -208,6 +208,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
   {
     // prepare processing
     final Collection<ProcessingItem> processedItems = new ArrayList<ProcessingItem>(items.length);
+    int instrumentedCount = 0;
 
     try
     {
@@ -243,6 +244,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 
           // file has related configuration in its module so it needs to be instrumented
           final Collection<Instrumentor> instrumentors = salveConfig.getInstrumentors(classPath);
+          boolean instrumented = false;
 
           if (!instrumentors.isEmpty())
           {
@@ -265,6 +267,9 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 
                 // instrument class
                 classFile.setBinaryContent(instrumentor.instrument(classPath, ctx));
+
+                // class has been changed
+                instrumented = true;
               }
               catch (InstrumentationException e)
               {
@@ -290,6 +295,8 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
                 log.error(e.getMessage(), e);
               }
             }
+            if (instrumented)
+              instrumentedCount++;
           }
         }
         catch (IOException e)
@@ -300,7 +307,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
         // file has been instrumented successfully
         processedItems.add(item);
       }
-      final String message = format("instrumentation.done", processedItems.size());
+      final String message = format("instrumentation.done", processedItems.size(), instrumentedCount);
       context.addMessage(CompilerMessageCategory.INFORMATION, message, null, -1, -1);
     }
     catch (ConfigException e)
