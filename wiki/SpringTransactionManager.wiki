@@ -1,0 +1,35 @@
+#summary Using the @Transactional attribute for declarative transactions
+
+= Introduction =
+
+Use salve for @Transactional support instead of spring-aop / AspectJ
+
+= Details =
+
+Salve provides bytecode instrumentiation of methods with the @Transactional attribute. It's similar to using spring-aop but doesn't require runtime weaving or compliation with AspectJ (is this explained right?). Instead the bytecode is modified to include transaction calls (begin / rollback / commit).
+
+{{{
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+  <!-- connect salve transactions to spring -->
+  <bean class="salve.depend.spring.txn.SpringTransactionManager"/>
+
+  <!-- configure transaction attributes on annotation @Transactional -->
+  <bean id="txAttributeSource" class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource"/>
+
+  <!-- transaction interceptor for calling transacted methods + types -->
+  <bean id="txInterceptor" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+    <property name="transactionManager" ref="transactionManager"/>
+    <property name="transactionAttributeSource" ref="txAttributeSource"/>
+  </bean>
+
+  <!-- scans for @Transactional on methods + types to recommend for instrumentation -->
+  <bean class="org.springframework.transaction.interceptor.TransactionAttributeSourceAdvisor">
+    <property name="transactionInterceptor" ref="txInterceptor"/>
+  </bean>
+
+</beans>
+}}}
