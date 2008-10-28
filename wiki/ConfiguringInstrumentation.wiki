@@ -87,3 +87,10 @@ Coming soon
 Salve has an eclipse builder plugin which can incrementally instrument files as you are editing them. See salve-eclipse module in svn.
 
 Eclipse update site: http://salve.googlecode.com/svn/trunk/salve-eclipse-update-site/
+
+== IDEA ==
+There's an plugin for IDEA as well now!
+
+It will scan for salve.xml in the META-INF directory of each IDEA module and instrument your class files. The plugin can be found under the name 'Salve Integration' in IDEA's 'Available' Tab in the 'Plugins' settings dialog easily.
+
+Link to the plugin on IntelliJ.net: http://plugins.intellij.net/plugin/?id=1347
