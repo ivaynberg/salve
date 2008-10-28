@@ -45,16 +45,41 @@
     <entry_points version="2.0" />
   </component>
   <component name="InspectionProjectProfileManager">
-    <option name="PROJECT_PROFILE" value="Project Default" />
-    <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
+    <option name="PROJECT_PROFILE" value="salve" />
+    <option name="USE_PROJECT_LEVEL_SETTINGS" value="true" />
     <scopes />
     <profiles>
       <profile version="1.0" is_locked="false">
-        <option name="myName" value="Project Default" />
+        <option name="myName" value="salve" />
         <option name="myLocal" value="false" />
+        <inspection_tool class="FieldMayBeFinal" level="WARNING" enabled="true" />
+        <inspection_tool class="LocalCanBeFinal" level="WARNING" enabled="true">
+          <option name="REPORT_VARIABLES" value="true" />
+          <option name="REPORT_PARAMETERS" value="true" />
+        </inspection_tool>
+        <inspection_tool class="UnusedDeclaration" level="WARNING" enabled="false">
+          <option name="ADD_MAINS_TO_ENTRIES" value="true" />
+          <option name="ADD_APPLET_TO_ENTRIES" value="true" />
+          <option name="ADD_SERVLET_TO_ENTRIES" value="true" />
+          <option name="ADD_NONJAVA_TO_ENTRIES" value="true" />
+          <option name="ADDITIONAL_ANNOTATIONS">
+            <value>
+              <list size="0" />
+            </value>
+          </option>
+          <option name="ADD_EJB_TO_ENTRIES" value="true" />
+          <option name="ADD_JUNIT_TO_ENTRIES" value="true" />
+        </inspection_tool>
+        <inspection_tool class="SameReturnValue" level="WARNING" enabled="false" />
+        <inspection_tool class="BooleanMethodIsAlwaysInverted" level="WARNING" enabled="false" />
       </profile>
     </profiles>
-    <list size="0" />
+    <list size="4">
+      <item index="0" class="java.lang.String" itemvalue="SERVER PROBLEM" />
+      <item index="1" class="java.lang.String" itemvalue="INFO" />
+      <item index="2" class="java.lang.String" itemvalue="WARNING" />
+      <item index="3" class="java.lang.String" itemvalue="ERROR" />
+    </list>
   </component>
   <component name="JavacSettings">
     <option name="DEBUGGING_INFO" value="true" />

@@ -54,6 +54,9 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
   @NonNls
   private static final String SALVE_XML_PATH = "META-INF/salve.xml";
 
+  // timestamp of last instrumentation
+  private long lastTimestamp = Long.MIN_VALUE;
+
   // configuration for component
   private final SalveConfiguration configuration;
 
@@ -90,11 +93,11 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
     final CompoundLoader loader = new CompoundLoader();
 
     // add bytecode loaders for compiled classes
-    for (VirtualFile rootDirectory : context.getAllOutputDirectories())
+    for (final VirtualFile rootDirectory : context.getAllOutputDirectories())
       loader.addLoader(new VirtualFileSystemBytecodeLoader(rootDirectory));
 
     // add bytecode loaders for libraries
-    for (VirtualFile libroot : LibraryUtil.getLibraryRoots(context.getProject(), false, true))
+    for (final VirtualFile libroot : LibraryUtil.getLibraryRoots(context.getProject(), false, true))
       loader.addLoader(new VirtualFileSystemBytecodeLoader(libroot));
 
     return loader;
@@ -112,7 +115,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
   private static VirtualFile getClassFile(final CompileContext context, final String classPath) throws IOException
   {
     // scan output directories
-    for (VirtualFile outputDirectory : context.getAllOutputDirectories())
+    for (final VirtualFile outputDirectory : context.getAllOutputDirectories())
     {
       // check if output dir contains class file
       final VirtualFile classFile = VfsUtil.findRelativeFile(classPath + CLASS_FILE_EXTENSION, outputDirectory);
@@ -154,7 +157,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
    * @param args message arguments
    * @return formatted message string
    */
-  private static String format(final String key, Object... args)
+  private static String format(final String key, final Object... args)
   {
     return MessageFormat.format(MESSAGES.getString(key), args);
   }
@@ -196,18 +199,19 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 
     // get all java source files and report them for processing
     final VirtualFile[] files = context.getCompileScope().getFiles(StdFileTypes.JAVA, true);
-    final ProcessingItem[] items = new ProcessingItem[files.length];
+    final List<ProcessingItem> items = new ArrayList<ProcessingItem>(files.length);
 
-    for (int i = 0; i < files.length; i++)
-      items[i] = createProcessingItem(files[i]);
+    for (final VirtualFile file : files)
+      items.add(createProcessingItem(file));
 
-    return items;
+    return items.toArray(new ProcessingItem[items.size()]);
   }
 
   public ProcessingItem[] process(final CompileContext context, final ProcessingItem[] items)
   {
     // prepare processing
     final Collection<ProcessingItem> processedItems = new ArrayList<ProcessingItem>(items.length);
+    long currentTimestamp = lastTimestamp;
 
     try
     {
@@ -221,7 +225,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
       final ModificationMonitor monitor = new ModificationMonitor();
 
       // process each item
-      for (ProcessingItem item : items)
+      for (final ProcessingItem item : items)
       {
         try
         {
@@ -232,7 +236,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
           ensureFileType(context, sourceFile, StdFileTypes.JAVA);
 
           // get related class path for the current java file
-          final String classPath = getSlashDelimitedClassPath(context, sourceFile);
+          final String classPath = getClassPath(context, sourceFile, '/');
 
           // check if current file has salve.xml
           final Module module = context.getModuleByFile(sourceFile);
@@ -246,9 +250,15 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 
           if (!instrumentors.isEmpty())
           {
-            VirtualFile classFile = null;
+            final VirtualFile classFile = getClassFile(context, classPath);
 
-            for (Instrumentor instrumentor : instrumentors)
+            // ignore class file if it was not modified since last instrumentation run
+            if (classFile.getModificationCount() <= lastTimestamp)
+              continue;
+
+            System.out.println(sourceFile.getUrl());
+
+            for (final Instrumentor instrumentor : instrumentors)
             {
               // setup context
               final Scope scope = salveConfig.getScope(instrumentor);
@@ -260,35 +270,37 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 
               try
               {
-                if (classFile == null)
-                  classFile = getClassFile(context, classPath);
-
                 // instrument class
                 final byte[] bytes = instrumentor.instrument(classPath, ctx);
 
                 // save class
                 final long now = System.currentTimeMillis();
                 classFile.setBinaryContent(bytes, now, now);
+
+                // keep track of latest modification timestamp of any class file by this instrumentor
+                // anything beyond that point is considered to be changed and
+                // needs instrumentation in any future run
+                currentTimestamp = Math.max(currentTimestamp, classFile.getModificationCount());
               }
               catch (InstrumentationException e)
               {
-                final String className = classPath.replace('/', '.');
-
                 final StringBuilder message = new StringBuilder();
-                message.append(format("instrumentation.failed", className));
-
-                CodeMarker marker = e.getCodeMarker();
+                message.append(format("instrumentation.failed", classPath.replace('/', '.')));
 
                 int line = -1;
 
-                if (marker != null)
+                if (e instanceof CodeMarkerAware)
                 {
-                  line = Math.max(-1, marker.getLineNumber());
+                  final CodeMarker marker = e.getCodeMarker();
 
-                  if (line > -1)
-                    message.append(' ').append(format("instrumentation.failed.lineNumber", line));
+                  if (marker != null)
+                  {
+                    line = Math.max(-1, marker.getLineNumber());
+
+                    if (line > -1)
+                      message.append(' ').append(format("instrumentation.failed.lineNumber", line));
+                  }
                 }
-
                 final Navigatable location = new OpenFileDescriptor(context.getProject(), sourceFile, line, 0);
                 context.addMessage(CompilerMessageCategory.ERROR, message.toString(), sourceFile.getUrl(), line, 0, location);
                 log.error(e.getMessage(), e);
@@ -316,6 +328,9 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
       // restore progress indicator state
       context.getProgressIndicator().popState();
     }
+    // update timestamp of last compile
+    lastTimestamp = currentTimestamp;
+
     return processedItems.toArray(new ProcessingItem[processedItems.size()]);
   }
 
@@ -342,7 +357,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 
     for (final Module module : modules)
     {
-      for (VirtualFile sourceRoot : context.getSourceRoots(module))
+      for (final VirtualFile sourceRoot : context.getSourceRoots(module))
       {
         final VirtualFile salveXml = VfsUtil.findRelativeFile(SALVE_XML_PATH, sourceRoot);
 
@@ -382,16 +397,16 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
     return map;
   }
 
-  private String getSlashDelimitedClassPath(final CompileContext context, final VirtualFile javaFile) throws IOException
+  private String getClassPath(final CompileContext context, final VirtualFile javaFile, final char delimiter) throws IOException
   {
     // get associated module for java file
     final Module module = context.getModuleByFile(javaFile);
 
     // get source roots of the current file's module
-    for (VirtualFile sourceRoot : context.getSourceRoots(module))
+    for (final VirtualFile sourceRoot : context.getSourceRoots(module))
     {
       // check which of the source root contains the java file
-      final String javaFilePath = VfsUtil.getPath(sourceRoot, javaFile, '/');
+      final String javaFilePath = VfsUtil.getRelativePath(javaFile, sourceRoot, delimiter);
 
       // get the path to and strip away '.java'
       if (javaFilePath != null)
