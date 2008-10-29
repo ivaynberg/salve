@@ -1,0 +1,61 @@
+#summary Using the @Transactional attribute for declarative transactions
+
+= Introduction =
+
+Use salve for @Transactional support instead of spring
+
+= Details =
+
+Salve provides bytecode instrumentiation of methods with the @Transactional attribute. It's similar to using spring-aop but doesn't require runtime weaving or compliation with AspectJ (is this explained right?). Instead the bytecode is modified to include transaction calls (begin / rollback / commit).
+
+Here's a sample illustrating it's usage:
+
+
+{{{
+package demo.salve.transactional;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import junit.framework.TestCase;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import salve.depend.DependencyLibrary;
+import salve.depend.guice.GuiceBeanLocator;
+import salve.depend.spring.txn.AnnotatedTransactionManager;
+import salve.depend.spring.txn.TransactionManager;
+
+public class SalveGuiceTransactionalTest extends TestCase
+{
+  static
+  {
+    DependencyLibrary.addLocator(new GuiceBeanLocator(Guice.createInjector(new AbstractModule()
+    {
+      @Override
+      protected void configure()
+      {
+        final DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("org.postgresql.Driver");
+        dataSource.setUrl("jdbc:postgresql://localhost/mydb");
+        dataSource.setUsername("test");
+        dataSource.setPassword("test");
+
+        final PlatformTransactionManager tx = new DataSourceTransactionManager(dataSource);
+        bind(TransactionManager.class).toInstance(new AnnotatedTransactionManager(tx));
+
+        // more configuration here
+      }
+    })));
+  }
+
+  @Transactional(propagation = Propagation.SUPPORTS, timeout = 120, isolation = Isolation.SERIALIZABLE)
+  public void testTransaction() throws SiteNotFoundException, AuthenticationFailedException
+  {
+    System.out.println("running inside a transaction now!");
+    // do some nice transaction stuff in here
+  }
+}
+}}}
