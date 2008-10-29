@@ -12,6 +12,10 @@
     <inceptionYear>2007</inceptionYear>
     <url>http://code.google.com/p/salve/</url>
 
+    <properties>
+        <spring.version>2.5.5</spring.version>
+    </properties>
+
     <scm>
         <connection>scm:svn:http://salve.googlecode.com/svn/trunk</connection>
         <developerConnection>scm:svn:https://salve.googlecode.com/svn/trunk</developerConnection>
