@@ -14,10 +14,12 @@ public interface TransactionManager {
 
 	void cleanup(Object txn);
 
-	public static final Key KEY = new Key() {
+  public static final Key KEY = new Key() {
+
+    private final Annotation[] NO_ANNOTATIONS = new Annotation[0];
 
 		public Annotation[] getAnnotations() {
-			return null;
+			return NO_ANNOTATIONS;
 		}
 
 		public Class<?> getType() {
