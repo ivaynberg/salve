@@ -94,3 +94,5 @@ There's an plugin for IDEA, too...
 It will scan for salve.xml in the META-INF directory of each IDEA module and instrument your class files. The plugin can be found under the name 'Salve Integration' in IDEA's 'Available' Tab in the 'Plugins' settings dialog easily.
 
 Link to the plugin on IntelliJ.net: http://plugins.intellij.net/plugin/?id=3709
+
+(Note: If you installed a version below 0.10.3, please delete that plugin from IDEA and reinstall it again. I had to change the plugin-id so update will not work in that case. Sorry!)
