@@ -89,11 +89,16 @@ public abstract class AbstractTransformer implements ClassFileTransformer
         }
     }
 
+    protected boolean isDebugEnabled()
+    {
+        return "true".equals(System.getProperty("salve.agent.debug"));
+    }
+
     private void printDebugInfoIfNecessary(String className, Collection<Instrumentor> instrumentors)
     {
-        if ("true".equals(System.getProperty("salve.agent.debug")))
+        if (isDebugEnabled())
         {
-            System.out.print("Instrumenting " + className + " using [");
+            System.out.print("Salve:Agent:Instrumenting " + className + " using [");
             Iterator<Instrumentor> it = instrumentors.iterator();
             while (it.hasNext())
             {
