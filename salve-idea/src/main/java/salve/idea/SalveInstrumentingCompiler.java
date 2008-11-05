@@ -256,8 +256,6 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
             if (classFile.getModificationCount() <= lastTimestamp)
               continue;
 
-            System.out.println(sourceFile.getUrl());
-
             for (final Instrumentor instrumentor : instrumentors)
             {
               // setup context
