@@ -362,6 +362,13 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
         if (salveXml == null)
           continue;
 
+        if (map.containsKey(module))
+        {
+          final String message = format("module.multiple.configs", module.getName(), SALVE_XML_PATH);
+          context.addMessage(CompilerMessageCategory.ERROR, message, null, -1, -1, null);
+          throw new ConfigException(message);
+        }
+
         final XmlConfig config = new XmlConfig();
         InputStream inputStream = null;
 
@@ -389,7 +396,6 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
           }
         }
         map.put(module, config);
-        break;
       }
     }
     return map;
