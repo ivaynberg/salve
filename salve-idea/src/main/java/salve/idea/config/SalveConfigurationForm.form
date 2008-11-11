@@ -20,7 +20,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="Salve IDEA Integration Plugin&#10;&#10;(c) Peter Ertl, 2008, mailto: peter@moreinput.de&#10;&#10;see http://code.google.com/salve&#10;&#10;Thanks to Igor Vaynberg for his great work!&#10;&#10;this plugin is still missing some nice configuration options, licensing terms, credits where credits are due, link to public website, documentation&#10;&#10;However I first need to freshen up my java skills in Swing before that happens. "/>
+          <text value="Salve IDEA Integration Plugin&#10;&#10;(c) Peter Ertl, 2008, mailto: peter@moreinput.de&#10;&#10;see http://code.google.com/salve&#10;&#10;This plugin is licensed under Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)&#10;&#10;Thanks to Igor Vaynberg for his great work! "/>
         </properties>
       </component>
     </children>
