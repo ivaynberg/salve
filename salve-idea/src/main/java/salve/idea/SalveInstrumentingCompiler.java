@@ -3,9 +3,10 @@ package salve.idea;
 import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.roots.libraries.LibraryUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -122,32 +123,19 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 
       if (classFile != null)
       {
-        ensureFileType(context, classFile, StdFileTypes.CLASS);
+        // paranoia = 1
+        if (!classFile.getFileType().equals(StdFileTypes.CLASS))
+        {
+          final String error = MessageFormat.format("file {0} has wrong type {1} ",
+                                                    classFile.getPresentableUrl(), classFile.getFileType().getName());
+          throw new IOException(error);
+        }
         return classFile;
       }
     }
     final String message = format("classfile.locate.error", classPath.replace('/', '.'));
     context.addMessage(CompilerMessageCategory.ERROR, message, null, -1, -1, null);
     throw new IOException(message);
-  }
-
-  /**
-   * make sure the specified file has the given file type (paranoia mode = true)
-   *
-   * @param context compilation context
-   * @param file    file to check
-   * @param type    expected file type
-   * @throws IOException on wrong file type
-   */
-  private static void ensureFileType(final CompileContext context, final VirtualFile file, final FileType type) throws IOException
-  {
-    if (!file.getFileType().equals(type))
-    {
-      final Navigatable location = new OpenFileDescriptor(context.getProject(), file);
-      final String message = format("file.type.unexpected.error", file.getFileType().getName(), type);
-      context.addMessage(CompilerMessageCategory.ERROR, message, file.getUrl(), -1, -1, location);
-      throw new IOException(message);
-    }
   }
 
   /**
@@ -224,6 +212,9 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
       final Map<Module, XmlConfig> salveConfigs = getSalveXMLs(context, bytecodeLoader);
       final ModificationMonitor monitor = new ModificationMonitor();
 
+      // access to project files
+      final ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(context.getProject()).getFileIndex();
+
       // process each item
       for (final ProcessingItem item : items)
       {
@@ -232,8 +223,9 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
           // get source file
           final VirtualFile sourceFile = item.getFile();
 
-          // paranoia check
-          ensureFileType(context, sourceFile, StdFileTypes.JAVA);
+          // don't even know if this could ever happen?! (paranoia = 1)
+          if (!projectFileIndex.isContentJavaSourceFile(sourceFile))
+            continue;
 
           // get related class path for the current java file
           final String classPath = getClassPath(context, sourceFile, '/');
