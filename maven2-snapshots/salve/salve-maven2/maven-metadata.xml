@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+  <groupId>salve</groupId>
+  <artifactId>salve-maven2</artifactId>
+  <version>0.10-SNAPSHOT</version>
+  <versioning>
+    <latest>0.10-SNAPSHOT</latest>
+    <versions>
+      <version>0.10-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20081123231245</lastUpdated>
+  </versioning>
+</metadata>
