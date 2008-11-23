@@ -165,14 +165,13 @@
             <url>file:target/site/</url>
         </site>
         <repository>
-            <id>local</id>
-            <url>file:target/m2-repo/</url>
+            <id>salve-releases</id>
+            <url>https://salve.googlecode.com/svn/maven2</url>
         </repository>
         <snapshotRepository>
-            <id>localsnaps</id>
-            <url>file:target/m2-snapshot-repo/</url>
+            <id>salve-snapshots</id>
+            <url>https://salve.googlecode.com/svn/maven2-snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-
 
 </project>
