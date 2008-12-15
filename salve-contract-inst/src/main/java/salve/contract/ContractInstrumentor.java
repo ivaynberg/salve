@@ -99,7 +99,7 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 		if (analyzer.shouldInstrument()) {
 			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx.getLoader());
 			reader.accept(new ClassInstrumentor(new ConditionalChecksInstrumentor(writer, ctx.getMonitor()),
-					initOnceAnalyzer), 0);
+					initOnceAnalyzer), ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG);
 			bytecode = writer.toByteArray();
 		}
 		return bytecode;
