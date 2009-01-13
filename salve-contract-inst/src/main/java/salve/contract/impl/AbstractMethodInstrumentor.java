@@ -43,23 +43,6 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 		this.monitor = monitor;
 	}
 
-	public InstrumentorMonitor getMonitor() {
-		return monitor;
-	}
-
-	public String getOwner() {
-		return owner;
-	}
-
-	@Override
-	public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-		int pindex = index - 1;
-		if (pindex >= 0 && pindex < paramNames.length) {
-			paramNames[pindex] = name;
-		}
-		super.visitLocalVariable(name, desc, signature, start, end, index);
-	}
-
 	protected int getMethodAccess() {
 		return access;
 	}
@@ -83,6 +66,14 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 
 	protected String getMethodName() {
 		return name;
+	}
+
+	public InstrumentorMonitor getMonitor() {
+		return monitor;
+	}
+
+	public String getOwner() {
+		return owner;
 	}
 
 	protected int getParamCount() {
@@ -136,6 +127,15 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 		push(msg);
 		invokeConstructor(ILLEGALSTATEEX, ILLEGALSTATEEX_INIT);
 		throwException();
+	}
+
+	@Override
+	public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+		int pindex = index - 1;
+		if (pindex >= 0 && pindex < paramNames.length) {
+			paramNames[pindex] = name;
+		}
+		super.visitLocalVariable(name, desc, signature, start, end, index);
 	}
 
 }
