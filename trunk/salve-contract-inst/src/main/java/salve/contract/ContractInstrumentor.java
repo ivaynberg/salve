@@ -26,13 +26,11 @@ import salve.asmlib.ClassReader;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.ClassWriter;
 import salve.asmlib.MethodVisitor;
-import salve.contract.impl.Constants;
 import salve.contract.impl.NotEmptyInstrumentor;
 import salve.contract.impl.NotNullInstrumentor;
 import salve.contract.impl.NumericalInstrumentor;
 import salve.contract.initonce.ClassAnalyzer;
 import salve.contract.initonce.ClassInstrumentor;
-import salve.contract.pe.PeValidatorClassVisitor;
 import salve.util.BytecodeLoadingClassWriter;
 
 public class ContractInstrumentor extends AbstractInstrumentor {
@@ -62,23 +60,6 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 		}
 	}
 
-	/**
-	 * Used to allow subclasses to add custom class visitors to the analyzer
-	 * chain. Only useful if the reader is an analyzer that reports errors by
-	 * throwing {@link InstrumentationException}.
-	 * 
-	 * This method is mainly used by subclasses to add
-	 * {@link PeValidatorClassVisitor}s that check for user-project-specific
-	 * classes that work with PEs.
-	 * 
-	 * @param reader
-	 * @return class reader that will be used to analyze classes before
-	 *         instrumentation
-	 */
-	protected ClassVisitor filter(InstrumentationContext ctx, ClassVisitor reader) {
-		return reader;
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	protected byte[] internalInstrument(String className, InstrumentationContext ctx) throws InstrumentationException {
@@ -93,8 +74,7 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 		final ClassAnalyzer initOnceAnalyzer = new ClassAnalyzer(ctx);
 		ContractAnalyzer analyzer = new ContractAnalyzer(initOnceAnalyzer);
 
-		reader.accept(filter(ctx, new PeValidatorClassVisitor(Constants.PE, Constants.PE_INIT, ctx, analyzer)),
-				ClassReader.SKIP_FRAMES);
+		reader.accept(analyzer, ClassReader.SKIP_FRAMES);
 
 		if (analyzer.shouldInstrument()) {
 			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx.getLoader());
