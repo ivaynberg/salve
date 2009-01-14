@@ -25,7 +25,7 @@ import salve.Scope;
 import salve.expr.inst.ExpressionValidatorInstrumentor;
 import salve.loader.BytecodePool;
 
-public class TestCaseSupport extends Assert
+public abstract class TestCaseSupport extends Assert
 {
     private static final ClassLoader CL = TestCaseSupport.class
             .getClassLoader();
