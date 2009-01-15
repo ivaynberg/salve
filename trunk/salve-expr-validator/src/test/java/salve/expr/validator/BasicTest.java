@@ -20,110 +20,158 @@ import org.junit.Test;
 
 import salve.InstrumentationException;
 import salve.expr.PE;
+import salve.expr.PeModel;
 import salve.expr.TestCaseSupport;
 import salve.expr.validator.model.City;
 import salve.expr.validator.model.PeContainer;
 import salve.expr.validator.model.Person;
 
-public class BasicTest extends TestCaseSupport {
+public class BasicTest extends TestCaseSupport
+{
 
-	public static class TestField__Primitive {
-		public void testCode() {
-			new PE(Person.class, "address.city.id", "r");
-		}
-	}
+    public void foo()
+    {
 
-	public static class TestGetter__Primitive {
-		public void testCode() {
-			new PE(Person.class, "address.city.idInteger", "r");
-		}
-	}
+        PeModel model = new PeModel(this, "foo");
 
-	public static class TestGettersCode1 {
-		public void testCode() {
-			new PE(Person.class, "address.city.name", "r");
-		}
-	}
+        model = new PeModel(null, PE.class, "expression");
 
-	public static class TestGettersCode2 {
-		public void testCode() {
-			new PE(City.class, "name", "r");
-		}
-	}
+    }
 
-	public static class TestGettersCodeBad1 {
-		public void testCode() {
-			new PE(Person.class, "address2.city.name", "r");
-		}
-	}
 
-	public static class TestGettersCodeBad2 {
-		public void testCode() {
-			new PE(Person.class, "address.city2.name", "r");
-		}
-	}
+    public static class TestField__Primitive
+    {
+        public void testCode()
+        {
+            new PE(Person.class, "address.city.id", "r");
+        }
+    }
 
-	public static class TestGettersCodeBad3 {
-		public void testCode() {
-			new PE(Person.class, "address.city.name2", "r");
-		}
-	}
+    public static class TestGetter__Primitive
+    {
+        public void testCode()
+        {
+            new PE(Person.class, "address.city.idInteger", "r");
+        }
+    }
 
-	public static class TestGettersCodeBad4 {
-		public void testCode() {
-			new PE(Person.class, "address.city.name.foo", "r");
-		}
-	}
+    public static class TestGettersCode1
+    {
+        public void testCode()
+        {
+            new PE(Person.class, "address.city.name", "r");
+        }
+    }
 
-	public static class TestGettersCodeBad5 {
-		public void testCode() {
-			new PeContainer(null, new PE(Person.class, "address2.city.name", "r"));
-		}
-	}
+    public static class TestGettersCode2
+    {
+        public void testCode()
+        {
+            new PE(City.class, "name", "r");
+        }
+    }
 
-	@Test
-	public void testFields() throws Exception {
-		create("TestField__Primitive");
-	}
+    public static class TestGettersCodeBad1
+    {
+        public void testCode()
+        {
+            new PE(Person.class, "address2.city.name", "r");
+        }
+    }
 
-	@Test
-	public void testGetters() throws Exception {
-		create("TestGettersCode1");
-		create("TestGettersCode2");
-		create("TestGetter__Primitive");
-		try {
-			create("TestGettersCodeBad1");
-			fail("Should have failed...");
-		} catch (InstrumentationException e) {
-			// ignore
-		}
-		try {
-			create("TestGettersCodeBad2");
-			fail("Should have failed...");
-		} catch (InstrumentationException e) {
-			// ignore
-		}
-		try {
-			create("TestGettersCodeBad3");
-			fail("Should have failed...");
-		} catch (InstrumentationException e) {
-			// ignore
-		}
-		try {
-			create("TestGettersCodeBad4");
-			fail("Should have failed...");
-		} catch (InstrumentationException e) {
-			// ignore
-		}
-	}
+    public static class TestGettersCodeBad2
+    {
+        public void testCode()
+        {
+            new PE(Person.class, "address.city2.name", "r");
+        }
+    }
 
-	@Test
-	public void testPeInstantiationAsParameter() throws Exception {
-		try {
-			create("TestGettersCodeBad5");
-			fail("Should have failed...");
-		} catch (InstrumentationException e) {
-			// ignore
-		}
-	}
+    public static class TestGettersCodeBad3
+    {
+        public void testCode()
+        {
+            new PE(Person.class, "address.city.name2", "r");
+        }
+    }
+
+    public static class TestGettersCodeBad4
+    {
+        public void testCode()
+        {
+            new PE(Person.class, "address.city.name.foo", "r");
+        }
+    }
+
+    public static class TestGettersCodeBad5
+    {
+        public void testCode()
+        {
+            new PeContainer(null, new PE(Person.class, "address2.city.name", "r"));
+        }
+    }
+
+    @Test
+    public void testFields() throws Exception
+    {
+        create("TestField__Primitive");
+    }
+
+    @Test
+    public void testGetters() throws Exception
+    {
+        create("TestGettersCode1");
+        create("TestGettersCode2");
+        create("TestGetter__Primitive");
+        try
+        {
+            create("TestGettersCodeBad1");
+            fail("Should have failed...");
+        }
+        catch (InstrumentationException e)
+        {
+            // ignore
+        }
+        try
+        {
+            create("TestGettersCodeBad2");
+            fail("Should have failed...");
+        }
+        catch (InstrumentationException e)
+        {
+            // ignore
+        }
+        try
+        {
+            create("TestGettersCodeBad3");
+            fail("Should have failed...");
+        }
+        catch (InstrumentationException e)
+        {
+            // ignore
+        }
+        try
+        {
+            create("TestGettersCodeBad4");
+            fail("Should have failed...");
+        }
+        catch (InstrumentationException e)
+        {
+            // ignore
+        }
+    }
+
+    @Test
+    public void testPeInstantiationAsParameter() throws Exception
+    {
+        try
+        {
+            create("TestGettersCodeBad5");
+            fail("Should have failed...");
+        }
+        catch (InstrumentationException e)
+        {
+            // ignore
+        }
+    }
 }

@@ -23,6 +23,22 @@ public class ExpressionPart
         this.data = data;
     }
 
+    
+    
+    public PartType getType()
+    {
+        return type;
+    }
+
+
+
+    public String getData()
+    {
+        return data;
+    }
+
+
+
     @Override
     public int hashCode()
     {
