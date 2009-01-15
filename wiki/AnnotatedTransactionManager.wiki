@@ -8,9 +8,9 @@ Use salve for @Transactional support instead of spring
 
 = Details =
 
-Salve provides bytecode instrumentiation of methods with the @Transactional attribute. It's similar to using spring-aop but doesn't require runtime weaving or compliation with AspectJ (is this explained right?). Instead the bytecode is modified to include transaction calls (begin / rollback / commit).
+Salve provides bytecode instrumentiation of methods with the @Transactional attribute. It's similar to using spring-aop but doesn't require runtime weaving or compliation with AspectJ (is this explained right?). Instead the bytecode is modified by Salve to include transaction calls (begin / rollback / commit).
 
-Here's a sample illustrating it's usage:
+Here's a short sample:
 
 
 {{{
@@ -39,22 +39,26 @@ public class SalveGuiceTransactionalTest extends TestCase
       @Override
       protected void configure()
       {
+        // create data source
         final DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
         dataSource.setUrl("jdbc:postgresql://localhost/mydb");
         dataSource.setUsername("test");
         dataSource.setPassword("test");
 
+        // create platform transaction manager
         final PlatformTransactionManager tx = new DataSourceTransactionManager(dataSource);
+        // bind platform transaction manager to @Transactional annotation
         bind(TransactionManager.class).toInstance(new AnnotatedTransactionManager(tx));
 
         // more configuration here
+        // ...
       }
     })));
   }
 
   @Transactional(propagation = Propagation.SUPPORTS, timeout = 120, isolation = Isolation.SERIALIZABLE)
-  public void testTransaction() throws SiteNotFoundException, AuthenticationFailedException
+  public void testTransaction()
   {
     System.out.println("running inside a transaction now!");
     // do some nice transaction stuff in here
