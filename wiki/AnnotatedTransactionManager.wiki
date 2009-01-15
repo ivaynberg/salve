@@ -1,6 +1,6 @@
 #summary Using the @Transactional attribute for declarative transactions
 
-(sorry, this is part of 0.10 and not publically available at this time so stay tuned)
+(sorry, this is part of 0.10 and not publically available at this time so stay tuned or check out from trunk)
 
 = Introduction =
 
