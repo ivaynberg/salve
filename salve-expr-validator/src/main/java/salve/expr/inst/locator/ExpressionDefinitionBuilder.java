@@ -33,5 +33,9 @@ public class ExpressionDefinitionBuilder
         return this;
     }
 
+    public ExpressionDefinition build()
+    {
+        return new ExpressionDefinition(parts);
+    }
 
 }
