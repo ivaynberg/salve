@@ -8,7 +8,7 @@ Use salve for @Transactional support instead of spring
 
 = Details =
 
-Salve provides bytecode instrumentiation of methods with the @Transactional attribute. It's similar to using spring-aop but doesn't require runtime weaving or compliation with AspectJ. Instead the bytecode is modified by Salve to include calls to the platform transaction manager (begin / rollback / commit).
+Salve provides declarative transaction support using @Transactional. It's similar to spring-aop but doesn't require runtime weaving or compliation with AspectJ. Instead the bytecode is modified by Salve to include calls to the platform transaction manager (begin / rollback / commit).
 
 Here's a short sample:
 
