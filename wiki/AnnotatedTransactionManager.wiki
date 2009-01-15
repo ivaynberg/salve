@@ -48,6 +48,7 @@ public class SalveGuiceTransactionalTest extends TestCase
 
         // create platform transaction manager
         final PlatformTransactionManager tx = new DataSourceTransactionManager(dataSource);
+
         // bind platform transaction manager to @Transactional annotation
         bind(TransactionManager.class).toInstance(new AnnotatedTransactionManager(tx));
 
