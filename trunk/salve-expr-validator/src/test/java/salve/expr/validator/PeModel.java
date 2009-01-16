@@ -1,4 +1,4 @@
-package salve.expr;
+package salve.expr.validator;
 
 public class PeModel
 {
@@ -6,6 +6,16 @@ public class PeModel
 
 
     // target must be this to validate
+    public PeModel(Object target, String expression, String mode)
+    {
+        this.expression = expression;
+    }
+
+    public PeModel(Object target, Class< ? > clazz, String expression, String mode)
+    {
+        this.expression = expression;
+    }
+
     public PeModel(Object target, String expression)
     {
         this.expression = expression;
@@ -15,7 +25,7 @@ public class PeModel
     {
         this.expression = expression;
     }
-
+    
     @Override
     public String toString()
     {
