@@ -6,12 +6,12 @@ import java.util.Set;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
 
-public class InstructionMatcher extends InstructionRecorder
+public class RuleMatcher extends InstructionRecorder
 {
     private final Type owner;
     final Set<Rule> definitions;
 
-    public InstructionMatcher(MethodVisitor mv, Type owner, Set<Rule> definitions)
+    public RuleMatcher(MethodVisitor mv, Type owner, Set<Rule> definitions)
     {
         super(mv, definitions);
         this.owner = owner;
