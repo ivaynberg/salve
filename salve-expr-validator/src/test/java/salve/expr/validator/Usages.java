@@ -8,6 +8,7 @@ public class Usages
     {
         new PeModel(new String() + "foo", Person.class, "address.city.id", "r");
         new PeModel(this, "address.city.this", "r");
+        new PeModel(this, "address.city.this");
     }
 
     public class Foo

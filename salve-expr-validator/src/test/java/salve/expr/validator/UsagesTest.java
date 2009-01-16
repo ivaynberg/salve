@@ -12,9 +12,9 @@ import salve.asmlib.Type;
 import salve.expr.inst.Constants;
 import salve.expr.inst.ExpressionUseLocator;
 import salve.expr.inst.PeDefinition;
-import salve.expr.inst.locator.RuleMatcher;
 import salve.expr.inst.locator.Part;
 import salve.expr.inst.locator.Rule;
+import salve.expr.inst.locator.RuleMatcher;
 import salve.loader.ClassLoaderLoader;
 import salve.util.asm.ClassVisitorAdapter;
 
@@ -28,14 +28,14 @@ public class UsagesTest
         reader.accept(new Locator(), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
 
-        Rule one = new Rule("salve/expr/validator/PeModel", Part.OTHER, Part.TYPE, Part.EXPR,
-                Part.MODE);
+        Rule one = new Rule("salve/expr/validator/PeModel", Part.TYPE, Part.EXPR, Part.MODE);
         Rule two = new Rule("salve/expr/validator/PeModel", Part.THIS, Part.EXPR, Part.MODE);
+        Rule three = new Rule("salve/expr/validator/PeModel", Part.THIS, Part.EXPR);
 
         Set<Rule> defs = new HashSet<Rule>();
         defs.add(one);
         defs.add(two);
-
+        defs.add(three);
         reader.accept(new NewLocator(defs), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
     }
