@@ -12,7 +12,7 @@ import salve.asmlib.Type;
 import salve.expr.inst.Constants;
 import salve.expr.inst.ExpressionUseLocator;
 import salve.expr.inst.PeDefinition;
-import salve.expr.inst.locator.InstructionMatcher;
+import salve.expr.inst.locator.RuleMatcher;
 import salve.expr.inst.locator.Part;
 import salve.expr.inst.locator.Rule;
 import salve.loader.ClassLoaderLoader;
@@ -65,7 +65,7 @@ public class UsagesTest
         {
 
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-            return new InstructionMatcher(mv, owner, defs);
+            return new RuleMatcher(mv, owner, defs);
         }
 
     }
