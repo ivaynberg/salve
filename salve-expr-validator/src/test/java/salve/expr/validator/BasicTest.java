@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import salve.InstrumentationException;
 import salve.expr.PE;
-import salve.expr.PeModel;
 import salve.expr.TestCaseSupport;
 import salve.expr.validator.model.City;
 import salve.expr.validator.model.PeContainer;
@@ -32,9 +31,9 @@ public class BasicTest extends TestCaseSupport
     public void foo()
     {
 
-        PeModel model = new PeModel(this, "foo");
+        PeModel model = new PeModel(this, "foo", "rw");
 
-        model = new PeModel(null, PE.class, "expression");
+        model = new PeModel(null, PE.class, "expression", "rw");
 
     }
 
