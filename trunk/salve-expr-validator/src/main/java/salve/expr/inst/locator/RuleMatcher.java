@@ -18,71 +18,92 @@ public class RuleMatcher extends InstructionRecorder
         this.definitions = definitions;
     }
 
-    
-
-  
     private void onMatch(Expression expr)
     {
         System.out.println(expr);
     }
 
+    private Expression match(Rule rule, List<Instruction> parts)
+    {
+        Type target = null;
+        String expr = null;
+        String mode = null;
 
+        if (parts.size() >= rule.getParts().length)
+        {
+
+            for (int i = 0; i < rule.getParts().length; i++)
+            {
+                final int instOffset = parts.size() - 1 - i;
+                final Instruction inst = parts.get(instOffset);
+                final int partOffset = rule.getParts().length - 1 - i;
+                final Part part = rule.getParts()[partOffset];
+
+                if (!inst.matches(part))
+                {
+                    return null;
+                }
+                else
+                {
+                    switch (part)
+                    {
+                        case EXPR :
+                            expr = inst.getData();
+                            break;
+                        case MODE :
+                            mode = inst.getData();
+                            break;
+                        case TYPE :
+                            target = Type.getObjectType(inst.getData());
+                            break;
+                        case THIS :
+                            target = owner;
+                            break;
+                    }
+                }
+            }
+            return new Expression(target, expr, (mode == null) ? "r" : mode);
+        }
+        return null;
+    }
 
     @Override
     protected void onInstructionRecorded(Type container, List<Instruction> parts)
     {
+        Expression match = null;
         // try to match the instruction
         for (Rule definition : definitions)
         {
             if (definition.getContainer().equals(container))
             {
-                if (parts.size() >= definition.getParts().length)
+                match = match(definition, parts);
+                if (match != null)
                 {
-                    boolean matched = true;
-                    Type target = null;
-                    String expr = null;
-                    String mode = null;
-
-                    for (int i = 0; i < definition.getParts().length; i++)
-                    {
-                        final int instOffset = parts.size() - 1 - i;
-                        final Instruction inst = parts.get(instOffset);
-                        final int partOffset = definition.getParts().length - 1 - i;
-                        final Part part = definition.getParts()[partOffset];
-
-                        if (!inst.matches(part))
-                        {
-                            matched = false;
-                            break;
-                        }
-                        else
-                        {
-                            switch (part)
-                            {
-                                case EXPR :
-                                    expr = inst.getData();
-                                    break;
-                                case MODE :
-                                    mode = inst.getData();
-                                    break;
-                                case TYPE :
-                                    target = Type.getObjectType(inst.getData());
-                                    break;
-                                case THIS :
-                                    target = owner;
-                                    break;
-                            }
-                        }
-                    }
-                    if (matched)
-                    {
-                        onMatch(new Expression(target, expr, (mode == null) ? "r" : mode));
-                        break;
-                    }
+                    break;
                 }
             }
         }
-        
+        if (match != null)
+        {
+            onMatch(match);
+        }
+        else
+        {
+            onInvalid(null, container, parts);
+        }
+
+
+    }
+
+    private void onInvalid(Type target, Type container, List<Instruction> parts)
+    {
+        System.out.print("invalid invocation. target=" + target + ", container=" + container +
+                ", parts=");
+        for (Instruction inst : parts)
+        {
+            System.out.print(inst + ", ");
+        }
+        System.out.println();
     }
 
 }

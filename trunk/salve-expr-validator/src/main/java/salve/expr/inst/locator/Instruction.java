@@ -47,7 +47,7 @@ class Instruction
         switch (type)
         {
             case OTHER :
-                return Part.OTHER.equals(part);
+                return false;
             case STRING :
                 return Part.EXPR.equals(part) || Part.MODE.equals(part);
             case THIS :
