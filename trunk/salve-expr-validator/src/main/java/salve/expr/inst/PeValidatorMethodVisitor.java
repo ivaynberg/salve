@@ -4,6 +4,12 @@ import salve.InstrumentationContext;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
 
+/**
+ * @deprecated
+ * @author igor.vaynberg
+ * 
+ */
+@Deprecated
 public class PeValidatorMethodVisitor extends ExpressionUseLocator
 {
     final PeValidator validator;
@@ -12,7 +18,7 @@ public class PeValidatorMethodVisitor extends ExpressionUseLocator
             InstrumentationContext ctx, MethodVisitor mv)
     {
         super(pe, constructor, owner, mv);
-        validator = new PeValidator(ctx);
+        validator = new PeValidator(ctx.getLoader());
     }
 
     @Override

@@ -3,31 +3,33 @@ package salve.expr.valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 
-import salve.InstrumentationContext;
+import salve.BytecodeLoader;
 import salve.Scope;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassVisitor;
-import salve.expr.inst.Constants;
-import salve.expr.inst.PeValidatorClassVisitor;
+import salve.expr.inst.locator.ClassAnalyzer;
+import salve.expr.inst.locator.Part;
+import salve.expr.inst.locator.Rule;
 import salve.loader.BytecodePool;
 import salve.loader.ClassLoaderLoader;
 import salve.loader.FilePathLoader;
-import salve.monitor.NoopMonitor;
-import salve.util.asm.ClassVisitorAdapter;
 
-public class ValidatorTestCase
+public abstract class ValidatorTestCase
 {
-    private final boolean DEBUG = false;
+    private final boolean DEBUG = true;
 
     private static final String CLASSES = "target" + File.separatorChar + "classes";
 
-    protected Scope getScope() {
+    protected Scope getScope()
+    {
         return Scope.ALL;
     }
-    
+
     protected File[] getClassFileRoots()
     {
         File target = new File(new File("").getAbsolutePath());
@@ -52,11 +54,23 @@ public class ValidatorTestCase
         return new File[] { target };
     }
 
+    protected Set<Rule> getRules()
+    {
+        Rule one = new Rule("salve/expr/PE", Part.TYPE, Part.EXPR, Part.MODE);
+        Rule two = new Rule("salve/expr/PE", Part.THIS, Part.EXPR);
+
+        Set<Rule> defs = new HashSet<Rule>();
+        defs.add(one);
+        defs.add(two);
+
+        return defs;
+    }
+
     @Test
     public final void test()
     {
         File[] classFileRoots = getClassFileRoots();
-        ClassFileVisitor visitor = new ClassFileValidator(classFileRoots);
+        ClassFileVisitor visitor = new ClassFileValidator(getRules(), classFileRoots);
         for (File classFileRoot : classFileRoots)
         {
             visit(classFileRoot, visitor);
@@ -89,10 +103,13 @@ public class ValidatorTestCase
 
     private static class ClassFileValidator implements ClassFileVisitor
     {
-        private final InstrumentationContext context;
+        private final BytecodeLoader loader;
+        private final Set<Rule> defs;
 
-        public ClassFileValidator(File... outputFolders)
+        public ClassFileValidator(Set<Rule> defs, File... outputFolders)
         {
+            this.defs = defs;
+
             BytecodePool pool = new BytecodePool(Scope.ALL);
             for (File outputFolder : outputFolders)
             {
@@ -100,7 +117,7 @@ public class ValidatorTestCase
             }
             pool.addLoader(new ClassLoaderLoader(getClass().getClassLoader()));
 
-            context = new InstrumentationContext(pool, NoopMonitor.INSTANCE, Scope.ALL);
+            loader = pool;
         }
 
         public void visit(File classFile)
@@ -113,8 +130,7 @@ public class ValidatorTestCase
                 try
                 {
                     ClassReader reader = new ClassReader(in);
-                    ClassVisitor visitor = new PeValidatorClassVisitor(Constants.PE,
-                            Constants.PE_INIT, context, new ClassVisitorAdapter());
+                    ClassVisitor visitor = new ClassAnalyzer(defs, loader);
 
                     reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                 }
