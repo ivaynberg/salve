@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import salve.asmlib.ClassAdapter;
@@ -21,6 +22,7 @@ import salve.expr.inst.locator.RuleMatcher;
 import salve.loader.ClassLoaderLoader;
 import salve.util.asm.ClassVisitorAdapter;
 
+@Ignore
 public class UsagesTest
 {
     @Test
@@ -113,7 +115,7 @@ public class UsagesTest
         {
             MethodVisitor orig = super.visitMethod(access, name, desc, signature, exceptions);
             return new ExpressionUseLocator(Constants.PE, Constants.PE_INIT, Type
-                    .getObjectType(owner), orig)
+                .getObjectType(owner), orig)
             {
 
                 @Override
