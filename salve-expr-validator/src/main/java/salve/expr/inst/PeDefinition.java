@@ -7,8 +7,9 @@ import salve.asmlib.Type;
  * Property expression data being tracked by bytecode reader
  * 
  * @author ivaynberg
- * 
+ * @deprecated
  */
+@Deprecated
 public class PeDefinition
 {
     private Type type;

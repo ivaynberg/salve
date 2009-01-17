@@ -1,7 +1,6 @@
 package salve.expr.inst.locator;
 
-
-class Instruction
+public class Instruction
 {
     static enum Type {
         THIS,

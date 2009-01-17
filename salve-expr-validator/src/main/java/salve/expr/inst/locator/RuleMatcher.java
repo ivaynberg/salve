@@ -6,7 +6,7 @@ import java.util.Set;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
 
-public class RuleMatcher extends InstructionRecorder
+public abstract class RuleMatcher extends InstructionRecorder
 {
     private final Type owner;
     final Set<Rule> definitions;
@@ -18,10 +18,7 @@ public class RuleMatcher extends InstructionRecorder
         this.definitions = definitions;
     }
 
-    private void onMatch(Expression expr)
-    {
-        System.out.println(expr);
-    }
+    protected abstract void onMatch(Expression expr);
 
     private Expression match(Rule rule, List<Instruction> parts)
     {
@@ -95,15 +92,5 @@ public class RuleMatcher extends InstructionRecorder
 
     }
 
-    private void onInvalid(Type target, Type container, List<Instruction> parts)
-    {
-        System.out.print("invalid invocation. target=" + target + ", container=" + container +
-                ", parts=");
-        for (Instruction inst : parts)
-        {
-            System.out.print(inst + ", ");
-        }
-        System.out.println();
-    }
-
+    protected abstract void onInvalid(Type target, Type container, List<Instruction> parts);
 }

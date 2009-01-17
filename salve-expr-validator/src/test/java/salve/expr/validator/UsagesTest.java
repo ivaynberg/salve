@@ -1,6 +1,7 @@
 package salve.expr.validator;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -12,6 +13,8 @@ import salve.asmlib.Type;
 import salve.expr.inst.Constants;
 import salve.expr.inst.ExpressionUseLocator;
 import salve.expr.inst.PeDefinition;
+import salve.expr.inst.locator.Expression;
+import salve.expr.inst.locator.Instruction;
 import salve.expr.inst.locator.Part;
 import salve.expr.inst.locator.Rule;
 import salve.expr.inst.locator.RuleMatcher;
@@ -65,7 +68,23 @@ public class UsagesTest
         {
 
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-            return new RuleMatcher(mv, owner, defs);
+            return new RuleMatcher(mv, owner, defs)
+            {
+
+                @Override
+                protected void onInvalid(Type target, Type container, List<Instruction> parts)
+                {
+                    System.out.println("invalid");
+                }
+
+                @Override
+                protected void onMatch(Expression expr)
+                {
+                    System.out.println("match: " + expr);
+                }
+
+
+            };
         }
 
     }
