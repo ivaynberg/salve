@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
-
 import salve.BytecodeLoader;
 import salve.Scope;
 import salve.asmlib.ClassReader;
@@ -21,7 +19,7 @@ import salve.loader.FilePathLoader;
 
 public abstract class ValidatorTestCase
 {
-    private final boolean DEBUG = true;
+    private final boolean DEBUG = false;
 
     private static final String CLASSES = "target" + File.separatorChar + "classes";
 

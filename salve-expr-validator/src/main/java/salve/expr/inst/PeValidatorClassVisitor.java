@@ -1,10 +1,14 @@
 package salve.expr.inst;
 
+import java.util.Set;
+
 import salve.InstrumentationContext;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
+import salve.expr.inst.locator.MethodAnalyzer;
+import salve.expr.inst.locator.Rule;
 import salve.util.asm.MethodVisitorAdapter;
 
 /** @deprecated */
@@ -13,16 +17,13 @@ public class PeValidatorClassVisitor extends ClassAdapter
 {
     private final InstrumentationContext ctx;
     private Type owner;
-    private final Type pe;
-    private final Arg[] constructor;
+    private final Set<Rule> rules;
 
-    public PeValidatorClassVisitor(Type pe, Arg[] constructor, InstrumentationContext ctx,
-            ClassVisitor cv)
+    public PeValidatorClassVisitor(Set<Rule> rules, InstrumentationContext ctx, ClassVisitor cv)
     {
         super(cv);
         this.ctx = ctx;
-        this.pe = pe;
-        this.constructor = constructor;
+        this.rules = rules;
     }
 
     @Override
@@ -42,7 +43,7 @@ public class PeValidatorClassVisitor extends ClassAdapter
         {
             mv = new MethodVisitorAdapter();
         }
-        return new PeValidatorMethodVisitor(pe, constructor, owner, ctx, mv);
+        return new MethodAnalyzer(mv, owner, rules, ctx.getLoader());
     }
 
 }

@@ -1,19 +1,13 @@
 package salve.expr.inst.locator;
 
-import java.util.List;
 import java.util.Set;
 
-import org.junit.Assert;
 
 import salve.BytecodeLoader;
-import salve.CodeMarker;
-import salve.InstrumentationException;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
-import salve.expr.inst.PeDefinition;
-import salve.expr.inst.PeValidator;
 import salve.util.asm.ClassVisitorAdapter;
 
 public class ClassAnalyzer extends ClassAdapter
@@ -50,44 +44,6 @@ public class ClassAnalyzer extends ClassAdapter
 
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
         return new MethodAnalyzer(mv, owner, defs, loader);
-    }
-
-    private static class MethodAnalyzer extends RuleMatcher
-    {
-        private final BytecodeLoader loader;
-
-        public MethodAnalyzer(MethodVisitor mv, Type owner, Set<Rule> definitions,
-                BytecodeLoader loader)
-        {
-            super(mv, owner, definitions);
-            this.loader = loader;
-        }
-
-        @Override
-        protected void onInvalid(Type target, Type container, List<Instruction> parts,
-                CodeMarker marker)
-        {
-            Assert.fail("invalid instantiation at: " + marker);
-        }
-
-        @Override
-        protected void onMatch(Expression expr, CodeMarker marker)
-        {
-            PeValidator validator = new PeValidator(loader);
-
-            PeDefinition def = new PeDefinition();
-            def.setExpression(expr.getExpression());
-            def.setMode(expr.getMode());
-            def.setType(expr.getType());
-            try
-            {
-                validator.validate(def);
-            }
-            catch (InstrumentationException e)
-            {
-                Assert.fail("invalid expression: " + expr + " at " + marker);
-            }
-        }
     }
 
 

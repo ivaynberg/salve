@@ -1,16 +1,22 @@
 package salve.expr.inst;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import salve.InstrumentationContext;
 import salve.InstrumentationException;
 import salve.Instrumentor;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassVisitor;
+import salve.expr.inst.locator.Part;
+import salve.expr.inst.locator.Rule;
 import salve.util.asm.ClassVisitorAdapter;
 
 /**
  * Salve instrumentor adapter for expression validator
+ * 
  * @author igor.vaynberg
- *
+ * 
  */
 public class ExpressionValidatorInstrumentor implements Instrumentor
 {
@@ -21,11 +27,17 @@ public class ExpressionValidatorInstrumentor implements Instrumentor
         byte[] bytecode = context.getLoader().loadBytecode(className);
         ClassReader reader = new ClassReader(bytecode);
 
+        Rule one = new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR, Part.MODE);
+        Rule two = new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR);
 
-        ClassVisitor visitor = new PeValidatorClassVisitor(Constants.PE, Constants.PE_INIT,
-                context, new ClassVisitorAdapter());
+        Set<Rule> rules = new HashSet<Rule>();
+        rules.add(one);
+        rules.add(two);
 
-        reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        ClassVisitor visitor = new PeValidatorClassVisitor(rules, context,
+            new ClassVisitorAdapter());
+
+        reader.accept(visitor, ClassReader.SKIP_FRAMES);
 
         return bytecode;
     }
