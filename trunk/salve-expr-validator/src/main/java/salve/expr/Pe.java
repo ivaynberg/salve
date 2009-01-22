@@ -1,13 +1,13 @@
-package salve.contract;
+package salve.expr;
 
-public class PE {
+public class Pe {
 	private final String expression;
 
-	public PE(Class<?> root, String expression) {
+	public Pe(Class<?> root, String expression) {
 		this.expression = expression;
 	}
 
-	public PE(Class<?> root, String expression, String mode) {
+	public Pe(Class<?> root, String expression, String mode) {
 		this.expression = expression;
 	}
 

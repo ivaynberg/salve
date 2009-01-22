@@ -19,7 +19,7 @@ package salve.expr.validator;
 import org.junit.Test;
 
 import salve.InstrumentationException;
-import salve.expr.PE2;
+import salve.expr.Pe;
 import salve.expr.TestCaseSupport;
 import salve.expr.validator.model.City;
 import salve.expr.validator.model.PeContainer;
@@ -33,7 +33,7 @@ public class BasicTest extends TestCaseSupport
 
         PeModel model = new PeModel(this, "foo", "rw");
 
-        model = new PeModel(null, PE2.class, "expression", "rw");
+        model = new PeModel(null, Pe.class, "expression", "rw");
 
     }
 
@@ -42,7 +42,7 @@ public class BasicTest extends TestCaseSupport
     {
         public void testCode()
         {
-            new PE2(Person.class, "address.city.id", "r");
+            new Pe(Person.class, "address.city.id", "r");
         }
     }
 
@@ -50,7 +50,7 @@ public class BasicTest extends TestCaseSupport
     {
         public void testCode()
         {
-            new PE2(Person.class, "address.city.idInteger", "r");
+            new Pe(Person.class, "address.city.idInteger", "r");
         }
     }
 
@@ -58,7 +58,7 @@ public class BasicTest extends TestCaseSupport
     {
         public void testCode()
         {
-            new PE2(Person.class, "address.city.name", "r");
+            new Pe(Person.class, "address.city.name", "r");
         }
     }
 
@@ -66,7 +66,7 @@ public class BasicTest extends TestCaseSupport
     {
         public void testCode()
         {
-            new PE2(City.class, "name", "r");
+            new Pe(City.class, "name", "r");
         }
     }
 
@@ -74,7 +74,7 @@ public class BasicTest extends TestCaseSupport
     {
         public void testCode()
         {
-            new PE2(Person.class, "address2.city.name", "r");
+            new Pe(Person.class, "address2.city.name", "r");
         }
     }
 
@@ -82,7 +82,7 @@ public class BasicTest extends TestCaseSupport
     {
         public void testCode()
         {
-            new PE2(Person.class, "address.city2.name", "r");
+            new Pe(Person.class, "address.city2.name", "r");
         }
     }
 
@@ -90,7 +90,7 @@ public class BasicTest extends TestCaseSupport
     {
         public void testCode()
         {
-            new PE2(Person.class, "address.city.name2", "r");
+            new Pe(Person.class, "address.city.name2", "r");
         }
     }
 
@@ -98,7 +98,7 @@ public class BasicTest extends TestCaseSupport
     {
         public void testCode()
         {
-            new PE2(Person.class, "address.city.name.foo", "r");
+            new Pe(Person.class, "address.city.name.foo", "r");
         }
     }
 
@@ -106,7 +106,7 @@ public class BasicTest extends TestCaseSupport
     {
         public void testCode()
         {
-            new PeContainer(null, new PE2(Person.class, "address2.city.name", "r"));
+            new PeContainer(null, new Pe(Person.class, "address2.city.name", "r"));
         }
     }
 
