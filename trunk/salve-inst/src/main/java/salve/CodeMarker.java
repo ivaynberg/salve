@@ -23,4 +23,8 @@ public class CodeMarker {
 		return lineNumber;
 	}
 
+	@Override
+	public String toString() {
+		return className + ":" + lineNumber;
+	}
 }
