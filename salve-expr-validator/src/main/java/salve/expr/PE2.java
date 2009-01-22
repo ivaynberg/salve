@@ -1,13 +1,13 @@
 package salve.expr;
 
-public class PE {
+public class PE2 {
 	private final String expression;
 
-	public PE(Class<?> root, String expression) {
+	public PE2(Class<?> root, String expression) {
 		this.expression = expression;
 	}
 
-	public PE(Class<?> root, String expression, String mode) {
+	public PE2(Class<?> root, String expression, String mode) {
 		this.expression = expression;
 	}
 

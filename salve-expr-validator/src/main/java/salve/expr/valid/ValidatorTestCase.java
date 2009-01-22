@@ -57,17 +57,18 @@ public abstract class ValidatorTestCase
     protected Set<Rule> getRules()
     {
         Rule one = new Rule("salve/expr/PE", Part.TYPE, Part.EXPR, Part.MODE);
-        Rule two = new Rule("salve/expr/PE", Part.THIS, Part.EXPR);
+        Rule two = new Rule("salve/expr/PE", Part.TYPE, Part.EXPR);
+        Rule three = new Rule("salve/expr/PE", Part.THIS, Part.EXPR);
 
         Set<Rule> defs = new HashSet<Rule>();
         defs.add(one);
         defs.add(two);
-
+        defs.add(three);
+        
         return defs;
     }
 
-    @Test
-    public final void test()
+    public final void executeTest()
     {
         File[] classFileRoots = getClassFileRoots();
         ClassFileVisitor visitor = new ClassFileValidator(getRules(), classFileRoots);
@@ -75,7 +76,6 @@ public abstract class ValidatorTestCase
         {
             visit(classFileRoot, visitor);
         }
-
     }
 
     private void visit(File directory, ClassFileVisitor visitor)
@@ -132,7 +132,7 @@ public abstract class ValidatorTestCase
                     ClassReader reader = new ClassReader(in);
                     ClassVisitor visitor = new ClassAnalyzer(defs, loader);
 
-                    reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                    reader.accept(visitor, ClassReader.SKIP_FRAMES);
                 }
                 finally
                 {

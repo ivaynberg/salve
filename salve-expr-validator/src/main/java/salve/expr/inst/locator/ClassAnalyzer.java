@@ -6,6 +6,7 @@ import java.util.Set;
 import org.junit.Assert;
 
 import salve.BytecodeLoader;
+import salve.CodeMarker;
 import salve.InstrumentationException;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
@@ -63,13 +64,14 @@ public class ClassAnalyzer extends ClassAdapter
         }
 
         @Override
-        protected void onInvalid(Type target, Type container, List<Instruction> parts)
+        protected void onInvalid(Type target, Type container, List<Instruction> parts,
+                CodeMarker marker)
         {
-            Assert.fail("invalid instantiation");
+            Assert.fail("invalid instantiation at: " + marker);
         }
 
         @Override
-        protected void onMatch(Expression expr)
+        protected void onMatch(Expression expr, CodeMarker marker)
         {
             PeValidator validator = new PeValidator(loader);
 
@@ -83,7 +85,7 @@ public class ClassAnalyzer extends ClassAdapter
             }
             catch (InstrumentationException e)
             {
-                Assert.fail("invalid expression: " + expr);
+                Assert.fail("invalid expression: " + expr + " at " + marker);
             }
         }
     }
