@@ -3,6 +3,8 @@ package salve.expr.inst.locator;
 import java.util.List;
 import java.util.Set;
 
+import salve.CodeMarker;
+import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
 
@@ -10,6 +12,7 @@ public abstract class RuleMatcher extends InstructionRecorder
 {
     private final Type owner;
     final Set<Rule> definitions;
+    private CodeMarker marker;
 
     public RuleMatcher(MethodVisitor mv, Type owner, Set<Rule> definitions)
     {
@@ -18,7 +21,14 @@ public abstract class RuleMatcher extends InstructionRecorder
         this.definitions = definitions;
     }
 
-    protected abstract void onMatch(Expression expr);
+    @Override
+    public void visitLineNumber(int line, Label start)
+    {
+        marker = new CodeMarker(owner.getInternalName(), line);
+        super.visitLineNumber(line, start);
+    }
+
+    protected abstract void onMatch(Expression expr, CodeMarker marker);
 
     private Expression match(Rule rule, List<Instruction> parts)
     {
@@ -82,15 +92,16 @@ public abstract class RuleMatcher extends InstructionRecorder
         }
         if (match != null)
         {
-            onMatch(match);
+            onMatch(match, marker);
         }
         else
         {
-            onInvalid(null, container, parts);
+            onInvalid(null, container, parts, marker);
         }
 
 
     }
 
-    protected abstract void onInvalid(Type target, Type container, List<Instruction> parts);
+    protected abstract void onInvalid(Type target, Type container, List<Instruction> parts,
+            CodeMarker marker);
 }

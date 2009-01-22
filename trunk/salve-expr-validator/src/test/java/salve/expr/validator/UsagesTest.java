@@ -7,6 +7,7 @@ import java.util.Set;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import salve.CodeMarker;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassReader;
 import salve.asmlib.MethodVisitor;
@@ -74,13 +75,14 @@ public class UsagesTest
             {
 
                 @Override
-                protected void onInvalid(Type target, Type container, List<Instruction> parts)
+                protected void onInvalid(Type target, Type container, List<Instruction> parts,
+                        CodeMarker marker)
                 {
                     System.out.println("invalid");
                 }
 
                 @Override
-                protected void onMatch(Expression expr)
+                protected void onMatch(Expression expr, CodeMarker marker)
                 {
                     System.out.println("match: " + expr);
                 }

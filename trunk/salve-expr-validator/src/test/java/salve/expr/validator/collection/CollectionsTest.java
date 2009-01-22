@@ -19,7 +19,7 @@ package salve.expr.validator.collection;
 import org.junit.Test;
 
 import salve.InstrumentationException;
-import salve.expr.PE;
+import salve.expr.PE2;
 import salve.expr.TestCaseSupport;
 import salve.expr.validator.collection.model.Family;
 
@@ -27,31 +27,31 @@ public class CollectionsTest extends TestCaseSupport {
 
 	public static class CorrectListAccess {
 		public void access() {
-			new PE(Family.class, "ancestors.0.name");
+			new PE2(Family.class, "ancestors.0.name");
 		}
 	}
 
 	public static class CorrectMapAccess {
 		public void access() {
-			new PE(Family.class, "members.uncle.name");
+			new PE2(Family.class, "members.uncle.name");
 		}
 	}
 
 	public static class IncorrectListAccess_BadIndex1 {
 		public void access() {
-			new PE(Family.class, "ancestors.0a.name");
+			new PE2(Family.class, "ancestors.0a.name");
 		}
 	}
 
 	public static class IncorrectListAccess_BadIndex2 {
 		public void access() {
-			new PE(Family.class, "ancestors.a0.name");
+			new PE2(Family.class, "ancestors.a0.name");
 		}
 	}
 
 	public static class IncorrectMapAccess {
 		public void access() {
-			new PE(Family.class, "members.uncle.foo");
+			new PE2(Family.class, "members.uncle.foo");
 		}
 	}
 
