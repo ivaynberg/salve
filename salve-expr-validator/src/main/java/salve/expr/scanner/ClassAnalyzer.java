@@ -1,4 +1,4 @@
-package salve.expr.inst.locator;
+package salve.expr.scanner;
 
 import java.util.Set;
 

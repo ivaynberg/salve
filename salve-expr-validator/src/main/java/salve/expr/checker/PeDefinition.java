@@ -1,4 +1,4 @@
-package salve.expr.inst;
+package salve.expr.checker;
 
 import salve.CodeMarker;
 import salve.asmlib.Type;

@@ -7,8 +7,8 @@ import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
-import salve.expr.inst.locator.MethodAnalyzer;
-import salve.expr.inst.locator.Rule;
+import salve.expr.scanner.MethodAnalyzer;
+import salve.expr.scanner.Rule;
 import salve.util.asm.MethodVisitorAdapter;
 
 /** @deprecated */
