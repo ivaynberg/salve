@@ -28,9 +28,9 @@ public abstract class RuleMatcher extends InstructionRecorder
         super.visitLineNumber(line, start);
     }
 
-    protected abstract void onMatch(Expression expr, CodeMarker marker);
+    protected abstract void onMatch(Expression expr);
 
-    private Expression match(Rule rule, List<Instruction> parts)
+    private Expression match(Rule rule, List<Instruction> parts, CodeMarker marker)
     {
         Type target = null;
         String expr = null;
@@ -69,7 +69,7 @@ public abstract class RuleMatcher extends InstructionRecorder
                     }
                 }
             }
-            return new Expression(target, expr, (mode == null) ? "r" : mode);
+            return new Expression(target, expr, (mode == null) ? "r" : mode, marker);
         }
         return null;
     }
@@ -83,7 +83,7 @@ public abstract class RuleMatcher extends InstructionRecorder
         {
             if (definition.getContainer().equals(container))
             {
-                match = match(definition, parts);
+                match = match(definition, parts, marker);
                 if (match != null)
                 {
                     break;
@@ -92,7 +92,7 @@ public abstract class RuleMatcher extends InstructionRecorder
         }
         if (match != null)
         {
-            onMatch(match, marker);
+            onMatch(match);
         }
         else
         {

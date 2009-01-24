@@ -75,7 +75,7 @@ public class UsagesTest
                 }
 
                 @Override
-                protected void onMatch(Expression expr, CodeMarker marker)
+                protected void onMatch(Expression expr)
                 {
                     System.out.println("match: " + expr);
                 }

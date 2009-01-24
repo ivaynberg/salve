@@ -11,8 +11,7 @@ import salve.CodeMarker;
 import salve.InstrumentationException;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
-import salve.expr.checker.PeDefinition;
-import salve.expr.checker.PeValidator;
+import salve.expr.checker.ExpressionChecker;
 
 public class MethodAnalyzer extends RuleMatcher
 {
@@ -31,14 +30,9 @@ public class MethodAnalyzer extends RuleMatcher
     }
 
     @Override
-    protected void onMatch(Expression expr, CodeMarker marker)
+    protected void onMatch(Expression expr)
     {
-        PeValidator validator = new PeValidator(loader);
-
-        PeDefinition def = new PeDefinition();
-        def.setExpression(expr.getExpression());
-        def.setMode(expr.getMode());
-        def.setType(expr.getType());
-        validator.validate(def);
+        ExpressionChecker validator = new ExpressionChecker(loader);
+        validator.validate(expr);
     }
 }

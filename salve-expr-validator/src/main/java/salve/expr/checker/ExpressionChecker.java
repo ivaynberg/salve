@@ -4,37 +4,38 @@ import java.util.Map;
 
 import salve.BytecodeLoader;
 import salve.InstrumentationException;
+import salve.expr.scanner.Expression;
 
-public class PeValidator
+public class ExpressionChecker
 {
     private final BytecodeLoader loader;
 
-    public PeValidator(BytecodeLoader loader)
+    public ExpressionChecker(BytecodeLoader loader)
     {
         this.loader = loader;
     }
 
-    public void validate(PeDefinition def)
+    public void validate(Expression expr)
     {
         AccessorCollector collector = new AccessorCollector(loader);
         Policy policy = new TestPolicy();
-        String[] parts = def.getExpression().split("\\.");
+        String[] parts = expr.getPath().split("\\.");
         if (parts.length < 1)
         {
-            throw new InstrumentationException("Property expression: " + def.getExpression() +
-                    " must have at least one part", def.getMarker());
+            throw new InstrumentationException("Property expression: " + expr.getPath() +
+                    " must have at least one part", expr.getLocation());
         }
-        String cn = def.getType().getInternalName();
+        String cn = expr.getType().getInternalName();
         Accessor accessor = null;
         for (String part : parts)
         {
-            Map<Accessor.Type, Accessor> accessors = collector.collect(cn, part, def.getMode(),
-                    accessor, def);
+            Map<Accessor.Type, Accessor> accessors = collector.collect(cn, part, expr.getMode(),
+                accessor, expr);
             if (accessors.isEmpty())
             {
                 throw new InstrumentationException("Could not resolve expression part: " + part +
-                        " in class: " + cn + ", expression: " + def.getExpression(), def
-                        .getMarker());
+                        " in class: " + cn + ", expression: " + expr.getPath(), expr
+                    .getLocation());
             }
             accessor = policy.choose(accessors);
             cn = accessor.getReturnTypeName();

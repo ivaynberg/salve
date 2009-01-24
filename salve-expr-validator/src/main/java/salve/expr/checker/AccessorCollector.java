@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import salve.BytecodeLoader;
 import salve.InstrumentationException;
 import salve.asmlib.ClassReader;
+import salve.expr.scanner.Expression;
 import salve.util.asm.AsmUtil;
 import salve.util.asm.InvalidSignatureException;
 import salve.util.asm.AsmUtil.Pair;
@@ -24,7 +25,7 @@ public class AccessorCollector
     }
 
     public Map<Accessor.Type, Accessor> collect(final String className, String part, String mode,
-            Accessor previous, PeDefinition def)
+            Accessor previous, Expression expr)
     {
         Map<Accessor.Type, Accessor> accessors = new HashMap<Accessor.Type, Accessor>();
 
@@ -42,9 +43,9 @@ public class AccessorCollector
                 catch (InvalidSignatureException e)
                 {
                     throw new InstrumentationException("Part: " + part +
-                            " of property expression: " + def.getExpression() +
+                            " of property expression: " + expr.getPath() +
                             " accesses a Map with an unsupported signature: " + previous.getSig(),
-                            def.getMarker());
+                        expr.getLocation());
                 }
                 final String type = sig.getValue();
                 final Accessor acc = new Accessor(Accessor.Type.MAP, part, "L" + type + ";", null);
@@ -55,8 +56,8 @@ public class AccessorCollector
                 if (!listIndexPattern.matcher(part).matches())
                 {
                     throw new InstrumentationException("Property expression: " +
-                            def.getExpression() + " contains an invalid list index: " + part, def
-                            .getMarker());
+                            expr.getPath() + " contains an invalid list index: " + part, expr
+                        .getLocation());
                 }
                 final String type;
                 try
@@ -66,9 +67,9 @@ public class AccessorCollector
                 catch (InvalidSignatureException e)
                 {
                     throw new InstrumentationException("Part: " + part +
-                            " of property expression: " + def.getExpression() +
+                            " of property expression: " + expr.getPath() +
                             " accesses a List with an unsupported signature: " + previous.getSig(),
-                            def.getMarker());
+                        expr.getLocation());
 
                 }
                 final Accessor acc = new Accessor(Accessor.Type.LIST, part, "L" + type + ";", null);
