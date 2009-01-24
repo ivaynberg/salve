@@ -1,7 +1,7 @@
 /**
  * 
  */
-package salve.expr.inst;
+package salve.expr.checker;
 
 /** @deprecated */
 @Deprecated

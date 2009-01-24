@@ -1,4 +1,4 @@
-package salve.expr.inst;
+package salve.expr.checker;
 
 import java.util.Iterator;
 

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package salve.expr.inst.locator;
+package salve.expr.scanner;
 
 import java.util.List;
 import java.util.Set;
@@ -11,8 +11,8 @@ import salve.CodeMarker;
 import salve.InstrumentationException;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
-import salve.expr.inst.PeDefinition;
-import salve.expr.inst.PeValidator;
+import salve.expr.checker.PeDefinition;
+import salve.expr.checker.PeValidator;
 
 public class MethodAnalyzer extends RuleMatcher
 {

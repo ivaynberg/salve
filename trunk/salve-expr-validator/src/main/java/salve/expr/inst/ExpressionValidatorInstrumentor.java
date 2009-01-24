@@ -8,8 +8,8 @@ import salve.InstrumentationException;
 import salve.Instrumentor;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassVisitor;
-import salve.expr.inst.locator.Part;
-import salve.expr.inst.locator.Rule;
+import salve.expr.scanner.Part;
+import salve.expr.scanner.Rule;
 import salve.util.asm.ClassVisitorAdapter;
 
 /**
