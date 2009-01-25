@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Test;
 
 import salve.BytecodeLoader;
 import salve.Scope;
@@ -20,17 +21,21 @@ import salve.loader.BytecodePool;
 import salve.loader.ClassLoaderLoader;
 import salve.loader.FilePathLoader;
 
-public abstract class ValidatorTestCase
+/**
+ * Base class for property expression validation test cases.
+ * 
+ * @author igor.vaynberg
+ * 
+ */
+public class PropertyExpressionTest
 {
     private final boolean DEBUG = false;
 
     private static final String CLASSES = "target" + File.separatorChar + "classes";
 
-    protected Scope getScope()
-    {
-        return Scope.ALL;
-    }
-
+    /**
+     * @return an array of directories that will be search for .class files
+     */
     protected File[] getClassFileRoots()
     {
         File target = new File(new File("").getAbsolutePath());
@@ -55,21 +60,27 @@ public abstract class ValidatorTestCase
         return new File[] { target };
     }
 
+    /**
+     * @return rules that will be used to discover property expressions in bytecode
+     */
     protected Set<Rule> getRules()
     {
-        Rule one = new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR, Part.MODE);
-        Rule two = new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR);
-        Rule three = new Rule("salve/expr/Pe", Part.THIS, Part.EXPR);
-
         Set<Rule> defs = new HashSet<Rule>();
-        defs.add(one);
-        defs.add(two);
-        defs.add(three);
+        // new Pe(Person.class, "address.street", "rw")
+        defs.add(new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR, Part.MODE));
+        // new Pe(Person.class, "address.street"); // use default mode
+        defs.add(new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR));
+        // new Pe(this, "name")
+        defs.add(new Rule("salve/expr/Pe", Part.THIS, Part.EXPR));
 
         return defs;
     }
 
-    public final void executeTest()
+    /**
+     * Executes the test.
+     */
+    @Test
+    public final void testExpressions()
     {
         File[] classFileRoots = getClassFileRoots();
         Errors errors = new Errors();
