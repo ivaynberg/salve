@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import salve.CodeMarker;
@@ -19,6 +20,7 @@ import salve.expr.scanner.RuleMatcher;
 import salve.loader.ClassLoaderLoader;
 import salve.util.asm.ClassVisitorAdapter;
 
+@Ignore
 public class UsagesTest
 {
     @Test
@@ -68,8 +70,7 @@ public class UsagesTest
             {
 
                 @Override
-                protected void onInvalid( Type container, List<Instruction> parts,
-                        CodeMarker marker)
+                protected void onInvalid(Type container, List<Instruction> parts, CodeMarker marker)
                 {
                     System.out.println("invalid");
                 }
