@@ -27,8 +27,8 @@ public class ExpressionValidatorInstrumentor implements Instrumentor
         byte[] bytecode = context.getLoader().loadBytecode(className);
         ClassReader reader = new ClassReader(bytecode);
 
-        Rule one = new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR, Part.MODE);
-        Rule two = new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR);
+        Rule one = new Rule("salve/expr/Pe", Part.TYPE, Part.PATH, Part.MODE);
+        Rule two = new Rule("salve/expr/Pe", Part.TYPE, Part.PATH);
 
         Set<Rule> rules = new HashSet<Rule>();
         rules.add(one);

@@ -67,11 +67,11 @@ public class PropertyExpressionTest
     {
         Set<Rule> defs = new HashSet<Rule>();
         // new Pe(Person.class, "address.street", "rw")
-        defs.add(new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR, Part.MODE));
+        defs.add(new Rule("salve/expr/Pe", Part.TYPE, Part.PATH, Part.MODE));
         // new Pe(Person.class, "address.street"); // use default mode
-        defs.add(new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR));
+        defs.add(new Rule("salve/expr/Pe", Part.TYPE, Part.PATH));
         // new Pe(this, "name")
-        defs.add(new Rule("salve/expr/Pe", Part.THIS, Part.EXPR));
+        defs.add(new Rule("salve/expr/Pe", Part.THIS, Part.PATH));
 
         return defs;
     }

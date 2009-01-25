@@ -48,7 +48,7 @@ public class Instruction
             case OTHER :
                 return false;
             case STRING :
-                return Part.EXPR.equals(part) || Part.MODE.equals(part);
+                return Part.PATH.equals(part) || Part.MODE.equals(part);
             case THIS :
                 return Part.THIS.equals(part);
             case TYPE :
