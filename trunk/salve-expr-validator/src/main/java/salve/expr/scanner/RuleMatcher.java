@@ -54,7 +54,7 @@ public abstract class RuleMatcher extends InstructionRecorder
                 {
                     switch (part)
                     {
-                        case EXPR :
+                        case PATH :
                             expr = inst.getData();
                             break;
                         case MODE :

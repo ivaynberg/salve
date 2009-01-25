@@ -29,9 +29,9 @@ public class UsagesTest
         ClassLoaderLoader loader = new ClassLoaderLoader(getClass().getClassLoader());
         ClassReader reader = new ClassReader(loader.loadBytecode("salve/expr/validator/Usages"));
 
-        Rule one = new Rule("salve/expr/validator/PeModel", Part.TYPE, Part.EXPR, Part.MODE);
-        Rule two = new Rule("salve/expr/validator/PeModel", Part.THIS, Part.EXPR, Part.MODE);
-        Rule three = new Rule("salve/expr/validator/PeModel", Part.THIS, Part.EXPR);
+        Rule one = new Rule("salve/expr/validator/PeModel", Part.TYPE, Part.PATH, Part.MODE);
+        Rule two = new Rule("salve/expr/validator/PeModel", Part.THIS, Part.PATH, Part.MODE);
+        Rule three = new Rule("salve/expr/validator/PeModel", Part.THIS, Part.PATH);
 
         Set<Rule> defs = new HashSet<Rule>();
         defs.add(one);
