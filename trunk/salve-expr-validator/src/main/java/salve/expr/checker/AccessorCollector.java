@@ -9,6 +9,8 @@ import salve.BytecodeLoader;
 import salve.InstrumentationException;
 import salve.asmlib.ClassReader;
 import salve.expr.scanner.Expression;
+import salve.expr.util.ClassHieararchy;
+import salve.expr.util.EnhancedClassReader;
 import salve.util.asm.AsmUtil;
 import salve.util.asm.InvalidSignatureException;
 import salve.util.asm.AsmUtil.Pair;

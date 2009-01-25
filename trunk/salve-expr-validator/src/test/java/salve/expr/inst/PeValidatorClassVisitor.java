@@ -3,10 +3,13 @@ package salve.expr.inst;
 import java.util.Set;
 
 import salve.InstrumentationContext;
+import salve.InstrumentationException;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
+import salve.expr.checker.Error;
+import salve.expr.scanner.Errors;
 import salve.expr.scanner.MethodAnalyzer;
 import salve.expr.scanner.Rule;
 import salve.util.asm.MethodVisitorAdapter;
@@ -18,6 +21,7 @@ public class PeValidatorClassVisitor extends ClassAdapter
     private final InstrumentationContext ctx;
     private Type owner;
     private final Set<Rule> rules;
+    private final Errors errors = new Errors();
 
     public PeValidatorClassVisitor(Set<Rule> rules, InstrumentationContext ctx, ClassVisitor cv)
     {
@@ -35,6 +39,17 @@ public class PeValidatorClassVisitor extends ClassAdapter
     }
 
     @Override
+    public void visitEnd()
+    {
+        super.visitEnd();
+        if (!errors.isEmpty())
+        {
+            final Error error = errors.iterator().next();
+            throw new InstrumentationException(error.toString());
+        }
+    }
+
+    @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature,
             String[] exceptions)
     {
@@ -43,7 +58,8 @@ public class PeValidatorClassVisitor extends ClassAdapter
         {
             mv = new MethodVisitorAdapter();
         }
-        return new MethodAnalyzer(mv, owner, rules, ctx.getLoader());
+
+        return new MethodAnalyzer(mv, owner, rules, ctx.getLoader(), errors);
     }
 
 }

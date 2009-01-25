@@ -2,7 +2,6 @@ package salve.expr.scanner;
 
 import java.util.Set;
 
-
 import salve.BytecodeLoader;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
@@ -15,18 +14,20 @@ public class ClassAnalyzer extends ClassAdapter
 
     private final Set<Rule> defs;
     private final BytecodeLoader loader;
+    private final Errors errors;
     private Type owner;
 
-    public ClassAnalyzer(Set<Rule> defs, BytecodeLoader loader)
+    public ClassAnalyzer(Set<Rule> defs, BytecodeLoader loader, Errors errors)
     {
-        this(new ClassVisitorAdapter(), defs, loader);
+        this(new ClassVisitorAdapter(), defs, loader, errors);
     }
 
-    public ClassAnalyzer(ClassVisitor cv, Set<Rule> defs, BytecodeLoader loader)
+    public ClassAnalyzer(ClassVisitor cv, Set<Rule> defs, BytecodeLoader loader, Errors errors)
     {
         super(cv);
         this.defs = defs;
         this.loader = loader;
+        this.errors = errors;
     }
 
     @Override
@@ -43,8 +44,6 @@ public class ClassAnalyzer extends ClassAdapter
     {
 
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-        return new MethodAnalyzer(mv, owner, defs, loader);
+        return new MethodAnalyzer(mv, owner, defs, loader, errors);
     }
-
-
 }
