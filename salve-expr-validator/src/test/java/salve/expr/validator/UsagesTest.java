@@ -68,7 +68,7 @@ public class UsagesTest
             {
 
                 @Override
-                protected void onInvalid(Type target, Type container, List<Instruction> parts,
+                protected void onInvalid( Type container, List<Instruction> parts,
                         CodeMarker marker)
                 {
                     System.out.println("invalid");

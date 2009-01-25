@@ -96,12 +96,12 @@ public abstract class RuleMatcher extends InstructionRecorder
         }
         else
         {
-            onInvalid(null, container, parts, marker);
+            onInvalid(container, parts, marker);
         }
 
 
     }
 
-    protected abstract void onInvalid(Type target, Type container, List<Instruction> parts,
+    protected abstract void onInvalid(Type container, List<Instruction> parts,
             CodeMarker marker);
 }

@@ -13,6 +13,12 @@ public class Error
         this.message = message;
     }
 
+    public Error(String message)
+    {
+        this(null, message);
+    }
+
+
     public Expression getExpression()
     {
         return expression;
@@ -23,5 +29,10 @@ public class Error
         return message;
     }
 
-
+    @Override
+    public String toString()
+    {
+        return new StringBuilder().append("\nExpression Error: ").append(message).append("\n  Expression: ")
+            .append(expression).toString();
+    }
 }

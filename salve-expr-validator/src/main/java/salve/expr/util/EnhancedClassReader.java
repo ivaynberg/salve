@@ -1,4 +1,4 @@
-package salve.expr.checker;
+package salve.expr.util;
 
 import java.io.IOException;
 import java.io.InputStream;

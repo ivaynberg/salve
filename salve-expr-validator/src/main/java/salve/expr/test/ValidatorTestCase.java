@@ -6,11 +6,14 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Assert;
+
 import salve.BytecodeLoader;
 import salve.Scope;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassVisitor;
 import salve.expr.scanner.ClassAnalyzer;
+import salve.expr.scanner.Errors;
 import salve.expr.scanner.Part;
 import salve.expr.scanner.Rule;
 import salve.loader.BytecodePool;
@@ -54,25 +57,31 @@ public abstract class ValidatorTestCase
 
     protected Set<Rule> getRules()
     {
-        Rule one = new Rule("salve/expr/PE", Part.TYPE, Part.EXPR, Part.MODE);
-        Rule two = new Rule("salve/expr/PE", Part.TYPE, Part.EXPR);
-        Rule three = new Rule("salve/expr/PE", Part.THIS, Part.EXPR);
+        Rule one = new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR, Part.MODE);
+        Rule two = new Rule("salve/expr/Pe", Part.TYPE, Part.EXPR);
+        Rule three = new Rule("salve/expr/Pe", Part.THIS, Part.EXPR);
 
         Set<Rule> defs = new HashSet<Rule>();
         defs.add(one);
         defs.add(two);
         defs.add(three);
-        
+
         return defs;
     }
 
     public final void executeTest()
     {
         File[] classFileRoots = getClassFileRoots();
-        ClassFileVisitor visitor = new ClassFileValidator(getRules(), classFileRoots);
+        Errors errors = new Errors();
+        ClassFileVisitor visitor = new ClassFileValidator(getRules(), errors, classFileRoots);
         for (File classFileRoot : classFileRoots)
         {
             visit(classFileRoot, visitor);
+        }
+
+        if (!errors.isEmpty())
+        {
+            Assert.fail(errors.toString());
         }
     }
 
@@ -103,11 +112,12 @@ public abstract class ValidatorTestCase
     {
         private final BytecodeLoader loader;
         private final Set<Rule> defs;
+        private final Errors errors;
 
-        public ClassFileValidator(Set<Rule> defs, File... outputFolders)
+        public ClassFileValidator(Set<Rule> defs, Errors errors, File... outputFolders)
         {
             this.defs = defs;
-
+            this.errors = errors;
             BytecodePool pool = new BytecodePool(Scope.ALL);
             for (File outputFolder : outputFolders)
             {
@@ -128,8 +138,7 @@ public abstract class ValidatorTestCase
                 try
                 {
                     ClassReader reader = new ClassReader(in);
-                    ClassVisitor visitor = new ClassAnalyzer(defs, loader);
-
+                    ClassVisitor visitor = new ClassAnalyzer(defs, loader, errors);
                     reader.accept(visitor, ClassReader.SKIP_FRAMES);
                 }
                 finally
