@@ -51,15 +51,17 @@ public class AccessorCollector
                 }
                 final String type = sig.getValue();
                 final Accessor acc = new Accessor(Accessor.Type.MAP, part, "L" + type + ";", null);
-                accessors.put(acc.getType(), acc);
+                if (!accessors.containsKey(acc.getType()))
+                {
+                    accessors.put(acc.getType(), acc);
+                }
             }
             else if (reader.isList())
             {
                 if (!listIndexPattern.matcher(part).matches())
                 {
-                    throw new InstrumentationException("Property expression: " +
-                            expr.getPath() + " contains an invalid list index: " + part, expr
-                        .getLocation());
+                    throw new InstrumentationException("Property expression: " + expr.getPath() +
+                            " contains an invalid list index: " + part, expr.getLocation());
                 }
                 final String type;
                 try
@@ -75,14 +77,20 @@ public class AccessorCollector
 
                 }
                 final Accessor acc = new Accessor(Accessor.Type.LIST, part, "L" + type + ";", null);
-                accessors.put(acc.getType(), acc);
+                if (!accessors.containsKey(acc.getType()))
+                {
+                    accessors.put(acc.getType(), acc);
+                }
             }
 
             reader.accept(visitor, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG |
                     ClassReader.SKIP_FRAMES);
             for (Accessor accessor : visitor.getAccessors())
             {
-                accessors.put(accessor.getType(), accessor);
+                if (!accessors.containsKey(accessor.getType()))
+                {
+                    accessors.put(accessor.getType(), accessor);
+                }
             }
 
         }
