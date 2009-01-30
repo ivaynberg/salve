@@ -13,5 +13,12 @@ public class MapSignatureTest {
 		Assert.assertEquals("java/lang/String", types.getKey());
 		Assert.assertEquals("salve/contract/pe/map/Member", types.getValue());
 
+		// str =
+		// "Ljava/util/Map<Ljava/lang/String;Ljava/util/List<Lsalve/expr/checker/TortureTest$Person;>;>;";
+		// SignatureReader reader = new SignatureReader(str);
+		// reader.accept(new TracingSignatureVisitorAdapter());
+		//
+		// types = AsmUtil.parseMapTypesFromSignature(str);
+
 	}
 }
