@@ -110,6 +110,15 @@ public class BasicTest extends TestCaseSupport
         }
     }
 
+    public static class TestBooleanGetterCode
+    {
+        public void testCode()
+        {
+            new Pe(Person.class, "address.residential", "r");
+        }
+    }
+
+
     @Test
     public void testFields() throws Exception
     {
@@ -121,6 +130,7 @@ public class BasicTest extends TestCaseSupport
     {
         create("TestGettersCode1");
         create("TestGettersCode2");
+        create("TestBooleanGetterCode");
         create("TestGetter__Primitive");
         try
         {

@@ -1,20 +1,26 @@
 package salve.expr.validator.model;
 
-public class City {
-	private String name;
+public class City
+{
+    private String name;
 
-	public int id;
+    public int id;
 
-	public int getIdInteger() {
-		return id;
-	}
+    public int getIdInteger()
+    {
+        return id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName()
+    {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+  
 
 }

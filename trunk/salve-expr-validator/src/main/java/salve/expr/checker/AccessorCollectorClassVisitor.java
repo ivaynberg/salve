@@ -20,6 +20,7 @@ final class AccessorCollectorClassVisitor extends ClassVisitorAdapter
 
     private final String part;
     private final String getterName;
+    private final String booleanGetterName;
     private final String setterName;
     private final String mode;
 
@@ -31,6 +32,7 @@ final class AccessorCollectorClassVisitor extends ClassVisitorAdapter
 
         getterName = "get" + capped;
         setterName = "set" + capped;
+        booleanGetterName = "is" + capped;
     }
 
     public List<Accessor> getAccessors()
@@ -71,6 +73,24 @@ final class AccessorCollectorClassVisitor extends ClassVisitorAdapter
                 final Accessor accessor = new Accessor(Accessor.Type.GETTER, name, desc, signature);
                 accessors.add(accessor);
             }
+        }
+        else if (mode.contains("r") && name.equals(booleanGetterName))
+        {
+            Method method = new Method(name, desc);
+            // make sure this getter has no parameters
+            if (method.getArgumentTypes().length == 0)
+            {
+                // make sure it returns a boolean
+                final Type ret = method.getReturnType();
+                if (ret.equals(Type.BOOLEAN_TYPE) ||
+                        "java/lang/Boolean".equals(ret.getInternalName()))
+                {
+                    final Accessor accessor = new Accessor(Accessor.Type.GETTER, name, desc,
+                            signature);
+                    accessors.add(accessor);
+                }
+            }
+
         }
         else if (mode.contains("w") && name.equals(setterName))
         {
