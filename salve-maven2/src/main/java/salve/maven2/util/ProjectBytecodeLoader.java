@@ -33,11 +33,17 @@ public class ProjectBytecodeLoader extends CompoundLoader {
 	public ProjectBytecodeLoader(MavenProject project) throws DependencyResolutionRequiredException {
 
 		// add target/classes folder
-		addLoader(new FilePathLoader(new File(project.getBuild().getOutputDirectory())));
+		File dir = new File(project.getBuild().getOutputDirectory());
+		if (dir.exists()) {
+			addLoader(new FilePathLoader(dir));
+		}
 
 		// append project class path entries
 		for (Object path : project.getCompileClasspathElements()) {
-			addLoader(new FilePathLoader(new File((String) path)));
+			dir = new File((String) path);
+			if (dir.exists()) {
+				addLoader(new FilePathLoader(dir));
+			}
 		}
 
 		// merge provided artifacts into the classpath because instrumentor jars
@@ -45,7 +51,10 @@ public class ProjectBytecodeLoader extends CompoundLoader {
 		Set<Artifact> artifacts = project.getDependencyArtifacts();
 		for (Artifact artifact : artifacts) {
 			if ("provided".equalsIgnoreCase(artifact.getScope())) {
-				addLoader(new FilePathLoader(artifact.getFile()));
+				dir = artifact.getFile();
+				if (dir.exists()) {
+					addLoader(new FilePathLoader(dir));
+				}
 			}
 		}
 
