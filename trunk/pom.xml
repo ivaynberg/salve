@@ -122,6 +122,16 @@
                     </execution>
                 </executions>
             </plugin>
+						<plugin>
+							<artifactId>maven-release-plugin</artifactId>
+							<configuration>
+								<tagBase>
+									https://salve.googlecode.com/svn/tags/releases
+								</tagBase>
+								<autoVersionSubmodules>true</autoVersionSubmodules>
+							</configuration>
+						</plugin>
+
         </plugins>
         <pluginManagement>
             <plugins>
