@@ -1,0 +1,5 @@
+<config>
+	<package name="salve.package1">
+		<instrumentor class="salve.config.Instrumentor22" />
+	</package>
+</config>

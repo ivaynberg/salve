@@ -1,0 +1,7 @@
+- try to make a maven based build
+- figure out repository url to openapi.jar on IntelliJ
+- check licensing terms with IDEA (openapi.jar)
+- far more documentation
+- user manual
+- better error messages / checking
+- include license in configuration dialog / plugin description

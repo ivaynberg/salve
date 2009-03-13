@@ -1,0 +1,22 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin>
+    <id>salve-idea</id>
+    <name>Salve Integration</name>
+    <!-- to be done -->
+    <!--<resource-bundle>salve.idea.Messages</resource-bundle>-->
+    <version>0.10.4</version>
+    <vendor email="peter@moreinput.de" url="http://salve.googlecode.com">Peter Ertl</vendor>
+    <idea-version since-build="8940"/>
+    <project-components>
+        <component>
+            <interface-class>salve.idea.SalveComponent</interface-class>
+            <implementation-class>salve.idea.SalveComponentImpl</implementation-class>
+        </component>
+    </project-components>
+    <description>
+        Idea integration for Salve
+    </description>
+    <change-notes>
+        changes: better error checking
+    </change-notes>
+</idea-plugin>
