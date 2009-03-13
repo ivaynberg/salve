@@ -186,13 +186,15 @@
     </repositories>
 
     <distributionManagement>
-          <!-- use the following if you're not using a snapshot version. -->
+        <site>
+            <id>local</id>
+            <url>file:target/site/</url>
+        </site>
           <repository>
             <id>release.repo</id>
             <name>Release Repo</name>
             <url>file:target/repo</url>
           </repository>
-          <!-- use the following if you ARE using a snapshot version. -->
           <snapshotRepository>
             <id>snapshot.repo</id>
             <name>Snapshot Repo</name>
