@@ -1,5 +1,0 @@
-<config>
-	<package name="salve.package1">
-		<instrumentor class="salve.config.BrokenInstrumentor" />
-	</package>
-</config>

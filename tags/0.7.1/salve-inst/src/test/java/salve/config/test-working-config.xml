@@ -1,9 +1,0 @@
-<config>
-	<package name="salve.package1">
-		<instrumentor class="salve.config.Instrumentor1"/>
-	</package>
-	<package name="salve.package2">
-		<instrumentor class="salve.config.Instrumentor2"/>
-		<instrumentor class="salve.config.Instrumentor1"/>
-	</package>
-</config>
