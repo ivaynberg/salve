@@ -185,4 +185,20 @@
         </repository>
     </repositories>
 
+    <distributionManagement>
+          <!-- use the following if you're not using a snapshot version. -->
+          <repository>
+            <id>release.repo</id>
+            <name>Release Repo</name>
+            <url>file:target/repo</url>
+          </repository>
+          <!-- use the following if you ARE using a snapshot version. -->
+          <snapshotRepository>
+            <id>snapshot.repo</id>
+            <name>Snapshot Repo</name>
+            <url>file:target/snapshot-repo</url>
+          </snapshotRepository>
+        </distributionManagement>
+
+
 </project>
