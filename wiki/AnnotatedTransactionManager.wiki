@@ -14,8 +14,6 @@ Here's a short sample:
 {{{
 package demo.salve.transactional;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
 import junit.framework.TestCase;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -24,36 +22,39 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import salve.depend.DependencyLibrary;
-import salve.depend.guice.GuiceBeanLocator;
+import salve.depend.Key;
+import salve.depend.Locator;
 import salve.depend.spring.txn.AnnotatedTransactionManager;
 import salve.depend.spring.txn.TransactionManager;
 
-public class SalveGuiceTransactionalTest extends TestCase
+public class SalveTransactionalTest extends TestCase
 {
   static
   {
-    DependencyLibrary.addLocator(new GuiceBeanLocator(Guice.createInjector(new AbstractModule()
+    // create data source
+    final DriverManagerDataSource dataSource = new DriverManagerDataSource();
+    dataSource.setDriverClassName("org.postgresql.Driver");
+    dataSource.setUrl("jdbc:postgresql://localhost/mydb");
+    dataSource.setUsername("test");
+    dataSource.setPassword("test");
+
+    // spring platform transaction manager
+    final PlatformTransactionManager springTx = new DataSourceTransactionManager(dataSource);
+
+    // salve transaction manager (which wraps spring platform transaction manager and applies to @Transactional annotation)
+    final TransactionManager salveTx = new AnnotatedTransactionManager(springTx);
+
+    // provide some very simple salve locator
+    DependencyLibrary.addLocator(new Locator()
     {
-      @Override
-      protected void configure()
+      public Object locate(final Key key)
       {
-        // create data source
-        final DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost/mydb");
-        dataSource.setUsername("test");
-        dataSource.setPassword("test");
+        if (TransactionManager.class.equals(key.getType()))
+          return salveTx;
 
-        // create platform transaction manager
-        final PlatformTransactionManager tx = new DataSourceTransactionManager(dataSource);
-
-        // bind platform transaction manager to @Transactional annotation
-        bind(TransactionManager.class).toInstance(new AnnotatedTransactionManager(tx));
-
-        // more configuration here
-        // ...
+        return null;
       }
-    })));
+    });
   }
 
   @Transactional(propagation = Propagation.SUPPORTS, timeout = 120, isolation = Isolation.SERIALIZABLE)
@@ -63,4 +64,5 @@ public class SalveGuiceTransactionalTest extends TestCase
     // do some nice transaction stuff in here
   }
 }
+
 }}}
