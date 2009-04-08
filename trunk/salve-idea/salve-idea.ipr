@@ -30,6 +30,9 @@
       <entry name="?*.ftl" />
     </wildcardResourcePatterns>
   </component>
+  <component name="CopyrightManager" default="">
+    <module2copyright />
+  </component>
   <component name="DependencyValidationManager">
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
   </component>
@@ -282,6 +285,7 @@
       </map>
     </option>
     <option name="myVersion" value="124" />
+    <option name="mySupportsUserInfoFilter" value="true" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
@@ -309,48 +313,26 @@
         <root url="jar://$MAVEN_REPOSITORY$/org/easymock/easymock/2.2/easymock-2.2-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Maven: salve:salve-inst:0.9">
+    <library name="Maven: salve:salve-inst:1.0">
       <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/0.9/salve-inst-0.9.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/1.0/salve-inst-1.0.jar!/" />
       </CLASSES>
       <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/0.9/salve-inst-0.9-javadoc.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/1.0/salve-inst-1.0-javadoc.jar!/" />
       </JAVADOC>
       <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/0.9/salve-inst-0.9-sources.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/1.0/salve-inst-1.0-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Maven: salve:salve-asm:0.9">
+    <library name="Maven: salve:salve-asm:1.0">
       <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.9/salve-asm-0.9.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/1.0/salve-asm-1.0.jar!/" />
       </CLASSES>
       <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.9/salve-asm-0.9-javadoc.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/1.0/salve-asm-1.0-javadoc.jar!/" />
       </JAVADOC>
       <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.9/salve-asm-0.9-sources.jar!/" />
-      </SOURCES>
-    </library>
-    <library name="Maven: salve:salve-inst:0.10-SNAPSHOT">
-      <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/0.10-SNAPSHOT/salve-inst-0.10-SNAPSHOT.jar!/" />
-      </CLASSES>
-      <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/0.10-SNAPSHOT/salve-inst-0.10-SNAPSHOT-javadoc.jar!/" />
-      </JAVADOC>
-      <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-inst/0.10-SNAPSHOT/salve-inst-0.10-SNAPSHOT-sources.jar!/" />
-      </SOURCES>
-    </library>
-    <library name="Maven: salve:salve-asm:0.10-SNAPSHOT">
-      <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.10-SNAPSHOT/salve-asm-0.10-SNAPSHOT.jar!/" />
-      </CLASSES>
-      <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.10-SNAPSHOT/salve-asm-0.10-SNAPSHOT-javadoc.jar!/" />
-      </JAVADOC>
-      <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/0.10-SNAPSHOT/salve-asm-0.10-SNAPSHOT-sources.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/salve/salve-asm/1.0/salve-asm-1.0-sources.jar!/" />
       </SOURCES>
     </library>
   </component>
