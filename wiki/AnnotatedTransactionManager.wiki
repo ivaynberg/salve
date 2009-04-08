@@ -2,11 +2,11 @@
 
 = Introduction =
 
-Use salve for @Transactional support instead of spring
+Use salve for @Transactional support instead of spring.
 
 = Details =
 
-Salve provides declarative transaction support using @Transactional. It's similar to spring-aop but doesn't require runtime weaving or compliation with AspectJ. Instead the bytecode is modified by Salve to include calls to the platform transaction manager (begin / rollback / commit).
+Salve provides declarative transaction support using @Transactional. It's similar to spring-aop but doesn't require runtime weaving, compilation with AspectJ or using proxies. Instead the bytecode of the affected class is modified by Salve to include calls to the platform transaction manager (begin / rollback / commit).
 
 Here's a short sample:
 
