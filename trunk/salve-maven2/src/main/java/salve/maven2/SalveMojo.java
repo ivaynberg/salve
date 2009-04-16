@@ -16,21 +16,11 @@
  */
 package salve.maven2;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
-
-import salve.CodeMarker;
-import salve.CodeMarkerAware;
-import salve.ConfigException;
-import salve.InstrumentationContext;
-import salve.Instrumentor;
+import salve.*;
 import salve.config.XmlConfig;
 import salve.config.XmlConfigReader;
 import salve.maven2.util.ClassFileVisitor;
@@ -38,6 +28,11 @@ import salve.maven2.util.Directory;
 import salve.maven2.util.ProjectBytecodeLoader;
 import salve.monitor.ModificationMonitor;
 import salve.util.FallbackBytecodeClassLoader;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 /**
  * Salve maven2 mojo. This mojo instruments class files before the project is
@@ -80,6 +75,23 @@ public class SalveMojo extends AbstractMojo {
 
 		loadConfig(classesDir);
 
+		// instrument production classes
+		instrumentDirectory(classesDir);
+
+		// TODO figure out the current execution phase
+//		// instrument test classes
+//		final File testClassesDir = new File(project.getBuild().getTestOutputDirectory());
+//
+//		if (testClassesDir.exists()) {
+//			instrumentDirectory(testClassesDir);
+//		}
+
+		getLog().info(String.format("Salve: classes scanned: %d, instrumented: %d", scanned, instrumented));
+
+	}
+
+	private void instrumentDirectory(final File classesDir)
+	{
 		// visit class files and instrument them
 		Directory dir = new Directory(classesDir);
 		dir.visitFiles(new ClassFileVisitor(dir) {
@@ -89,9 +101,6 @@ public class SalveMojo extends AbstractMojo {
 				instrumentClassFile(className, file);
 			}
 		});
-
-		getLog().info(String.format("Salve: classes scanned: %d, instrumented: %d", scanned, instrumented));
-
 	}
 
 	/**

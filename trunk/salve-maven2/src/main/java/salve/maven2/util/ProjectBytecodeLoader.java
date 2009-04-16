@@ -16,16 +16,15 @@
  */
 package salve.maven2.util;
 
-import java.io.File;
-import java.util.Set;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
-
 import salve.loader.ClassLoaderLoader;
 import salve.loader.CompoundLoader;
 import salve.loader.FilePathLoader;
+
+import java.io.File;
+import java.util.Set;
 
 public class ProjectBytecodeLoader extends CompoundLoader {
 
@@ -37,6 +36,13 @@ public class ProjectBytecodeLoader extends CompoundLoader {
 		if (dir.exists()) {
 			addLoader(new FilePathLoader(dir));
 		}
+
+		// TODO figure out the current execution phase
+//		// add target/test-classes folder
+//		dir = new File(project.getBuild().getTestOutputDirectory());
+//		if (dir.exists()) {
+//			addLoader(new FilePathLoader(dir));
+//		}
 
 		// append project class path entries
 		for (Object path : project.getCompileClasspathElements()) {
