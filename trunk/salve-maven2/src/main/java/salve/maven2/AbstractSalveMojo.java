@@ -54,14 +54,14 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	private MavenProject project;
 
 	/**
-	 * Be verbose (print instrumented files + used instrumentor on console)
+	 * be verbose: print instrumented files on console
 	 *
 	 * @parameter expression="${salve.maven2.verbose}"
 	 */
 	private boolean verbose = false;
 
 	/**
-	 * Show debug info (show which files are scanned)
+	 * show debug info: show which files are scanned and which instrumentors are applied
 	 *
 	 * @parameter expression="${salve.maven2.debug}"
 	 */
