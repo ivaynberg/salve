@@ -29,7 +29,8 @@ import java.util.Set;
 public class ProjectBytecodeLoader extends CompoundLoader {
 
 	@SuppressWarnings("unchecked")
-	public ProjectBytecodeLoader(MavenProject project) throws DependencyResolutionRequiredException {
+	public ProjectBytecodeLoader(MavenProject project, final boolean includeTestClasses)
+			throws DependencyResolutionRequiredException {
 
 		// add target/classes folder
 		File dir = new File(project.getBuild().getOutputDirectory());
@@ -37,12 +38,13 @@ public class ProjectBytecodeLoader extends CompoundLoader {
 			addLoader(new FilePathLoader(dir));
 		}
 
-		// TODO figure out the current execution phase
-//		// add target/test-classes folder
-//		dir = new File(project.getBuild().getTestOutputDirectory());
-//		if (dir.exists()) {
-//			addLoader(new FilePathLoader(dir));
-//		}
+		// add target/test-classes folder (production classes must not refer to test-classes, but vice-versa is ok)
+		if(includeTestClasses) {
+			dir = new File(project.getBuild().getTestOutputDirectory());
+			if (dir.exists()) {
+				addLoader(new FilePathLoader(dir));
+			}
+		}
 
 		// append project class path entries
 		for (Object path : project.getCompileClasspathElements()) {
