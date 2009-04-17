@@ -12,16 +12,8 @@
 			</configuration>
 			<executions>
 				<execution>
-					<id>instrument</id>
-					<phase>process-classes</phase>
 					<goals>
 						<goal>instrument</goal>
-					</goals>
-				</execution>
-				<execution>
-					<id>instrument-test</id>
-					<phase>process-test-classes</phase>
-					<goals>
 						<goal>instrument-test</goal>
 					</goals>
 				</execution>
