@@ -24,7 +24,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @prefix salve
  * @goal instrument-test
  * @phase process-test-classes
- * @requiresDependencyResolution
+ * @requiresDependencyResolution test
  */
 public class TestSalveMojo extends AbstractSalveMojo
 {
