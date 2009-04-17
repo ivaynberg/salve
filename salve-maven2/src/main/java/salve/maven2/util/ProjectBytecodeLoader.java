@@ -60,7 +60,7 @@ public class ProjectBytecodeLoader extends CompoundLoader {
 		for (Artifact artifact : artifacts) {
 			if ("provided".equalsIgnoreCase(artifact.getScope())) {
 				dir = artifact.getFile();
-				if (dir.exists()) {
+				if (dir != null && dir.exists()) {
 					addLoader(new FilePathLoader(dir));
 				}
 			}
