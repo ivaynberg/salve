@@ -7,8 +7,10 @@
 			<artifactId>salve-maven2</artifactId>
 			<version>1.1-SNAPSHOT</version>
 			<configuration>
-				<!-- useful to dump the instrumented classes on the console -->
-				<verbose>true</verbose>
+				<!-- print the instrumented classes on the console -->
+				<!--<verbose>true</verbose>-->
+				<!-- implies verbose=true and will additionally show which files are scanned for instrumentation -->
+				<!--<debug>true</debug>-->
 			</configuration>
 			<executions>
 				<execution>
