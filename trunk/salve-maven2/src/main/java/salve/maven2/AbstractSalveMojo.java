@@ -57,7 +57,6 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	 * Show some info to user when instrumenting files
 	 *
 	 * @parameter expression="${salve.maven2.verbose}"
-	 * @readonly
 	 */
 	private boolean verbose = false;
 
