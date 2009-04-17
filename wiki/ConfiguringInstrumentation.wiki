@@ -80,6 +80,40 @@ Add the following lines to pom.xml
 
 Maven 2.0.x does not offer a good build-phase hook for processing class files after unit tests and before packaging, so we use the `test` phase which will execute the plugin after unit tests are done. In Maven 2.1.x we can use the new `prepare-package` phase.
 
+Note: In the upcoming salve version 1.1 things get a little easier...
+
+(not available right now !! )
+
+{{{
+<!-- fragment to demonstrate invocation of the maven plugin -->
+
+<build>
+  <plugins>
+    <plugin>
+      <groupId>salve</groupId>
+      <artifactId>salve-maven2</artifactId>
+      <!--<configuration>-->
+        <!-- print the instrumented classes on the console -->
+        <!--<verbose>true</verbose>-->
+        <!-- implies verbose=true and additionallys show which files are scanned for instrumentation -->
+        <!--<debug>true</debug>-->
+      <!--</configuration>-->
+      <executions>
+        <execution>
+          <goals>
+            <goal>instrument</goal>
+            <goal>instrument-test</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+}}}
+
+
+
+
 == Ant Build ==
 Coming soon
 
@@ -91,8 +125,6 @@ Eclipse update site: http://salve.googlecode.com/svn/trunk/salve-eclipse-update-
 == IDEA ==
 There's an plugin for IDEA, too...
 
-It will scan for salve.xml in the META-INF directory of each IDEA module and instrument your class files. The plugin can be found under the name 'Salve Integration' in IDEA's 'Available' Tab in the 'Plugins' settings dialog easily.
+The plugin will scan for META-INF/salve.xml in your source directories and instrument your class files automatically when IDEA compiles them. The plugin can be found under the name 'Salve Integration' in IDEA's 'Available' Tab in the 'Plugins' settings dialog easily.
 
 Link to the plugin on IntelliJ.net: http://plugins.intellij.net/plugin/?id=3709
-
-(Note: If you installed a version below 0.10.3, please delete that plugin from IDEA and reinstall it again. I had to change the plugin-id so update will not work in that case. Sorry!)
