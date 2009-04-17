@@ -54,11 +54,18 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	private MavenProject project;
 
 	/**
-	 * Show some info to user when instrumenting files
+	 * Be verbose (print instrumented files + used instrumentor on console)
 	 *
 	 * @parameter expression="${salve.maven2.verbose}"
 	 */
 	private boolean verbose = false;
+
+	/**
+	 * Show debug info (show which files are scanned)
+	 *
+	 * @parameter expression="${salve.maven2.debug}"
+	 */
+	private boolean debug = false;
 
 	/**
 	 * instruments either production or test classes
@@ -120,7 +127,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	 */
 	private void instrumentClassFile(String className, File file) {
 
-		if(verbose)
+		if(debug)
 			getLog().info("Scanning " + className);
 		scanned++;
 
@@ -129,7 +136,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 		try {
 			ModificationMonitor monitor = new ModificationMonitor();
 			for (Instrumentor inst : config.getInstrumentors(binClassName)) {
-				if(verbose)
+				if(verbose || debug)
 					getLog().info("Instrumenting " + className + " with " + inst.getClass().getName() + " instrumentor");
 
 				InstrumentationContext ctx = new InstrumentationContext(loader, monitor, config.getScope(inst));
