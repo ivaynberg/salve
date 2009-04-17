@@ -101,7 +101,9 @@ Note: In the upcoming salve version 1.1 things get a little easier...
       <executions>
         <execution>
           <goals>
+            <!-- instrument production classes in target/classes -->
             <goal>instrument</goal>
+            <!-- instrument test classes in target/test-classes -->
             <goal>instrument-test</goal>
           </goals>
         </execution>
