@@ -136,8 +136,8 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 		try {
 			ModificationMonitor monitor = new ModificationMonitor();
 			for (Instrumentor inst : config.getInstrumentors(binClassName)) {
-				if(verbose || debug)
-					getLog().info("Instrumenting " + className + " with " + inst.getClass().getName() + " instrumentor");
+				if(debug)
+					getLog().info("Checking " + className + " to apply " + inst.getClass().getName());
 
 				InstrumentationContext ctx = new InstrumentationContext(loader, monitor, config.getScope(inst));
 
@@ -147,6 +147,8 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 				fos.close();
 			}
 			if (monitor.isModified()) {
+				if(verbose)
+					getLog().info("Instrumented " + className);
 				instrumented++;
 			}
 		} catch (Exception e) {
