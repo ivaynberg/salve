@@ -91,7 +91,7 @@ Note: In the upcoming salve version 1.1 things get a little easier...
   <plugins>
     <plugin>
       <groupId>salve</groupId>
-      <artifactId>salve-maven2</artifactId>
+      <artifactId>maven-salve-plugin</artifactId>
       <!--<configuration>-->
         <!-- print the instrumented classes on the console -->
         <!--<verbose>true</verbose>-->
