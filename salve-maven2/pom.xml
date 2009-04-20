@@ -7,26 +7,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<!-- proposal by PERTL:
-
-	     we should change the artifactId to
-
-	       maven-salve-plugin
-
-	     This is not only the default naming pattern of maven
-	     but will also naturally lead to a goal prefix of 'salve'
-	     for the plugin which is just right.
-
-	     So you could easily type 'mvn salve:instrument' to execute instrumentation.
-	     Also the naming would conform to maven standards.
-
-	     Currently the goal prefix for salve-maven2 is 'salve2' in the generated plugin.xml.
-
-	     In order to override 'salve2' we would have to provide a custom 'plugin.xml'.
-	     By a simple rename we get that much cheaper.
-	-->
-	<!--<artifactId>maven-salve-plugin</artifactId>-->
-	<artifactId>salve-maven2</artifactId>
+	<artifactId>maven-salve-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 	<name>Salve Maven2 Plugin</name>
 
