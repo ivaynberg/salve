@@ -12,10 +12,8 @@
     </content>
     <orderEntry type="jdk" jdkName="IDEA8 JDK" jdkType="IDEA JDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: junit:junit:4.3.1" level="project" />
-    <orderEntry type="library" name="Maven: org.easymock:easymock:2.2" level="project" />
-    <orderEntry type="library" exported="" name="Maven: salve:salve-inst:1.1-SNAPSHOT" level="project" />
-    <orderEntry type="library" exported="" name="Maven: salve:salve-asm:1.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" exported="" name="Maven: salve:salve-inst:1.0" level="project" />
+    <orderEntry type="library" exported="" name="Maven: salve:salve-asm:1.0" level="project" />
   </component>
 </module>
 

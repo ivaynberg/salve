@@ -4,7 +4,7 @@
     <name>Salve Integration</name>
     <!-- to be done -->
     <!--<resource-bundle>salve.idea.Messages</resource-bundle>-->
-    <version>1.1.0</version>
+    <version>1.0</version>
     <vendor email="peter@moreinput.de" url="http://salve.googlecode.com">Peter Ertl</vendor>
     <idea-version since-build="8940"/>
     <project-components>
@@ -17,6 +17,6 @@
         Idea integration for Salve
     </description>
     <change-notes>
-        changes: better error checking
+      minor improvements, compiled for salve 1.0
     </change-notes>
 </idea-plugin>
