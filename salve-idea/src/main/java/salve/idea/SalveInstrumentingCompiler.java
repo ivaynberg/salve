@@ -33,7 +33,7 @@ import java.util.*;
  *
  * @author Peter Ertl
  */
-final class SalveInstrumentingCompiler implements ClassPostProcessingCompiler
+final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 {
 // ------------------------------ FIELDS ------------------------------
 
