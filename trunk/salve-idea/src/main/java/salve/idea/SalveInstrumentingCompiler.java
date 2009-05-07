@@ -109,7 +109,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 	 *
 	 * @param context   compilation context
 	 * @param classPath path to class file
-	 * @return file node representing the class file
+	 * @return file node representing the class file or <code>null</code> if class file not found
 	 *
 	 * @throws IOException if something bad happened
 	 */
@@ -133,9 +133,7 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 				return classFile;
 			}
 		}
-		final String message = format("classfile.locate.error", classPath.replace('/', '.'));
-		context.addMessage(CompilerMessageCategory.ERROR, message, null, -1, -1, null);
-		throw new IOException(message);
+		return null;
 	}
 
 	/**
@@ -243,6 +241,14 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 					if (!instrumentors.isEmpty())
 					{
 						final VirtualFile classFile = getClassFile(context, classPath);
+
+						if (classFile == null)
+						{
+							final String message = format("classfile.missing.rebuild.requested", classPath.replace('/', '.'));
+							log.info(message);
+							context.requestRebuildNextTime(message);
+							break;
+						}
 
 						// ignore class file if it was not modified since last instrumentation run
 						if (classFile.getModificationCount() <= lastTimestamp)
