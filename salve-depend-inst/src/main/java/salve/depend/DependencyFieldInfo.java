@@ -12,9 +12,11 @@ import java.lang.annotation.Target;
  * instrumentor.
  * 
  * @author ivaynberg
- * 
+ *
+ * the scope of this annotation is 'runtime' because this is required for retrotranslator
+ * (and probably other java 1.4 bytecode transformers) to convert that annotation.
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface DependencyFieldInfo {
 	/** field description */
