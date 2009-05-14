@@ -11,6 +11,7 @@ import salve.Scope;
 import salve.depend.DependencyInstrumentor;
 import salve.depend.DependencyLibrary;
 import salve.depend.DependencyNotFoundException;
+import salve.depend.DependencyResolutionConflictException;
 import salve.depend.Locator;
 import salve.depend.spring.model.A;
 import salve.depend.spring.model.C;
@@ -48,7 +49,7 @@ public class SpringBeanLocatorTest {
 		try {
 			i.getD();
 			Assert.fail("Should have hit an exception");
-		} catch (DependencyNotFoundException e) {
+		} catch (DependencyResolutionConflictException e) {
 			// noop
 		}
 	}

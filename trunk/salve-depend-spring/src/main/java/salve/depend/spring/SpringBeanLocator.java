@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
 
+import salve.depend.DependencyResolutionConflictException;
 import salve.depend.Key;
 import salve.depend.Locator;
 
@@ -67,8 +68,19 @@ public class SpringBeanLocator implements Locator {
 		Map<String, Object> beans = context.getBeansOfType(key.getType());
 		if (beans.size() == 1) {
 			return beans.values().iterator().next();
-		} else {
+		} else if (beans.size() == 0) {
 			return null;
+		} else {
+			// found more then one matchinb bean, error out
+			final StringBuilder details = new StringBuilder();
+			details.append("Matched bean ids: ");
+			int idx = 0;
+			for (String beanId : beans.keySet()) {
+				details.append((idx++) > 0 ? ", " : "").append(beanId);
+			}
+			details.append(".");
+			throw new DependencyResolutionConflictException(key, details
+					.toString());
 		}
 	}
 

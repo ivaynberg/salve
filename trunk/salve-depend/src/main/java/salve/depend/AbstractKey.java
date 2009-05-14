@@ -16,6 +16,7 @@
  */
 package salve.depend;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 
 /**
@@ -64,7 +65,15 @@ public abstract class AbstractKey implements Key {
 	 */
 	@Override
 	public String toString() {
-		return String.format("[%s type=%s genericType=%s annots=%s]", getClass().getName(), getType().getName(),
-				getGenericType().toString(), getAnnotations());
+		final StringBuilder str = new StringBuilder();
+		str.append("[").append(getClass().getName()).append(" type=").append(getType().getName());
+		str.append(" genericType=").append(getGenericType().toString());
+		str.append(" annotations=[");
+		int idx = 0;
+		for (Annotation annot : getAnnotations()) {
+			str.append(idx++ > 0 ? ", " : "").append(annot.toString());
+		}
+		str.append("]]");
+		return str.toString();
 	}
 }
