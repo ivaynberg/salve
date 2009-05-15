@@ -45,13 +45,13 @@ Add the following lines to pom.xml
     <!-- salve dependency injection -->
     <groupId>salve</groupId>
     <artifactId>salve-depend</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>1.0</version>
    </dependency>
   <dependency>
     <!-- salve dependency instrumentor -->
     <groupId>salve</groupId>
     <artifactId>salve-depend-inst</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>1.0</version>
     <!-- no need to include this in final packaging -->
     <scope>provided</scope>
   </dependency>
