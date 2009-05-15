@@ -64,10 +64,7 @@ Add the following lines to pom.xml
       <artifactId>salve-maven2</artifactId>
       <executions>
         <execution>
-          <!--  if using maven 2.1 or above
-                use phase prepare-package instead
-          -->
-          <phase>test</phase>
+          <phase>process-classes</phase>
           <goals>
           <goal>instrument</goal>
           </goals>
