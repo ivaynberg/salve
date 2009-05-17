@@ -75,9 +75,7 @@ Add the following lines to pom.xml
 </build>
 }}}
 
-Maven 2.0.x does not offer a good build-phase hook for processing class files after unit tests and before packaging, so we use the `test` phase which will execute the plugin after unit tests are done. In Maven 2.1.x we can use the new `prepare-package` phase.
-
-Note: In the upcoming salve version 1.1 things get a little easier...
+Note: In the upcoming salve version 1.1 things change a little...
 
 (not available right now !! )
 
