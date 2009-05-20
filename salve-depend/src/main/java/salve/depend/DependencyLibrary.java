@@ -32,7 +32,6 @@ public class DependencyLibrary {
 	private static final List<Locator> locators = new CopyOnWriteArrayList<Locator>();
 	private static CacheProvider cacheProvider = new CacheProvider() {
 
-		@Override
 		public Cache<Key, Object> getCache() {
 			return new Lru3Cache<Key, Object>();
 		}
