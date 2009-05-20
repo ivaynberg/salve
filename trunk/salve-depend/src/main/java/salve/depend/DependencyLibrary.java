@@ -30,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class DependencyLibrary {
 	private static final List<Locator> locators = new CopyOnWriteArrayList<Locator>();
-	private static CacheProvider cacheProvider = new CacheProvider() {
+	private static volatile CacheProvider cacheProvider = new CacheProvider() {
 
 		public Cache<Key, Object> getCache() {
 			return new Lru3Cache<Key, Object>();
