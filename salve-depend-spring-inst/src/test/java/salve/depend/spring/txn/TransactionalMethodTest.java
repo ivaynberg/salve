@@ -66,13 +66,6 @@ public class TransactionalMethodTest extends Assert
 				method.invoke(mb, transactionManager);
 	}
 
-	@MethodIndicator
-	@Transactional
-	public void transactionalMethod()
-	{
-		assertTrue("check that transaction manager has been invoked", transactionManager.isInsideTransaction());
-	}
-
 	public static class TestTransactionManager implements TransactionManager
 	{
 		private boolean insideTransaction = false;
