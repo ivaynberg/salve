@@ -85,4 +85,11 @@ public class MethodBean {
 		throw new RuntimeException();
 	}
 
+	@Transactional
+	@MethodIndicator
+	public void testTransactionIsWorking(final TransactionalMethodTest.TestTransactionManager tx) {
+		if(!tx.isInsideTransaction())
+			throw new RuntimeException("not running inside a transaction");
+	}
+
 }
