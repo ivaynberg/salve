@@ -14,18 +14,20 @@
 package salve.depend.spring.txn;
 
 import junit.framework.Assert;
-
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import salve.Scope;
 import salve.depend.DependencyLibrary;
+import salve.depend.Key;
 import salve.depend.Locator;
 import salve.depend.cache.NoopCacheProvider;
 import salve.loader.BytecodePool;
 import salve.util.EasyMockTemplate;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class TransactionalInstrumentorTest extends Assert {
 	private static String METHODBEAN_NAME = "salve/depend/spring/txn/MethodBean";
@@ -36,10 +38,12 @@ public class TransactionalInstrumentorTest extends Assert {
 	private static Locator locator;
 	private static TransactionManager tm;
 
+	private static DummyTransactionManager transactionManager;
+
 	@Before
 	public void initMocks() {
+		initDependencyLibrary();
 		EasyMock.reset(tm, locator);
-
 	}
 
 	@Test
@@ -201,7 +205,6 @@ public class TransactionalInstrumentorTest extends Assert {
 	@BeforeClass
 	public static void initClass() throws Exception {
 		loadBeans();
-		initDependencyLibrary();
 	}
 
 	/**
@@ -214,6 +217,20 @@ public class TransactionalInstrumentorTest extends Assert {
 		locator = EasyMock.createMock(Locator.class);
 		DependencyLibrary.addLocator(locator);
 		DependencyLibrary.setCacheProvider(new NoopCacheProvider());
+
+		transactionManager = new DummyTransactionManager();
+
+		DependencyLibrary.addLocator(new Locator()
+		{
+			public Object locate(final Key key)
+			{
+				if (TransactionManager.class.equals(key.getType()))
+					return transactionManager;
+
+				return null;
+			}
+		});
+
 	}
 
 	/**
@@ -288,6 +305,22 @@ public class TransactionalInstrumentorTest extends Assert {
 		}.test();
 	}
 
+	@Test
+	public void testMethodByExplicitCall() throws IllegalAccessException, InstantiationException
+	{
+		((MethodBean) mbClass.newInstance()).testTransactionIsWorking(transactionManager);
+	}
+
+	@Test
+	public void testMethodByAnnotationLocation() throws IllegalAccessException, InstantiationException, InvocationTargetException
+	{
+		final MethodBean mb = (MethodBean) mbClass.newInstance();
+
+		for (Method method : mb.getClass().getMethods())
+			if (method.isAnnotationPresent(MethodIndicator.class))
+				method.invoke(mb, transactionManager);
+	}
+	
 	/**
 	 * Test that unexpected exception thrown from a method call inside a
 	 * transactional method causes the transactional method to rollback
