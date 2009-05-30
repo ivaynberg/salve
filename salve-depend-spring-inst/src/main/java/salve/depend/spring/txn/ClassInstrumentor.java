@@ -32,10 +32,27 @@ import salve.util.asm.GeneratorAdapter;
  * <p>
  * Instrumentor for classes and methods annotated with {@link Transactional}
  * </p>
+ * <p>
+ * Concepts/Terms:
+ * 
+ * Suppose:
+ * 
+ * <pre>
+ * public class MyClass {
+ *   [at]Tranactional public void foo() { bar(); baz(); }
+ * }
+ * </pre>
+ * 
+ * The method <code>foo</code> will be rewritten to contain tranasction handling logic and will be
+ * called the <strong>wrapper</strong> method. A new method will be generated with a unique name and
+ * will contain the inside (<code>bar(); baz();</code>)of the original <code>foo()</code> method,
+ * this method will be called the <strong>delegate</strong>. The wrapper will manage the transacton
+ * and call the delegate from within one.
  * 
  * <pre>
  * Instrumentation transformation:
  * -------------------------------
+ * FIXME code below is incorrect and outdated
  * 
  * public void method() {
  * 		Object info = AdviserUtil.begin(null, null);
@@ -51,261 +68,277 @@ import salve.util.asm.GeneratorAdapter;
  *  	AdviserUtil.finish(info);
  *  
  *  }
- *  
+ * 
  * </pre>
  * 
  * @author ivaynberg
  */
-class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
-	private String owner;
-	private final InstrumentorMonitor monitor;
-	private int nextAttribute = 0;
-	private final ClassAnalyzer analyzer;
+class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants
+{
+    private String owner;
+    private final InstrumentorMonitor monitor;
+    private int nextAttribute = 0;
+    private final ClassAnalyzer analyzer;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param cv
-	 *            class visitor
-	 * @param monitor
-	 *            instrumentor monitor
-	 */
-	public ClassInstrumentor(ClassAnalyzer analyzer, ClassVisitor cv,
-			InstrumentorMonitor monitor) {
-		super(new StaticInitMerger("_salvespringtxn_", cv));
-		this.monitor = monitor;
-		this.analyzer = analyzer;
-	}
+    /**
+     * Constructor
+     * 
+     * @param cv
+     *            class visitor
+     * @param monitor
+     *            instrumentor monitor
+     */
+    public ClassInstrumentor(ClassAnalyzer analyzer, ClassVisitor cv, InstrumentorMonitor monitor)
+    {
+        super(new StaticInitMerger("_salvespringtxn_", cv));
+        this.monitor = monitor;
+        this.analyzer = analyzer;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void visit(int version, int access, String name, String signature,
-			String superName, String[] interfaces) {
-		super.visit(version, access, name, signature, superName, interfaces);
-		owner = name;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void visit(int version, int access, String name, String signature, String superName,
+            String[] interfaces)
+    {
+        super.visit(version, access, name, signature, superName, interfaces);
+        owner = name;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public AnnotationVisitor visitAnnotation(final String desc,
-			final boolean visible) {
-		// rewrite @Transactional as @SpringTransactional
-		if (TRANSACTIONAL_DESC.equals(desc)) {
-			return cv.visitAnnotation(SPRINGTRANSACTIONAL_DESC, visible);
-		} else {
-			return cv.visitAnnotation(desc, visible);
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible)
+    {
+        // rewrite @Transactional as @SpringTransactional
+        if (TRANSACTIONAL_DESC.equals(desc))
+        {
+            return cv.visitAnnotation(SPRINGTRANSACTIONAL_DESC, visible);
+        }
+        else
+        {
+            return cv.visitAnnotation(desc, visible);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public MethodVisitor visitMethod(int access, String name, String desc,
-			String signature, String[] exceptions) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature,
+            String[] exceptions)
+    {
 
-		if (analyzer
-				.shouldInstrument(access, name, desc, signature, exceptions)) {
+        // check if need to instrument, and if not skip code modifications
+        if (!analyzer.shouldInstrument(access, name, desc, signature, exceptions))
+        {
+            return cv.visitMethod(access, name, desc, signature, exceptions);
+        }
 
-			monitor.methodModified(owner, access, name, desc);
+        monitor.methodModified(owner, access, name, desc);
 
-			final String delegateMethodName = "__salve_txn$" + name;
+        // this is the name of the method that will contain the original user code and will be
+        // called from the method that will manage the transaction
+        final String delegateMethodName = "__salve_txn$" + name;
 
-			// generate field to hold transactional attribute class for this
-			// method
-			final String attrName = generateTransactionalAttributeField(
-					delegateMethodName, desc);
+        // generate field to hold transactional attribute class for this method
+        final String attrName = generateTransactionalAttributeField(delegateMethodName, desc);
 
-			final String txnName = owner + name;
+        final String txnName = owner + name;
 
-			MethodVisitor mv = cv.visitMethod(access, name, desc, signature,
-					exceptions);
-			mv.visitCode();
+        // generate the code that will manage the transaction in the original method
+        // and call the delegate method from within a transaction
 
-			// //////////////////////////////////////////////////////////////////////////////////////////
+        MethodVisitor original = generateWrapperMethod(access, name, desc, signature, exceptions,
+                delegateMethodName, attrName, txnName);
 
-			GeneratorAdapter gen = new GeneratorAdapter(mv, access, name, desc);
+        // //////////////////////////////////////////////////////////////////////////////////////////
 
-			Label start = new Label();
-			Label end = new Label();
-			Label exception = new Label();
-			Label cleanupAndCommit = new Label();
-			Label cleanupAndThrow = new Label();
+        MethodVisitor mv = cv.visitMethod(access, delegateMethodName, desc, signature, exceptions);
+        return new DelegateMethodInstrumentor(mv, original);
+    }
 
-			gen
-					.visitTryCatchBlock(start, end, exception,
-							"java/lang/Throwable");
+    private MethodVisitor generateWrapperMethod(int access, String name, String desc,
+            String signature, String[] exceptions, final String delegateMethodName,
+            final String attrName, final String txnName)
+    {
+        MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
+        mv.visitCode();
 
-			gen.visitTryCatchBlock(start, cleanupAndThrow, cleanupAndThrow,
-					null);
+        // //////////////////////////////////////////////////////////////////////////////////////////
 
-			// TransactionManager mgr
-			int tm = gen.newLocal(Type
-					.getType("Lsalve/depend/spring/txn/TransactionManager;"));
+        GeneratorAdapter gen = new GeneratorAdapter(mv, access, name, desc);
 
-			// mgr=DependencyLibrary.locate(TransactionManagerKey.INSTANCE);
-			mv.visitFieldInsn(GETSTATIC,
-					"salve/depend/spring/txn/TransactionManager", "KEY",
-					"Lsalve/depend/Key;");
-			mv.visitMethodInsn(INVOKESTATIC, "salve/depend/DependencyLibrary",
-					"locate", "(Lsalve/depend/Key;)Ljava/lang/Object;");
-			mv.visitTypeInsn(CHECKCAST,
-					"salve/depend/spring/txn/TransactionManager");
-			mv.visitVarInsn(ASTORE, tm);
+        Label start = new Label();
+        Label end = new Label();
+        Label exception = new Label();
+        Label cleanupAndCommit = new Label();
+        Label cleanupAndThrow = new Label();
 
-			// Object status;
-			int status = gen.newLocal(Type.getType("Ljava/lang/Object;"));
+        gen.visitTryCatchBlock(start, end, exception, "java/lang/Throwable");
 
-			// status=tm.begin(attr,name);
-			mv.visitVarInsn(ALOAD, tm);
-			mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
-			mv.visitLdcInsn(txnName);
-			mv
-					.visitMethodInsn(
-							INVOKEINTERFACE,
-							"salve/depend/spring/txn/TransactionManager",
-							"start",
-							"(Lsalve/depend/spring/txn/TransactionAttribute;Ljava/lang/String;)Ljava/lang/Object;");
-			mv.visitVarInsn(ASTORE, status);
+        gen.visitTryCatchBlock(start, cleanupAndThrow, cleanupAndThrow, null);
 
-			mv.visitLabel(start);
+        // TransactionManager mgr
+        int tm = gen.newLocal(Type.getType("Lsalve/depend/spring/txn/TransactionManager;"));
 
-			// call delegate
-			gen.loadThis();
-			gen.loadArgs();
-			gen.visitMethodInsn(INVOKESPECIAL, owner, delegateMethodName, desc);
+        // mgr=DependencyLibrary.locate(TransactionManagerKey.INSTANCE);
+        mv.visitFieldInsn(GETSTATIC, "salve/depend/spring/txn/TransactionManager", "KEY",
+                "Lsalve/depend/Key;");
+        mv.visitMethodInsn(INVOKESTATIC, "salve/depend/DependencyLibrary", "locate",
+                "(Lsalve/depend/Key;)Ljava/lang/Object;");
+        mv.visitTypeInsn(CHECKCAST, "salve/depend/spring/txn/TransactionManager");
+        mv.visitVarInsn(ASTORE, tm);
 
-			gen.visitLabel(end);
-			gen.visitJumpInsn(GOTO, cleanupAndCommit);
+        // Object status;
+        int status = gen.newLocal(Type.getType("Ljava/lang/Object;"));
 
-			gen.visitLabel(exception);
+        // status=tm.begin(attr,name);
+        mv.visitVarInsn(ALOAD, tm);
+        mv.visitFieldInsn(GETSTATIC, owner, attrName, TXNATTR_DESC);
+        mv.visitLdcInsn(txnName);
+        mv
+                .visitMethodInsn(INVOKEINTERFACE, "salve/depend/spring/txn/TransactionManager",
+                        "start",
+                        "(Lsalve/depend/spring/txn/TransactionAttribute;Ljava/lang/String;)Ljava/lang/Object;");
+        mv.visitVarInsn(ASTORE, status);
 
-			// mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out",
-			// "Ljava/io/PrintStream;");
-			// mv.visitLdcInsn(">>>EXCEPTION LABEL");
-			// mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream",
-			// "println", "(Ljava/lang/String;)V");
+        mv.visitLabel(start);
 
-			// stack: {ex}, we need {ex,tm,ex}
-			gen.dup(); // {ex,ex}
-			mv.visitVarInsn(ALOAD, tm); // {ex,ex,tm}
-			gen.swap(); // {ex,tm,ex}
+        // call delegate
+        gen.loadThis();
+        gen.loadArgs();
+        gen.visitMethodInsn(INVOKESPECIAL, owner, delegateMethodName, desc);
 
-			// tm.finish(ex, status);
-			gen.loadLocal(status);
-			mv.visitMethodInsn(INVOKEINTERFACE,
-					"salve/depend/spring/txn/TransactionManager", "finish",
-					"(Ljava/lang/Throwable;Ljava/lang/Object;)V");
+        gen.visitLabel(end);
+        gen.visitJumpInsn(GOTO, cleanupAndCommit);
 
-			// throw e;
-			gen.visitInsn(ATHROW);
+        gen.visitLabel(exception);
 
-			gen.visitLabel(cleanupAndThrow);
+        // mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out",
+        // "Ljava/io/PrintStream;");
+        // mv.visitLdcInsn(">>>EXCEPTION LABEL");
+        // mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream",
+        // "println", "(Ljava/lang/String;)V");
 
-			// tm.cleanup(status);
-			gen.loadLocal(tm);
-			gen.loadLocal(status);
-			mv.visitMethodInsn(INVOKEINTERFACE,
-					"salve/depend/spring/txn/TransactionManager", "cleanup",
-					"(Ljava/lang/Object;)V");
+        // stack: {ex}, we need {ex,tm,ex}
+        gen.dup(); // {ex,ex}
+        mv.visitVarInsn(ALOAD, tm); // {ex,ex,tm}
+        gen.swap(); // {ex,tm,ex}
 
-			gen.visitInsn(ATHROW);
+        // tm.finish(ex, status);
+        gen.loadLocal(status);
+        mv.visitMethodInsn(INVOKEINTERFACE, "salve/depend/spring/txn/TransactionManager", "finish",
+                "(Ljava/lang/Throwable;Ljava/lang/Object;)V");
 
-			gen.visitLabel(cleanupAndCommit);
+        // throw e;
+        gen.visitInsn(ATHROW);
 
-			gen.loadLocal(tm);
-			gen.loadLocal(status);
-			mv.visitMethodInsn(INVOKEINTERFACE,
-					"salve/depend/spring/txn/TransactionManager", "cleanup",
-					"(Ljava/lang/Object;)V");
+        gen.visitLabel(cleanupAndThrow);
 
-			gen.loadLocal(tm);
-			gen.loadLocal(status);
-			mv.visitMethodInsn(INVOKEINTERFACE,
-					"salve/depend/spring/txn/TransactionManager", "finish",
-					"(Ljava/lang/Object;)V");
+        // tm.cleanup(status);
+        gen.loadLocal(tm);
+        gen.loadLocal(status);
+        mv.visitMethodInsn(INVOKEINTERFACE, "salve/depend/spring/txn/TransactionManager",
+                "cleanup", "(Ljava/lang/Object;)V");
 
-			gen.returnValue();
+        gen.visitInsn(ATHROW);
 
-			gen.endMethod();
+        gen.visitLabel(cleanupAndCommit);
 
-			// //////////////////////////////////////////////////////////////////////////////////////////
+        gen.loadLocal(tm);
+        gen.loadLocal(status);
+        mv.visitMethodInsn(INVOKEINTERFACE, "salve/depend/spring/txn/TransactionManager",
+                "cleanup", "(Ljava/lang/Object;)V");
 
-			mv = cv.visitMethod(access, delegateMethodName, desc, signature,
-					exceptions);
+        gen.loadLocal(tm);
+        gen.loadLocal(status);
+        mv.visitMethodInsn(INVOKEINTERFACE, "salve/depend/spring/txn/TransactionManager", "finish",
+                "(Ljava/lang/Object;)V");
 
-			return new MethodInstrumentor(mv);
-		} else {
-			return cv.visitMethod(access, name, desc, signature, exceptions);
-		}
-	}
+        gen.returnValue();
 
-	/**
-	 * Method instrumentor
-	 * 
-	 * @author ivaynberg
-	 */
-	public class MethodInstrumentor extends MethodAdapter implements Opcodes,
-			Constants {
+        gen.endMethod();
 
-		public MethodInstrumentor(MethodVisitor mv) {
-			super(mv);
-		}
+        return mv;
+    }
 
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-			// rewrite @Transactional as @SpringTransactional
-			if (TRANSACTIONAL_DESC.equals(desc)) {
-				return mv.visitAnnotation(SPRINGTRANSACTIONAL_DESC, visible);
-			} else {
-				return mv.visitAnnotation(desc, visible);
-			}
-		}
+    /**
+     * Delegate method instrumentor.
+     * 
+     * @author ivaynberg
+     */
+    public class DelegateMethodInstrumentor extends MethodAdapter implements Opcodes, Constants
+    {
+        /**
+         * wraper method that now houses tranasction handling and calls the delegate with user code
+         */
+        private final MethodVisitor wrapper;
 
-	}
+        public DelegateMethodInstrumentor(MethodVisitor mv, MethodVisitor wrapper)
+        {
+            super(mv);
+            this.wrapper = wrapper;
+        }
 
-	private String generateTransactionalAttributeField(String methodName,
-			String methodDesc) {
-		String attrName = "_salvestxn$attr" + nextAttribute++;
-		cv.visitField(ACC_PRIVATE + ACC_STATIC + ACC_FINAL, attrName,
-				TXNATTR_DESC, null, null);
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public AnnotationVisitor visitAnnotation(String desc, boolean visible)
+        {
+            /*
+             * @transactional gets rewritten as @springtransactional to the delegate method, all
+             * other annotation get rerouted to the outer wrapper method
+             */
 
-		GeneratorAdapter clinit = new GeneratorAdapter(cv.visitMethod(
-				ACC_STATIC, "<clinit>", "()V", null, null), ACC_STATIC,
-				"<clinit>", "()V");
-		clinit.visitCode();
-		clinit.visitTypeInsn(NEW, TXNATTR_NAME);
-		clinit.visitInsn(DUP);
-		clinit.visitLdcInsn(Type.getObjectType(owner));
-		clinit.visitLdcInsn(methodName);
+            if (TRANSACTIONAL_DESC.equals(desc))
+            {
+                return mv.visitAnnotation(SPRINGTRANSACTIONAL_DESC, visible);
+            }
+            else
+            {
+                return wrapper.visitAnnotation(desc, visible);
+            }
+        }
 
-		// create array of method argument types
-		Type[] types = Type.getArgumentTypes(methodDesc);
-		clinit.push(types.length);
-		clinit.visitTypeInsn(ANEWARRAY, "java/lang/Class");
+    }
 
-		for (int i = 0; i < types.length; i++) {
-			final Type type = types[i];
-			clinit.visitInsn(DUP);
-			clinit.push(i);
-			clinit.push(type);
-			clinit.visitInsn(AASTORE);
-		}
-		clinit.visitMethodInsn(INVOKESPECIAL, TXNATTR_NAME, "<init>",
-				TXNATTR_INIT_DESC);
-		clinit.visitFieldInsn(PUTSTATIC, owner, attrName, TXNATTR_DESC);
-		clinit.visitInsn(RETURN);
-		clinit.visitMaxs(0, 0);
-		clinit.visitEnd();
+    private String generateTransactionalAttributeField(String methodName, String methodDesc)
+    {
+        String attrName = "_salvestxn$attr" + nextAttribute++;
+        cv.visitField(ACC_PRIVATE + ACC_STATIC + ACC_FINAL, attrName, TXNATTR_DESC, null, null);
 
-		return attrName;
-	}
+        GeneratorAdapter clinit = new GeneratorAdapter(cv.visitMethod(ACC_STATIC, "<clinit>",
+                "()V", null, null), ACC_STATIC, "<clinit>", "()V");
+        clinit.visitCode();
+        clinit.visitTypeInsn(NEW, TXNATTR_NAME);
+        clinit.visitInsn(DUP);
+        clinit.visitLdcInsn(Type.getObjectType(owner));
+        clinit.visitLdcInsn(methodName);
+
+        // create array of method argument types
+        Type[] types = Type.getArgumentTypes(methodDesc);
+        clinit.push(types.length);
+        clinit.visitTypeInsn(ANEWARRAY, "java/lang/Class");
+
+        for (int i = 0; i < types.length; i++)
+        {
+            final Type type = types[i];
+            clinit.visitInsn(DUP);
+            clinit.push(i);
+            clinit.push(type);
+            clinit.visitInsn(AASTORE);
+        }
+        clinit.visitMethodInsn(INVOKESPECIAL, TXNATTR_NAME, "<init>", TXNATTR_INIT_DESC);
+        clinit.visitFieldInsn(PUTSTATIC, owner, attrName, TXNATTR_DESC);
+        clinit.visitInsn(RETURN);
+        clinit.visitMaxs(0, 0);
+        clinit.visitEnd();
+
+        return attrName;
+    }
 
 }
