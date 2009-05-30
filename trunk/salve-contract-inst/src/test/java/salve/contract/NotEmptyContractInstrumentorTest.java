@@ -35,7 +35,7 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 
 		/**
 		 * Issue 2 test: NotEmpty does not work on a String method param right
-		 * bfore a var-args param
+		 * before a var-args param
 		 */
 		public void testParamBeforeVarArgs(String param1, @NotEmpty String param2, String... params) {
 		}
