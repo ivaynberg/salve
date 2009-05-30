@@ -21,6 +21,39 @@ import org.junit.Test;
 import salve.InstrumentationException;
 
 public class NotEmptyContractInstrumentorTest extends AbstractContractInstrumentorTestSupport {
+	public static class Bean {
+		public static final String NULL = new String("!!!not-empty!!!");
+
+		public Object test(Object arg1) {
+			return arg1;
+		}
+
+		@NotEmpty
+		public String test(Object arg1, @NotEmpty String arg2, Object arg3) {
+			return NULL.equals(arg2) ? null : arg2;
+		}
+
+		/**
+		 * Issue 2 test: NotEmpty does not work on a String method param right
+		 * bfore a var-args param
+		 */
+		public void testParamBeforeVarArgs(String param1, @NotEmpty String param2, String... params) {
+		}
+
+	}
+
+	public static class NonStringParameterBean {
+		public void testEmptyNull(@NotEmpty int a) {
+
+		}
+	}
+
+	public static class VoidReturnBean {
+		@NotEmpty
+		public void test() {
+		}
+	}
+
 	@Test
 	public void testArgumentTypeErrorChecking() throws Exception {
 		try {
@@ -46,7 +79,6 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 			fail("Expected " + IllegalArgumentException.class.getName());
 		} catch (IllegalArgumentException e) {
 			// expected
-			// System.out.println(e.getMessage());
 		}
 
 		try {
@@ -54,7 +86,6 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 			fail("Expected " + IllegalArgumentException.class.getName());
 		} catch (IllegalArgumentException e) {
 			// expected
-			// System.out.println(e.getMessage());
 		}
 
 		try {
@@ -64,6 +95,16 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 			// expected
 			// System.out.println(e.getMessage());
 		}
+
+		// test signatures with varargs
+
+		try {
+			bean.testParamBeforeVarArgs(null, "  ", "vararg0", "vararg1");
+			fail("Expected " + IllegalArgumentException.class.getName());
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+		bean.testParamBeforeVarArgs(null, "not empty", "vararg0", "vararg1");
 
 	}
 
@@ -79,31 +120,6 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 			}
 		}
 
-	}
-
-	public static class Bean {
-		public static final String NULL = new String("!!!not-empty!!!");
-
-		public Object test(Object arg1) {
-			return arg1;
-		}
-
-		@NotEmpty
-		public String test(Object arg1, @NotEmpty String arg2, Object arg3) {
-			return NULL.equals(arg2) ? null : arg2;
-		}
-	}
-
-	public static class NonStringParameterBean {
-		public void testEmptyNull(@NotEmpty int a) {
-
-		}
-	}
-
-	public static class VoidReturnBean {
-		@NotEmpty
-		public void test() {
-		}
 	}
 
 }
