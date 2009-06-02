@@ -46,7 +46,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 
 	/**
 	 * Maven project we are building
-	 * 
+	 *
 	 * @parameter expression="${project}"
 	 * @required
 	 * @readonly
@@ -92,12 +92,11 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 		loadConfig(classesDir);
 
 		if(instrumentTestClasses) {
-			// instrument test classes
+			// instrument test classes (if any exist)
 			final File testClassesDir = new File(project.getBuild().getTestOutputDirectory());
-			if (!testClassesDir.exists()) {
-				throw new IllegalStateException("target/test-classes directory does not exist");
+			if(testClassesDir.exists()) {
+				instrumentClassFileDirectory(testClassesDir);
 			}
-			instrumentClassFileDirectory(testClassesDir);
 		} else {
 			// instrument production classes
 			instrumentClassFileDirectory(classesDir);
@@ -121,7 +120,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 
 	/**
 	 * Instruments the specified class file
-	 * 
+	 *
 	 * @param className name of the java class
 	 * @param file file to instrument
 	 */
@@ -142,9 +141,12 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 				InstrumentationContext ctx = new InstrumentationContext(loader, monitor, config.getScope(inst));
 
 				byte[] bytecode = inst.instrument(binClassName, ctx);
-				FileOutputStream fos = new FileOutputStream(file);
-				fos.write(bytecode);
-				fos.close();
+				final FileOutputStream fos = new FileOutputStream(file);
+				try { 
+					fos.write(bytecode);
+				}	finally {
+					fos.close();
+				}
 			}
 			if (monitor.isModified()) {
 				if(verbose)
