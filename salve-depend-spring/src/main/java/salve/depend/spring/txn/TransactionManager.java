@@ -14,20 +14,4 @@ public interface TransactionManager {
 
 	void cleanup(Object txn);
 
-  public static final Key KEY = new Key() {
-
-    private final Annotation[] NO_ANNOTATIONS = new Annotation[0];
-
-		public Annotation[] getAnnotations() {
-			return NO_ANNOTATIONS;
-		}
-
-		public Class<?> getType() {
-			return TransactionManager.class;
-		}
-
-		public Type getGenericType() {
-			return getType();
-		}
-	};
 }

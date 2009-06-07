@@ -21,10 +21,16 @@ package salve.depend.spring.txn;
  * 
  * @author ivaynberg
  */
-interface Constants {
-	static final String TRANSACTIONAL_DESC = "Lorg/springframework/transaction/annotation/Transactional;";
-	static final String SPRINGTRANSACTIONAL_DESC = "Lsalve/depend/spring/txn/SpringTransactional;";
-	static final String TXNATTR_NAME = "salve/depend/spring/txn/TransactionAttribute";
-	static final String TXNATTR_DESC = "Lsalve/depend/spring/txn/TransactionAttribute;";
-	static final String TXNATTR_INIT_DESC = "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;)V";
+interface Constants
+{
+    static final String TRANSACTIONAL_DESC = "Lorg/springframework/transaction/annotation/Transactional;";
+    static final String SPRINGTRANSACTIONAL_DESC = "Lsalve/depend/spring/txn/SpringTransactional;";
+    
+    static final String TXNATTR_NAME = "salve/depend/spring/txn/TransactionAttribute";
+    static final String TXNATTR_DESC = "Lsalve/depend/spring/txn/TransactionAttribute;";
+    static final String TXNATTR_INIT_DESC = "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;)V";
+    
+    static final String TXNKEY_INIT_DESC = "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;)V";
+    static final String TXNKEY_NAME = "salve/depend/spring/txn/TransactionalKey";
+    static final String TXNKEY_DESC = "Lsalve/depend/spring/txn/TransactionalKey;";
 }

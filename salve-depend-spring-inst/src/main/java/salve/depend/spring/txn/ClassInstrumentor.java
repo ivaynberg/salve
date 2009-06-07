@@ -144,6 +144,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants
         final String delegateMethodName = "__salve_txn$" + name;
 
         // generate field to hold transactional attribute class for this method
+        final String keyName = generateTransactionalMethodKeyField(name, desc);
         final String attrName = generateTransactionalAttributeField(delegateMethodName, desc);
 
         final String txnName = owner + name;
@@ -152,7 +153,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants
         // and call the delegate method from within a transaction
 
         MethodVisitor original = generateWrapperMethod(access, name, desc, signature, exceptions,
-                delegateMethodName, attrName, txnName);
+                delegateMethodName, attrName, keyName, txnName);
 
         // //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -162,7 +163,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants
 
     private MethodVisitor generateWrapperMethod(int access, String name, String desc,
             String signature, String[] exceptions, final String delegateMethodName,
-            final String attrName, final String txnName)
+            final String attrName, final String keyName, final String txnName)
     {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
         mv.visitCode();
@@ -185,8 +186,9 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants
         int tm = gen.newLocal(Type.getType("Lsalve/depend/spring/txn/TransactionManager;"));
 
         // mgr=DependencyLibrary.locate(TransactionManagerKey.INSTANCE);
-        mv.visitFieldInsn(GETSTATIC, "salve/depend/spring/txn/TransactionManager", "KEY",
-                "Lsalve/depend/Key;");
+
+
+        mv.visitFieldInsn(GETSTATIC, owner, keyName, TXNKEY_DESC);
         mv.visitMethodInsn(INVOKESTATIC, "salve/depend/DependencyLibrary", "locate",
                 "(Lsalve/depend/Key;)Ljava/lang/Object;");
         mv.visitTypeInsn(CHECKCAST, "salve/depend/spring/txn/TransactionManager");
@@ -291,7 +293,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants
         {
             /*
              * @transactional gets rewritten as @springtransactional to the delegate method, all
-             * other annotation get rerouted to the outer wrapper method
+             * other annotation are left on the outer method
              */
 
             if (TRANSACTIONAL_DESC.equals(desc))
@@ -334,6 +336,42 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants
         }
         clinit.visitMethodInsn(INVOKESPECIAL, TXNATTR_NAME, "<init>", TXNATTR_INIT_DESC);
         clinit.visitFieldInsn(PUTSTATIC, owner, attrName, TXNATTR_DESC);
+        clinit.visitInsn(RETURN);
+        clinit.visitMaxs(0, 0);
+        clinit.visitEnd();
+
+        return attrName;
+    }
+
+
+    private String generateTransactionalMethodKeyField(String methodName, String methodDesc)
+    {
+        String attrName = "_salvestxn$attr" + nextAttribute++;
+        cv.visitField(ACC_PRIVATE + ACC_STATIC + ACC_FINAL, attrName, TXNKEY_DESC, null, null);
+
+        GeneratorAdapter clinit = new GeneratorAdapter(cv.visitMethod(ACC_STATIC, "<clinit>",
+                "()V", null, null), ACC_STATIC, "<clinit>", "()V");
+        clinit.visitCode();
+        clinit.visitTypeInsn(NEW, TXNKEY_NAME);
+        clinit.visitInsn(DUP);
+        clinit.visitLdcInsn(Type.getObjectType(owner));
+        clinit.visitLdcInsn(methodName);
+
+        // create array of method argument types
+        Type[] types = Type.getArgumentTypes(methodDesc);
+        clinit.push(types.length);
+        clinit.visitTypeInsn(ANEWARRAY, "java/lang/Class");
+
+        for (int i = 0; i < types.length; i++)
+        {
+            final Type type = types[i];
+            clinit.visitInsn(DUP);
+            clinit.push(i);
+            clinit.push(type);
+            clinit.visitInsn(AASTORE);
+        }
+        clinit.visitMethodInsn(INVOKESPECIAL, TXNKEY_NAME, "<init>", TXNKEY_INIT_DESC);
+        clinit.visitFieldInsn(PUTSTATIC, owner, attrName, TXNKEY_DESC);
         clinit.visitInsn(RETURN);
         clinit.visitMaxs(0, 0);
         clinit.visitEnd();
