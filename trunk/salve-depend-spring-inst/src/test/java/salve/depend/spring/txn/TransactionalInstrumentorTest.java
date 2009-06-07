@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import junit.framework.Assert;
 
 import org.easymock.EasyMock;
+import org.easymock.IArgumentMatcher;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -279,7 +280,6 @@ public class TransactionalInstrumentorTest extends Assert
         ClassLoader loader = TransactionalInstrumentorTest.class.getClassLoader();
         BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(loader);
         TransactionalInstrumentor inst = new TransactionalInstrumentor();
-
         mbClass = pool.instrumentIntoClass(METHODBEAN_NAME, inst);
         cbClass = pool.instrumentIntoClass(CLASSBEAN_NAME, inst);
     }
@@ -408,6 +408,37 @@ public class TransactionalInstrumentorTest extends Assert
         }.test();
     }
 
+    @Test
+    public void testExtraAnnotationsPropagation() throws Exception
+    {
+        DependencyLibrary.clear();
+        DependencyLibrary.addLocator(new Locator()
+        {
+            public Object locate(Key key)
+            {
+                if (TransactionManager.class.isAssignableFrom(key.getType()))
+                {
+                    boolean bluePresent = false;
+                    for (java.lang.annotation.Annotation annot : key.getAnnotations())
+                    {
+                        if (annot.annotationType().getName().equals(Blue.class.getName()))
+                        {
+                            bluePresent = true;
+                        }
+                    }
+                    assertTrue("Key should contain Blue annotation", bluePresent);
+                    return new DummyTransactionManager();
+                }
+                else
+                {
+                    throw new IllegalStateException("Unknown dependency requested: " + key);
+                }
+            }
+
+        });
+        ((MethodBean)mbClass.newInstance()).simple();
+    }
+
     /**
      * Easy mock template that sets up expections for a single failed runthrough of a transactional
      * method
@@ -486,8 +517,32 @@ public class TransactionalInstrumentorTest extends Assert
 
         protected void setupExpectations(Object status)
         {
-            // locate transaction manager
-            EasyMock.expect(locator.locate(TransactionManager.KEY)).andReturn(tm);
+            // set up an arg matcher that will match any Key as long as it is asking for
+            // TransactionManager
+            EasyMock.reportMatcher(new IArgumentMatcher()
+            {
+
+                public void appendTo(StringBuffer arg0)
+                {
+                    arg0.append("Expected a key for class: " + TransactionManager.class.getName());
+                }
+
+                public boolean matches(Object arg0)
+                {
+                    if (arg0 instanceof Key)
+                    {
+                        if (TransactionManager.class.isAssignableFrom(((Key)arg0).getType()))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+
+                }
+
+            });
+            // set up locator expectation
+            EasyMock.expect(locator.locate(null)).andReturn(tm);
         }
 
     }

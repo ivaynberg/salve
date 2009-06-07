@@ -15,81 +15,96 @@ package salve.depend.spring.txn;
 
 import org.springframework.transaction.annotation.Transactional;
 
-public class MethodBean {
-	public static final long CLINIT_FORCER = System.currentTimeMillis();
+public class MethodBean
+{
+    public static final long CLINIT_FORCER = System.currentTimeMillis();
 
-	public MethodBean() {
+    public MethodBean()
+    {
 
-	}
+    }
 
-	@Transactional
-	public void args1(int a) {
+    @Transactional
+    public void args1(int a)
+    {
 
-	}
+    }
 
-	@Transactional
-	public Object args2(int mode, Object[] a, double[] b) {
-		switch (mode) {
-		case 1:
-			return a;
-		case 2:
-			return b;
-		default:
-			return null;
-		}
-	}
+    @Transactional
+    public Object args2(int mode, Object[] a, double[] b)
+    {
+        switch (mode)
+        {
+            case 1 :
+                return a;
+            case 2 :
+                return b;
+            default :
+                return null;
+        }
+    }
 
-	@Transactional
-	public Object exception(int mode, Object p) {
-		switch (mode) {
-		case 1:
-			throw new ArrayIndexOutOfBoundsException();
-		case 2:
-			throw new IllegalStateException();
-		default:
-			return p;
-		}
-	}
+    @Transactional
+    public Object exception(int mode, Object p)
+    {
+        switch (mode)
+        {
+            case 1 :
+                throw new ArrayIndexOutOfBoundsException();
+            case 2 :
+                throw new IllegalStateException();
+            default :
+                return p;
+        }
+    }
 
-	@Transactional
-	public Object ret(Object p) {
-		return p;
-	}
+    @Transactional
+    public Object ret(Object p)
+    {
+        return p;
+    }
 
-	@Transactional
-	public void simple() {
+    @Transactional
+    @Blue
+    public void simple()
+    {
 
-	}
+    }
 
-	@Transactional(rollbackFor = RollbackException.class)
-	public void exceptionOk() throws RollbackException, NoRollbackException {
-	}
+    @Transactional(rollbackFor = RollbackException.class)
+    public void exceptionOk() throws RollbackException, NoRollbackException
+    {
+    }
 
-	@Transactional(rollbackFor = RollbackException.class)
-	public void exceptionOkWithException() throws RollbackException,
-			NoRollbackException {
-		throw new NoRollbackException();
-	}
+    @Transactional(rollbackFor = RollbackException.class)
+    public void exceptionOkWithException() throws RollbackException, NoRollbackException
+    {
+        throw new NoRollbackException();
+    }
 
-	@Transactional(rollbackFor = RollbackException.class)
-	public void exception() throws RollbackException, NoRollbackException {
-		throw new RollbackException();
-	}
+    @Transactional(rollbackFor = RollbackException.class)
+    public void exception() throws RollbackException, NoRollbackException
+    {
+        throw new RollbackException();
+    }
 
-	@Transactional
-	public void exceptionFromWithin() {
-		throwRte();
-	}
+    @Transactional
+    public void exceptionFromWithin()
+    {
+        throwRte();
+    }
 
-	private void throwRte() {
-		throw new RuntimeException();
-	}
+    private void throwRte()
+    {
+        throw new RuntimeException();
+    }
 
-	@Transactional
-	@MethodIndicator
-	public void testTransactionIsWorking(final DummyTransactionManager tx) {
-		if(!tx.isInsideTransaction())
-			throw new RuntimeException("not running inside a transaction");
-	}
+    @Transactional
+    @MethodIndicator
+    public void testTransactionIsWorking(final DummyTransactionManager tx)
+    {
+        if (!tx.isInsideTransaction())
+            throw new RuntimeException("not running inside a transaction");
+    }
 
 }
