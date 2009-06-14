@@ -1,7 +1,6 @@
-===Background===
-WhySalve
-ComparisonWithSpringsConfigurable  	 
-
-===Configuration===
-ConfiguringDependencyLibrary 
-ConfiguringInstrumentation 
+  * Background
+    * [WhySalve Why Salve exists]
+    * [ComparisonWithSpringsConfigurable]
+  * Configuration
+    * [ConfiguringDependencyLibrary Configuring DependencyLibrary]
+    * [ConfiguringInstrumentation Configuring Instrumentation]
