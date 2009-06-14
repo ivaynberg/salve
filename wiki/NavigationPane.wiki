@@ -1,4 +1,3 @@
-# Navigation pane
 WhySalve
 Configuration
   * ConfiguringDependencyLibrary 
