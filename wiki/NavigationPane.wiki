@@ -4,3 +4,6 @@
   * Configuration
     * [ConfiguringDependencyLibrary Dependency lookups]
     * [ConfiguringInstrumentation Instrumentation]
+  * Integrations
+    * [ConfiguringInstrumentation Spring's @Transactional]
+    * [AnnotatedTransactionManager @Transactional without Spring]
