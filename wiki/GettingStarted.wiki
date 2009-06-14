@@ -1,3 +1,4 @@
+#labels Featured
 Getting started with Salve is simple:
 
 === Step 1: Integrate DependencyLibrary with your IOC container ===
@@ -18,5 +19,3 @@ public class Account {
   }
 }
 }}}
-
-
