@@ -2,7 +2,7 @@
 	<parent>
 		<artifactId>salve</artifactId>
 		<groupId>salve</groupId>
-		<version>1.1-SNAPSHOT</version>
+		<version>1.1</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>salve</groupId>
@@ -19,19 +19,19 @@
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-depend-spring</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>1.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-test</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>1.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-inst</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>1.1</version>
 		</dependency>
 	</dependencies>
 
