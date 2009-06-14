@@ -11,7 +11,7 @@ For example:
 class MyArray {
   /** delete object located somewhere between two indices */
   public void deleteBetween(Object obj, int start, int end) {
-    if (o==null) {
+    if (obj==null) {
       throw new IllegalArgumentException("Argument obj cannot be null");
     }
     if (start<0) {
@@ -64,15 +64,18 @@ As you can see, we were able to remove some noise from the code.
 Salve provides two contract modules `salve-contract` and `salve-contract-inst`. The former contains runtime dependencies like the annotations, and the latter bytecode instrumentors. If you are using maven2 your dependencies will look like this:
 
 {{{
+<properties>
+  <salve.version>1.1</salve.version>
+</propertes>
 <dependency>
   <groupId>salve</groupId>
   <artifactId>salve-contract</artifactId>
-  <version>0.6-SNAPSHOT</version>
+  <version>${salve.version}</version>
 </dependency>
 <dependency>
   <groupId>salve</groupId>
   <artifactId>salve-contract-inst</artifactId>
-  <version>0.6-SNAPSHOT</version>
+  <version>${salve.version}</version>
   <scope>provided</scope>
 </dependency>
 }}}
