@@ -1,21 +1,29 @@
-#summary Using the @Transactional attribute for declarative transactions
-
 = Introduction =
 
-Use salve for @Transactional support instead of spring-aop / AspectJ
+One of the best features of Spring introduced in 2.0 is the @Transactional annotation which allows an easy declarative control of annotations. Unfortunately it only works on beans managed by Spring inside its context. Salve's transactional instrumentor allows this great feature to be used on any pojo instrumented by Salve independent on whether or not it is declared in the Spring's context.
 
-= Details =
+= Setup =
 
-Salve provides bytecode instrumentiation of methods with the @Transactional attribute. It's similar to using spring-aop but doesn't require runtime weaving or compliation with AspectJ (is this explained right?). Instead the bytecode is modified to include transaction calls (begin / rollback / commit).
+The short version:
 
 {{{
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+<beans>
 
   <!-- connect salve transactions to spring -->
   <bean class="salve.depend.spring.txn.SpringTransactionManager"/>
+
+  <!-- enable spring's handling of @Transactional to setup the plumbing we will need - this will not interfere with Salve because it removes @Transactional annotation during instrumentation -->
+  <tx:annotation-driven>
+
+  <!-- define your required 'transactionManager' here as usual -->
+</beans>
+
+The long version without tx:annotation-driven
+<beans>
+  <!-- connect salve transactions to spring -->
+  <bean class="salve.depend.spring.txn.SpringTransactionManager"/>
+
+  <!-- set up the plumbing that tx:annotation-driven would set up for us -->
 
   <!-- configure transaction attributes on annotation @Transactional -->
   <bean id="txAttributeSource" class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource"/>
@@ -31,7 +39,7 @@ Salve provides bytecode instrumentiation of methods with the @Transactional attr
     <property name="transactionInterceptor" ref="txInterceptor"/>
   </bean>
 
-<!-- define your required 'transactionManager' here -->
+  <!-- define your required 'transactionManager' here as usual -->
 
 </beans>
 }}}
