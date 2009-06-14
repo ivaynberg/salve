@@ -5,5 +5,10 @@
       <prefix>salve2</prefix>
       <artifactId>salve-maven2</artifactId>
     </plugin>
+    <plugin>
+      <name>Salve Maven2 Plugin</name>
+      <prefix>salve</prefix>
+      <artifactId>maven-salve-plugin</artifactId>
+    </plugin>
   </plugins>
 </metadata>
