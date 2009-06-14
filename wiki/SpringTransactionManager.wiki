@@ -4,7 +4,7 @@ One of the best features of Spring introduced in 2.0 is the @Transactional annot
 
 = Setup =
 
-The short version:
+== Short Verson ==
 
 {{{
 <beans>
@@ -17,8 +17,12 @@ The short version:
 
   <!-- define your required 'transactionManager' here as usual -->
 </beans>
+}}}
 
-The long version without tx:annotation-driven
+== Long Version ==
+(without using tx:annotation-driven tag)
+
+{{{
 <beans>
   <!-- connect salve transactions to spring -->
   <bean class="salve.depend.spring.txn.SpringTransactionManager"/>
