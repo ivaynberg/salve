@@ -1,0 +1,21 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin>
+	<id>salve-idea</id>
+	<name>Salve Integration</name>
+	<!--<resource-bundle>salve.idea.Messages</resource-bundle>-->
+	<version>1.0.3</version>
+	<vendor email="peter@moreinput.de" url="http://salve.googlecode.com">Peter Ertl</vendor>
+	<idea-version since-build="8940"/>
+	<project-components>
+		<component>
+			<interface-class>salve.idea.SalveComponent</interface-class>
+			<implementation-class>salve.idea.SalveComponentImpl</implementation-class>
+		</component>
+	</project-components>
+	<description>
+		Idea integration for Salve: It will instrument the .class-files during regular compilation with salve lookups.
+	</description>
+	<change-notes>
+		trigger rebuild of project when expected .class files in output directory are missing
+	</change-notes>
+</idea-plugin>
