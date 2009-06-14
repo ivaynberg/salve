@@ -40,6 +40,37 @@ Best option when the project is using maven2 for builds and no java command line
 Add the following lines to pom.xml
 
 {{{
+<!-- fragment to demonstrate invocation of the maven plugin -->
+
+<build>
+  <plugins>
+    <plugin>
+      <groupId>salve</groupId>
+      <artifactId>maven-salve-plugin</artifactId>
+      <!--<configuration>-->
+        <!-- print the instrumented classes on the console -->
+        <!--<verbose>true</verbose>-->
+        <!-- implies verbose=true and additionallys show which files are scanned for instrumentation -->
+        <!--<debug>true</debug>-->
+      <!--</configuration>-->
+      <executions>
+        <execution>
+          <goals>
+            <!-- instrument production classes in target/classes -->
+            <goal>instrument</goal>
+            <!-- instrument test classes in target/test-classes -->
+            <goal>instrument-test</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+}}}
+
+In legacy versions before 1.1 the configuration was slightly different:
+
+{{{
 <dependencies>
   <dependency>
     <!-- salve dependency injection -->
@@ -75,40 +106,6 @@ Add the following lines to pom.xml
 </build>
 }}}
 
-Note: In the upcoming salve version 1.1 things change a little...
-
-(not available right now !! )
-
-{{{
-<!-- fragment to demonstrate invocation of the maven plugin -->
-
-<build>
-  <plugins>
-    <plugin>
-      <groupId>salve</groupId>
-      <artifactId>maven-salve-plugin</artifactId>
-      <!--<configuration>-->
-        <!-- print the instrumented classes on the console -->
-        <!--<verbose>true</verbose>-->
-        <!-- implies verbose=true and additionallys show which files are scanned for instrumentation -->
-        <!--<debug>true</debug>-->
-      <!--</configuration>-->
-      <executions>
-        <execution>
-          <goals>
-            <!-- instrument production classes in target/classes -->
-            <goal>instrument</goal>
-            <!-- instrument test classes in target/test-classes -->
-            <goal>instrument-test</goal>
-          </goals>
-        </execution>
-      </executions>
-    </plugin>
-  </plugins>
-</build>
-}}}
-
-
 
 
 == Ant Build ==
@@ -117,7 +114,7 @@ Coming soon
 == Eclipse ==
 Salve has an eclipse builder plugin which can incrementally instrument files as you are editing them. See salve-eclipse module in svn.
 
-Eclipse update site: http://salve.googlecode.com/svn/trunk/salve-eclipse-update-site/
+Eclipse update site: http://salve.googlecode.com/svn/eclipse-update-site
 
 == IDEA ==
 There's an plugin for IDEA, too...
