@@ -1,6 +1,6 @@
   * Background
-    * [WhySalve Why Salve exists]
+    * [WhySalve Why Salve]
     * [ComparisonWithSpringsConfigurable Comparison to Spring's @Configurable]
   * Configuration
-    * [ConfiguringDependencyLibrary Configuring DependencyLibrary]
-    * [ConfiguringInstrumentation Configuring Instrumentation]
+    * [ConfiguringDependencyLibrary Dependency lookups]
+    * [ConfiguringInstrumentation Instrumentation]
