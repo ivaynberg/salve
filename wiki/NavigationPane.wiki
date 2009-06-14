@@ -1,5 +1,7 @@
+===Background===
 WhySalve
+ComparisonWithSpringsConfigurable  	 
 
-Configuration
-  * ConfiguringDependencyLibrary 
-  * ConfiguringInstrumentation 
+===Configuration===
+ConfiguringDependencyLibrary 
+ConfiguringInstrumentation 
