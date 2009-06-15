@@ -177,7 +177,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants
         Label exception = new Label();
         Label cleanupAndCommit = new Label();
         Label cleanupAndThrow = new Label();
-
+ 
         gen.visitTryCatchBlock(start, end, exception, "java/lang/Throwable");
 
         gen.visitTryCatchBlock(start, cleanupAndThrow, cleanupAndThrow, null);
@@ -322,18 +322,22 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants
         clinit.visitLdcInsn(methodName);
 
         // create array of method argument types
-        Type[] types = Type.getArgumentTypes(methodDesc);
-        clinit.push(types.length);
-        clinit.visitTypeInsn(ANEWARRAY, "java/lang/Class");
+// Type[] types = Type.getArgumentTypes(methodDesc);
+// clinit.push(types.length);
+// clinit.visitTypeInsn(ANEWARRAY, "java/lang/Class");
+//
+// for (int i = 0; i < types.length; i++)
+// {
+// final Type type = types[i];
+// clinit.visitInsn(DUP);
+// clinit.push(i);
+// clinit.push(type);
+// clinit.visitInsn(AASTORE);
+// }
 
-        for (int i = 0; i < types.length; i++)
-        {
-            final Type type = types[i];
-            clinit.visitInsn(DUP);
-            clinit.push(i);
-            clinit.push(type);
-            clinit.visitInsn(AASTORE);
-        }
+        clinit.loadArgTypesArray(methodDesc);
+
+
         clinit.visitMethodInsn(INVOKESPECIAL, TXNATTR_NAME, "<init>", TXNATTR_INIT_DESC);
         clinit.visitFieldInsn(PUTSTATIC, owner, attrName, TXNATTR_DESC);
         clinit.visitInsn(RETURN);
