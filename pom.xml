@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
@@ -36,8 +37,10 @@
 		<module>salve-test</module>
 		<!-- still need to figure out how to make the maven build run -->
 		<!--<module>salve-idea</module>-->
-		<module>salve-expr-validator</module>
-	</modules>
+		<!--<module>salve-expr-validator</module>-->
+    <module>salve-aop</module>
+    <module>salve-aop-inst</module>
+  </modules>
 
 
 	<licenses>
