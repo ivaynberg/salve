@@ -7,14 +7,31 @@ public class BeanInstrumented
     @Traced
     public void hello()
     {
-        
+        Object[] args = new Object[0];
+
         try
         {
-            final Class<?> clazz=getClass();
+            final Class< ? > clazz = getClass();
             final Method executor = clazz.getDeclaredMethod("_salve_aop$hello", null);
             final Method method = clazz.getDeclaredMethod("hello", null);
-            final MethodInvocation invocation = new ReflectiveInvocation(this, executor, method, null);
-            TracedAdvice.advise(invocation);
+            final MethodInvocation invocation = new ReflectiveInvocation(this, executor, method,
+                    null);
+            try
+            {
+                TracedAdvice.advise(invocation);
+            }
+            catch (Throwable t)
+            {
+                if (t instanceof RuntimeException)
+                {
+                    throw (RuntimeException)t;
+                }
+                if (t instanceof IllegalStateException)
+                {
+                    throw (IllegalStateException)t;
+                }
+                throw new UnknownAspectException(t);
+            }
         }
         catch (SecurityException e)
         {
@@ -32,14 +49,8 @@ public class BeanInstrumented
     {
         System.out.println("hello");
     }
-    
-    
-    public void hello(String a, int b) {
-        Object[] args=new Object[2];
-        args[0]=a;
-        args[1]=b;
-    }
-    
+
+
     public static void main(String[] args)
     {
         new BeanInstrumented().hello();

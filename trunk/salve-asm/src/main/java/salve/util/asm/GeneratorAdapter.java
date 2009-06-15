@@ -25,12 +25,15 @@ import salve.asmlib.Type;
  * fixes {@link #push(Type)} when type is primitive.
  * 
  * see
- * http://forge.objectweb.org/tracker/?func=detail&aid=307378&group_id=23&atid=350023
+ * http://forge.objectweb.org/tracker/?func=detail&aid=307378&group_id=23&atid
+ * =350023
  * 
  * @author ivaynberg
  * 
  */
 public class GeneratorAdapter extends salve.asmlib.GeneratorAdapter implements Opcodes {
+	private final String desc;
+
 	/**
 	 * Constructor
 	 * 
@@ -45,49 +48,87 @@ public class GeneratorAdapter extends salve.asmlib.GeneratorAdapter implements O
 	 */
 	public GeneratorAdapter(MethodVisitor mv, int access, String name, String desc) {
 		super(mv, access, name, desc);
+		this.desc = desc;
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Pushes argument types on to the stack and stores them into a single class
+	 * array
 	 */
-	@Override
-	public void push(Type value) {
-		if (value == null) {
-			mv.visitInsn(Opcodes.ACONST_NULL);
-		} else {
-			int sort = value.getSort();
-			if (sort == Type.BOOLEAN) {
-				mv.visitFieldInsn(GETSTATIC, "java/lang/Boolean", "TYPE", "Ljava/lang/Class;");
-			} else if (sort == Type.CHAR) {
-				mv.visitFieldInsn(GETSTATIC, "java/lang/Char", "TYPE", "Ljava/lang/Class;");
-			} else
+	public void loadArgTypesArray() {
+		loadArgTypesArray(desc);
+	}
 
-			if (sort == Type.BYTE) {
-				mv.visitFieldInsn(GETSTATIC, "java/lang/Byte", "TYPE", "Ljava/lang/Class;");
-			} else
+	/**
+	 * Pushes argument types on to the stack and stores them into a single class
+	 * array
+	 * 
+	 * @param desc
+	 *            method desc
+	 */
+	public void loadArgTypesArray(String desc) {
+		Type[] types = Type.getArgumentTypes(desc);
+		push(types.length);
+		visitTypeInsn(ANEWARRAY, "java/lang/Class");
 
-			if (sort == Type.SHORT) {
-				mv.visitFieldInsn(GETSTATIC, "java/lang/Short", "TYPE", "Ljava/lang/Class;");
-			} else
-
-			if (sort == Type.INT) {
-				mv.visitFieldInsn(GETSTATIC, "java/lang/Integer", "TYPE", "Ljava/lang/Class;");
-			} else
-
-			if (sort == Type.FLOAT) {
-				mv.visitFieldInsn(GETSTATIC, "java/lang/Float", "TYPE", "Ljava/lang/Class;");
-			} else
-
-			if (sort == Type.LONG) {
-				mv.visitFieldInsn(GETSTATIC, "java/lang/Long", "TYPE", "Ljava/lang/Class;");
-			} else
-
-			if (sort == Type.DOUBLE) {
-				mv.visitFieldInsn(GETSTATIC, "java/lang/Double", "TYPE", "Ljava/lang/Class;");
-			} else {
-				mv.visitLdcInsn(value);
-			}
-
+		for (int i = 0; i < types.length; i++) {
+			final Type type = types[i];
+			visitInsn(DUP);
+			push(i);
+			push(type);
+			visitInsn(AASTORE);
 		}
 	}
+
+	// /**
+	// * {@inheritDoc}
+	// */
+	// @Override
+	// public void push(Type value) {
+	// if (value == null) {
+	// mv.visitInsn(Opcodes.ACONST_NULL);
+	// } else {
+	// int sort = value.getSort();
+	// if (sort == Type.BOOLEAN) {
+	// mv.visitFieldInsn(GETSTATIC, "java/lang/Boolean", "TYPE",
+	// "Ljava/lang/Class;");
+	// } else if (sort == Type.CHAR) {
+	// mv.visitFieldInsn(GETSTATIC, "java/lang/Char", "TYPE",
+	// "Ljava/lang/Class;");
+	// } else
+	//
+	// if (sort == Type.BYTE) {
+	// mv.visitFieldInsn(GETSTATIC, "java/lang/Byte", "TYPE",
+	// "Ljava/lang/Class;");
+	// } else
+	//
+	// if (sort == Type.SHORT) {
+	// mv.visitFieldInsn(GETSTATIC, "java/lang/Short", "TYPE",
+	// "Ljava/lang/Class;");
+	// } else
+	//
+	// if (sort == Type.INT) {
+	// mv.visitFieldInsn(GETSTATIC, "java/lang/Integer", "TYPE",
+	// "Ljava/lang/Class;");
+	// } else
+	//
+	// if (sort == Type.FLOAT) {
+	// mv.visitFieldInsn(GETSTATIC, "java/lang/Float", "TYPE",
+	// "Ljava/lang/Class;");
+	// } else
+	//
+	// if (sort == Type.LONG) {
+	// mv.visitFieldInsn(GETSTATIC, "java/lang/Long", "TYPE",
+	// "Ljava/lang/Class;");
+	// } else
+	//
+	// if (sort == Type.DOUBLE) {
+	// mv.visitFieldInsn(GETSTATIC, "java/lang/Double", "TYPE",
+	// "Ljava/lang/Class;");
+	// } else {
+	// mv.visitLdcInsn(value);
+	// }
+	//
+	// }
+	// }
 }

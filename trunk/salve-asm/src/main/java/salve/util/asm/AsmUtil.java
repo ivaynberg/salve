@@ -68,6 +68,28 @@ public class AsmUtil {
 	private static final String CHARDESC = "Ljava/lang/Character;";
 
 	/**
+	 * Checks if type is BigDecimal.
+	 * 
+	 * @param type
+	 *            type to check
+	 * @return true if the type is BigDecimal, false otherwise
+	 */
+	public static boolean isBigDecimal(Type type) {
+		return "Ljava/math/BigDecimal;".equals(type.getDescriptor());
+	}
+
+	/**
+	 * Checks if type is BigInteger.
+	 * 
+	 * @param type
+	 *            type to check
+	 * @return true if the type is BigInteger, false otherwise
+	 */
+	public static boolean isBigInteger(Type type) {
+		return "Ljava/math/BigInteger;".equals(type.getDescriptor());
+	}
+
+	/**
 	 * Checks if type is byte or Byte
 	 * 
 	 * @param type
@@ -130,7 +152,7 @@ public class AsmUtil {
 	 * @return true if type is primitive
 	 */
 	public static boolean isPrimitive(Type type) {
-		return type.getSort() != Type.OBJECT && type.getSort() != Type.ARRAY;
+		return type.getSort() != Type.OBJECT && type.getSort() != Type.ARRAY && type.getSort() != Type.VOID;
 	}
 
 	public static boolean isSet(int value, int flag) {
@@ -147,28 +169,6 @@ public class AsmUtil {
 
 	public static boolean isShort(Type type) {
 		return Type.SHORT == type.getSort() || "Ljava/lang/Short;".equals(type.getDescriptor());
-	}
-
-	/**
-	 * Checks if type is BigInteger.
-	 * 
-	 * @param type
-	 *            type to check
-	 * @return true if the type is BigInteger, false otherwise
-	 */
-	public static boolean isBigInteger(Type type) {
-		return "Ljava/math/BigInteger;".equals(type.getDescriptor());
-	}
-
-	/**
-	 * Checks if type is BigDecimal.
-	 * 
-	 * @param type
-	 *            type to check
-	 * @return true if the type is BigDecimal, false otherwise
-	 */
-	public static boolean isBigDecimal(Type type) {
-		return "Ljava/math/BigDecimal;".equals(type.getDescriptor());
 	}
 
 	public static String parseListTypeFromSignature(final String signature) {
@@ -239,6 +239,48 @@ public class AsmUtil {
 	}
 
 	/**
+	 * Converts a primitive type to its object equivalent. If provided type is
+	 * already a objectthis method is a noop.
+	 * 
+	 * @param type
+	 *            type to convert to primitive
+	 * @return object equivalent of the primitive type
+	 */
+	public static Type toObject(Type type) {
+		int sort = type.getSort();
+		if (sort == Type.ARRAY) {
+			throw new IllegalArgumentException("Type `" + type.toString() + "` does not have a primitive counterpart");
+		}
+
+		if (!isPrimitive(type)) {
+			return type;
+		}
+
+		switch (type.getSort()) {
+			case Type.BOOLEAN:
+				return Type.getType(BOOLEANDESC);
+			case Type.CHAR:
+				return Type.getType(CHARDESC);
+			case Type.BYTE:
+				return Type.getType(BYTEDESC);
+			case Type.SHORT:
+				return Type.getType(SHORTDESC);
+			case Type.INT:
+				return Type.getType(INTEGERDESC);
+			case Type.FLOAT:
+				return Type.getType(FLOATDESC);
+			case Type.LONG:
+				return Type.getType(LONGDESC);
+			case Type.DOUBLE:
+				return Type.getType(DOUBLEDESC);
+			default:
+				throw new IllegalStateException("Could not convert primitive type: " + type
+						+ " to its Object counterpart");
+		}
+
+	}
+
+	/**
 	 * Converts type to its primitive equivalent. If provided type is already a
 	 * primitive this method is a noop.
 	 * 
@@ -253,6 +295,7 @@ public class AsmUtil {
 		if (sort == Type.ARRAY) {
 			throw new IllegalArgumentException("Type `" + type.toString() + "` does not have a primitive counterpart");
 		}
+
 		if (sort == Type.OBJECT) {
 			String desc = type.getDescriptor();
 			if (DOUBLEDESC.equals(desc)) {
