@@ -32,27 +32,34 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         this.owner = name;
     }
 
+    protected String newAopDelegateMethodName(Method method)
+    {
+        return "_salve_aop" + uuid() + "$" + method.getName();
+    }
+
+
     @Override
     public MethodVisitor visitMethod(int access, final String name, final String desc,
             final String signature, final String[] exceptions)
     {
-        Collection<Aspect> aspects = analyzer.getAspects(new Method(name, desc));
+        Method method = new Method(name, desc);
+        Collection<Aspect> aspects = analyzer.getAspects(method);
 
         if (aspects.isEmpty())
         {
             return cv.visitMethod(access, name, desc, signature, exceptions);
         }
 
-        MethodVisitor delegate = null;
-
+        String originName = name;
+        String delegateName = name;
 
         for (Aspect aspect : aspects)
         {
-
-            final String delegateName = "_salve_aop$" + name + uuid();
+            delegateName = newAopDelegateMethodName(method);
 
             // create origin method which will call the delegate
-            MethodVisitor originmv = cv.visitMethod(access, name, desc, signature, exceptions);
+            MethodVisitor originmv = cv
+                    .visitMethod(access, originName, desc, signature, exceptions);
             GeneratorAdapter origin = new GeneratorAdapter(originmv, access, name, desc);
 
             origin.visitCode();
@@ -61,8 +68,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             final Label end = new Label();
             final Label securityException = new Label();
             final Label noSuchMethodException = new Label();
-            final Label endSecurityException = new Label();
-            final Label endNoSuchMethodException = new Label();
             final Label invocationStart = new Label();
             final Label invocationEnd = new Label();
             final Label invocationException = new Label();
@@ -103,13 +108,13 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             origin.visitVarInsn(ASTORE, executor);
 
             // final Method method = clazz.getDeclaredMethod("hello", <arg types array>);
-            final int method = origin.newLocal(Type.getType("Ljava/lang/reflect/Method;"));
+            final int methodVar = origin.newLocal(Type.getType("Ljava/lang/reflect/Method;"));
             origin.visitVarInsn(ALOAD, clazz);
             origin.visitLdcInsn(name);
             origin.loadLocal(types);
             origin.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getDeclaredMethod",
                     "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;");
-            origin.visitVarInsn(ASTORE, method);
+            origin.visitVarInsn(ASTORE, methodVar);
 
             // MethodInvocation invocation = new ReflectiveInvocation(this, executor, method, <arg
             // valuess array>);
@@ -119,7 +124,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             origin.visitInsn(DUP);
             origin.visitVarInsn(ALOAD, 0);
             origin.visitVarInsn(ALOAD, executor);
-            origin.visitVarInsn(ALOAD, method);
+            origin.visitVarInsn(ALOAD, methodVar);
             origin.loadLocal(args);
             origin
                     .visitMethodInsn(INVOKESPECIAL, "salve/aop/ReflectiveInvocation", "<init>",
@@ -134,7 +139,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
                     "(Lsalve/aop/MethodInvocation;)Ljava/lang/Object;");
 
             // return value returned by the invocation
-            final Type ret = new Method(name, desc).getReturnType();
+            final Type ret = method.getReturnType();
             if (ret.equals(Type.VOID_TYPE))
             {
                 // void method, pop aspect's return value off the stack
@@ -224,11 +229,10 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             origin.visitMaxs(0, 0);
             origin.visitEnd();
 
-            delegate = cv.visitMethod(access, delegateName, desc, signature, exceptions);
+            originName = delegateName;
+
         }
-
-
-        return delegate;
+        return cv.visitMethod(access, delegateName, desc, signature, exceptions);
     }
 
     private static void checkCastThrow(MethodVisitor mv, int local, String type)
