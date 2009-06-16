@@ -30,6 +30,11 @@ import salve.loader.BytecodePool;
 public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 {
     @Retention(RetentionPolicy.RUNTIME)
+    public @interface Blue {
+
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
     @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "simple")
     public @interface Simple {
 
@@ -132,6 +137,7 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
         }
 
         @Simple
+        @Blue
         public void test1()
         {
             methodsCalled.add("test1");
@@ -232,6 +238,7 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
         Bean bean = create("Bean");
         Method method = bean.getClass().getMethod("test1", (Class< ? >[])null);
         assertNotNull(method.getAnnotation(Simple.class));
+        assertNotNull(method.getAnnotation(Blue.class));
     }
 
 
