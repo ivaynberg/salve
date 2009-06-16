@@ -2,9 +2,11 @@ package salve.aop;
 
 import java.lang.reflect.Method;
 
+import salve.aop.inst.AopInstrumentorTest.BeanAdvice;
+
 public class BeanInstrumented
 {
-    @Traced
+    //@Traced
     public void hello()
     {
         Object[] args = new Object[0];
@@ -18,7 +20,7 @@ public class BeanInstrumented
                     null);
             try
             {
-                TracedAdvice.advise(invocation);
+                BeanAdvice.simple(invocation);
             }
             catch (Throwable t)
             {
@@ -30,13 +32,12 @@ public class BeanInstrumented
                 {
                     throw (IllegalStateException)t;
                 }
-                throw new UnknownAspectException(t);
+                throw new UndeclaredException(t);
             }
         }
         catch (SecurityException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new AspectInvocationException(e);
         }
         catch (NoSuchMethodException e)
         {
