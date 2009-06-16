@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -38,9 +39,9 @@
 		<!-- still need to figure out how to make the maven build run -->
 		<!--<module>salve-idea</module>-->
 		<!--<module>salve-expr-validator</module>-->
-    <module>salve-aop</module>
-    <module>salve-aop-inst</module>
-  </modules>
+		<module>salve-aop</module>
+		<module>salve-aop-inst</module>
+	</modules>
 
 
 	<licenses>
@@ -125,8 +126,20 @@
 				<artifactId>maven-source-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>attach-sources</id>
-						<phase>verify</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<configuration>
+							<encoding>UTF-8</encoding>
+						</configuration>
 						<goals>
 							<goal>jar</goal>
 						</goals>
@@ -142,8 +155,8 @@
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 				</configuration>
 			</plugin>
-
 		</plugins>
+
 		<pluginManagement>
 			<plugins>
 				<plugin>
