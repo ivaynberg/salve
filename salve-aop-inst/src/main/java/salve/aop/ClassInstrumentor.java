@@ -2,10 +2,12 @@ package salve.aop;
 
 import java.util.Collection;
 
+import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.Label;
 import salve.asmlib.Method;
+import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
@@ -45,14 +47,14 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         Method method = new Method(name, desc);
         Collection<Aspect> aspects = analyzer.getAspects(method);
 
-        if (aspects.isEmpty())
+        if (aspects.isEmpty() || analyzer.hasAnnotation(method, getMarkerAnnotationDesc()))
         {
             return cv.visitMethod(access, name, desc, signature, exceptions);
         }
 
         String originName = name;
         String delegateName = name;
-
+        MethodVisitor home = null;
         for (Aspect aspect : aspects)
         {
             delegateName = newAopDelegateMethodName(method);
@@ -60,6 +62,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             // create origin method which will call the delegate
             MethodVisitor originmv = cv
                     .visitMethod(access, originName, desc, signature, exceptions);
+            home = (home == null) ? originmv : home;
             GeneratorAdapter origin = new GeneratorAdapter(originmv, access, name, desc);
 
             origin.visitCode();
@@ -232,7 +235,22 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             originName = delegateName;
 
         }
-        return cv.visitMethod(access, delegateName, desc, signature, exceptions);
+
+        MethodVisitor delegate = cv.visitMethod(access, delegateName, desc, signature, exceptions);
+        delegate.visitAnnotation(getMarkerAnnotationDesc(), true);
+
+        // mark entry method as processed
+        home.visitAnnotation(getMarkerAnnotationDesc(), true);
+
+        final MethodVisitor _home = home;
+        return new MethodAdapter(delegate)
+        {
+            @Override
+            public AnnotationVisitor visitAnnotation(String desc, boolean visible)
+            {
+                return _home.visitAnnotation(desc, visible);
+            }
+        };
     }
 
     private static void checkCastThrow(MethodVisitor mv, int local, String type)
@@ -246,6 +264,11 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         mv.visitTypeInsn(CHECKCAST, type);
         mv.visitInsn(ATHROW);
         mv.visitLabel(after);
+    }
+
+    protected String getMarkerAnnotationDesc()
+    {
+        return "Lsalve/aop/Instrumented;";
     }
 
     private static void pushInteger(MethodVisitor mv, int val)

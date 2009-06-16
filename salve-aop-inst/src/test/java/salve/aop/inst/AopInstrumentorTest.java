@@ -7,21 +7,25 @@ import java.util.List;
 
 import org.junit.Test;
 
+import salve.Scope;
+import salve.aop.AopInstrumentor;
 import salve.aop.MethodAdvice;
 import salve.aop.MethodInvocation;
 import salve.aop.UndeclaredException;
+import salve.loader.BytecodePool;
 
-//TODO support advice annots on method arguments
 
-//TODO inheritance - make sure overridden methods are also instrumented in super has annot
+//FIXME inheritance - make sure overridden methods are also instrumented in super has annot?
+
+//FIXME aspect filtering in the instrumentor to allow other instrumentors to extend the aop and yet not have double instrumentation
 
 //TODO instrumentor should check if the advice method exists
 
 //TODO return values - void methods should always get a null value from aspect
 //TODO return values - more helpful exception then the classcast if value of wrong type is returned from the aspect
 
-
-//TODO prevent double instrumentation - mark instrumented methods with a tag annot
+//XXX remove reflection lookups when creating invocation
+//XXX instrumentation monitor integration
 public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 {
     @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "simple")
@@ -176,6 +180,30 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
         {
             return input;
         }
+
+        @Brackets
+        public String test7(@Uppercase String input)
+        {
+            return input;
+        }
+
+        @Uppercase
+        @Brackets
+        public Object test8(@Uppercase @Brackets String string)
+        {
+            return string;
+        }
+
+    }
+
+    public static class Bean3
+    {
+        @Uppercase
+        @Brackets
+        public String test9(String input)
+        {
+            return input;
+        }
     }
 
     @Test
@@ -188,13 +216,21 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
     }
 
     @Test
-    public void shouldHandleSimpleMethods() throws Exception
+    public void shouldHandleAnnotatedMethods() throws Exception
     {
         Bean bean = create("Bean");
         bean.test1();
         assertTrue(bean.methodsCalled.contains("test1"));
         assertTrue(bean.aspectsCalled.contains("test1"));
     }
+
+    @Test
+    public void shouldHandleAnnotatedArguments() throws Exception
+    {
+        Bean2 bean = create("Bean2");
+        assertEquals("[HELLO]", bean.test7("hello"));
+    }
+
 
     @Test
     public void shouldHandleArguments() throws Exception
@@ -210,6 +246,30 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
     {
         Bean2 bean = create("Bean2");
         assertEquals("[HELLO]", bean.test6("hello"));
+    }
+
+    @Test
+    public void shouldHandleDoubleInstrumentation() throws Exception
+    {
+        final String beanName = "Bean3";
+        final String cn = getClass().getName().replace(".", "/") + "$" + beanName;
+        BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(getClass().getClassLoader());
+
+        // double instrument the class
+        pool.instrumentIntoBytecode(cn, new AopInstrumentor());
+        pool.instrumentIntoBytecode(cn, new AopInstrumentor());
+
+        Class< ? > clazz = pool.loadClass(cn);
+
+        Bean3 bean = (Bean3)clazz.newInstance();
+        assertEquals("[HELLO]", bean.test9("hello"));
+    }
+
+    @Test
+    public void shouldHandleDuplicateInstrumentors() throws Exception
+    {
+        Bean2 bean = create("Bean2");
+        assertEquals("[HELLO]", bean.test8("hello"));
     }
 
     @Test
