@@ -1,6 +1,8 @@
 package salve.aop;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
@@ -45,7 +47,14 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             final String signature, final String[] exceptions)
     {
         Method method = new Method(name, desc);
-        Collection<Aspect> aspects = analyzer.getAspects(method);
+        List<Aspect> aspects = new ArrayList<Aspect>();
+        for (Aspect aspect : analyzer.getAspects(method))
+        {
+            if (accept(aspect))
+            {
+                aspects.add(aspect);
+            }
+        }
 
         if (aspects.isEmpty() || analyzer.hasAnnotation(method, getMarkerAnnotationDesc()))
         {
@@ -264,6 +273,11 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         mv.visitTypeInsn(CHECKCAST, type);
         mv.visitInsn(ATHROW);
         mv.visitLabel(after);
+    }
+
+    protected boolean accept(Aspect aspect)
+    {
+        return true;
     }
 
     protected String getMarkerAnnotationDesc()
