@@ -6,7 +6,7 @@ import salve.aop.inst.AopInstrumentorTest.BeanAdvice;
 
 public class BeanInstrumented
 {
-    //@Traced
+    // @Traced
     public void hello()
     {
         Object[] args = new Object[0];
@@ -24,6 +24,11 @@ public class BeanInstrumented
             }
             catch (Throwable t)
             {
+                if (t instanceof java.lang.reflect.InvocationTargetException)
+                {
+                    t = ((java.lang.reflect.InvocationTargetException)t).getCause();
+                }
+
                 if (t instanceof RuntimeException)
                 {
                     throw (RuntimeException)t;

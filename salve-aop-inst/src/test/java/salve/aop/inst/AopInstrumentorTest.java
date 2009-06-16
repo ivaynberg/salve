@@ -1,5 +1,6 @@
 package salve.aop.inst;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,7 @@ import org.junit.Test;
 
 import salve.aop.MethodAdvice;
 import salve.aop.MethodInvocation;
+import salve.aop.UndeclaredException;
 
 public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 {
@@ -20,6 +22,11 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 
     @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "args")
     public @interface Args {
+
+    }
+
+    @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "exceptions")
+    public @interface Exceptions {
 
     }
 
@@ -45,6 +52,21 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
             bean.aspectsCalled.add(str.toString());
             return invocation.execute();
         }
+
+        public static Object exceptions(MethodInvocation invocation) throws Throwable
+        {
+            int mode = (Integer)invocation.getArguments()[0];
+            if (mode == 3)
+            {
+                throw new IllegalStateException();
+            }
+            else if (mode == 4)
+            {
+                throw new IOException();
+            }
+            return invocation.execute();
+        }
+
     }
 
 
@@ -71,17 +93,19 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
                     primitiveArray[0]);
         }
 
-// @Traced
-// public void hello(String str, int num)
-// {
-// System.out.println("hello str=" + str + " num=" + num);
-// }
-
-// @Traced
-// public void hello(int[] nums)
-// {
-// System.out.println("hello nums.length=" + nums.length);
-// }
+        @Exceptions
+        public void test3(int mode) throws IndexOutOfBoundsException
+        {
+            switch (mode)
+            {
+                case 0 :
+                    return;
+                case 1 :
+                    throw new IndexOutOfBoundsException();
+                case 2 :
+                    throw new IllegalArgumentException();
+            }
+        }
 
     }
 
@@ -112,13 +136,51 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
         assertTrue(bean.aspectsCalled.contains("test2:a:1:b:2"));
     }
 
-// @Test
-// public void shouldInstrumentMethodsWithArguments() throws Exception
-// {
-// Bean bean = create("Bean");
-// bean.test1();
-// assertTrue(bean.methodsCalled.contains("test1"));
-// assertTrue(bean.aspectsCalled.contains("test1"));
-// }
+    @Test
+    public void shouldHandleExceptions() throws Exception
+    {
+        Bean bean = create("Bean");
 
+        bean.test3(0);
+
+        try
+        {
+            bean.test3(1);
+            fail("expected " + IndexOutOfBoundsException.class.getName());
+        }
+        catch (IndexOutOfBoundsException e)
+        {
+            // expected
+        }
+
+        try
+        {
+            bean.test3(2);
+            fail("expected " + IllegalArgumentException.class.getName());
+        }
+        catch (IllegalArgumentException e)
+        {
+            // expected
+        }
+
+        try
+        {
+            bean.test3(3);
+            fail("expected " + IllegalStateException.class.getName());
+        }
+        catch (IllegalStateException e)
+        {
+            // expected
+        }
+
+        try
+        {
+            bean.test3(4);
+            fail("expected " + UndeclaredException.class.getName());
+        }
+        catch (UndeclaredException e)
+        {
+            assertTrue(e.getCause().getClass().equals(IOException.class));
+        }
+    }
 }
