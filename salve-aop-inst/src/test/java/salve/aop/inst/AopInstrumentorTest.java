@@ -1,7 +1,10 @@
 package salve.aop.inst;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +29,7 @@ import salve.loader.BytecodePool;
 //XXX instrumentation monitor integration
 public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 {
+    @Retention(RetentionPolicy.RUNTIME)
     @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "simple")
     public @interface Simple {
 
@@ -221,6 +225,15 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
         assertTrue(bean.methodsCalled.contains("test1"));
         assertTrue(bean.aspectsCalled.contains("test1"));
     }
+
+    @Test
+    public void shouldKeepAnnotationsOnMethod() throws Exception
+    {
+        Bean bean = create("Bean");
+        Method method = bean.getClass().getMethod("test1", (Class< ? >[])null);
+        assertNotNull(method.getAnnotation(Simple.class));
+    }
+
 
     @Test
     public void shouldHandleAnnotatedArguments() throws Exception
