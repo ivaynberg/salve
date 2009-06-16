@@ -143,22 +143,37 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             origin.visitTypeInsn(NEW, "salve/aop/AspectInvocationException");
             origin.visitInsn(DUP);
             origin.visitVarInsn(ALOAD, ex);
-            origin.visitMethodInsn(INVOKESPECIAL, "salve/aop/AspectInvocationException", "<init>", "(Ljava/lang/Throwable;)V");
+            origin.visitMethodInsn(INVOKESPECIAL, "salve/aop/AspectInvocationException", "<init>",
+                    "(Ljava/lang/Throwable;)V");
             origin.visitInsn(ATHROW);
-            
+
             // catch (NoSuchMethodException ex) throw new AspectInvocationException(ex);
             origin.visitLabel(noSuchMethodException);
             origin.visitVarInsn(ASTORE, ex);
             origin.visitTypeInsn(NEW, "salve/aop/AspectInvocationException");
             origin.visitInsn(DUP);
             origin.visitVarInsn(ALOAD, ex);
-            origin.visitMethodInsn(INVOKESPECIAL, "salve/aop/AspectInvocationException", "<init>", "(Ljava/lang/Throwable;)V");
+            origin.visitMethodInsn(INVOKESPECIAL, "salve/aop/AspectInvocationException", "<init>",
+                    "(Ljava/lang/Throwable;)V");
             origin.visitInsn(ATHROW);
 
             origin.visitLabel(invocationException);
 
             // catch Throwable t <-- from aspect invocation
             origin.visitVarInsn(ASTORE, ex);
+
+            // check if t is an InvocationTargetException and unwrap it before we process it
+            origin.visitVarInsn(ALOAD, ex);
+            origin.visitTypeInsn(INSTANCEOF, "java/lang/reflect/InvocationTargetException");
+            Label doneUnwrapping = new Label();
+            origin.visitJumpInsn(IFEQ, doneUnwrapping);
+            origin.visitVarInsn(ALOAD, ex);
+            origin.visitTypeInsn(CHECKCAST, "java/lang/reflect/InvocationTargetException");
+            origin.visitMethodInsn(INVOKEVIRTUAL, "java/lang/reflect/InvocationTargetException",
+                    "getCause", "()Ljava/lang/Throwable;");
+            origin.visitVarInsn(ASTORE, ex);
+            origin.visitLabel(doneUnwrapping);
+
 
             // if (t instanceof RuntimeException) throw t;
             checkCastThrow(origin, ex, "java/lang/RuntimeException");
@@ -194,6 +209,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     private static void checkCastThrow(MethodVisitor mv, int local, String type)
     {
         Label after = new Label();
+
         mv.visitVarInsn(ALOAD, local);
         mv.visitTypeInsn(INSTANCEOF, type);
         mv.visitJumpInsn(IFEQ, after);
