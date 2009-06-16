@@ -9,6 +9,7 @@ import salve.asmlib.Method;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
+import salve.util.asm.AsmUtil;
 import salve.util.asm.GeneratorAdapter;
 
 class ClassInstrumentor extends ClassAdapter implements Opcodes
@@ -127,11 +128,35 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
 
             origin.mark(invocationStart);
-            // <advice class>.<advice method>(invocation);
+            // return <advice class>.<advice method>(invocation);
             origin.visitVarInsn(ALOAD, invocation);
             origin.visitMethodInsn(INVOKESTATIC, aspect.clazz.replace(".", "/"), aspect.method,
                     "(Lsalve/aop/MethodInvocation;)Ljava/lang/Object;");
-            origin.visitInsn(POP);
+
+            // return value returned by the invocation
+            final Type ret = new Method(name, desc).getReturnType();
+            if (ret.equals(Type.VOID_TYPE))
+            {
+                // void method, pop aspect's return value off the stack
+                // TODO possible check to make sure an aspect always returns null for void methods
+                origin.visitInsn(POP);
+            }
+            else
+            {
+                if (AsmUtil.isPrimitive(ret))
+                {
+                    // primitivereturn value, need to unbox before returning
+                    origin.unbox(ret);
+                }
+                else
+                {
+                    // non-primitive return value, cast and return
+                    origin.checkCast(ret);
+                }
+                origin.returnValue();
+            }
+
+
             origin.mark(invocationEnd);
 
             origin.visitInsn(RETURN);

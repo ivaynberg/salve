@@ -7,7 +7,7 @@ import salve.aop.inst.AopInstrumentorTest.BeanAdvice;
 public class BeanInstrumented
 {
     // @Traced
-    public void hello()
+    public Integer hello()
     {
         Object[] args = new Object[0];
 
@@ -20,7 +20,7 @@ public class BeanInstrumented
                     null);
             try
             {
-                BeanAdvice.simple(invocation);
+                return (Integer)BeanAdvice.simple(invocation);
             }
             catch (Throwable t)
             {
@@ -46,14 +46,14 @@ public class BeanInstrumented
         }
         catch (NoSuchMethodException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new AspectInvocationException(e);
         }
     }
 
-    public void _salve_aop$hello()
+    public int _salve_aop$hello()
     {
         System.out.println("hello");
+        return 5;
     }
 
 

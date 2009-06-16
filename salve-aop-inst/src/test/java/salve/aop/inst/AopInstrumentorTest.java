@@ -11,10 +11,15 @@ import salve.aop.MethodAdvice;
 import salve.aop.MethodInvocation;
 import salve.aop.UndeclaredException;
 
+//TODO inheritance - make sure overridden methods are also instrumented in super has annot
+
+//TODO return values - partially complete
+
+//TODO multiple aspects per class and per method
+//TODO prevent double instrumentation - mark instrumented methods with a tag annot
+//TODO instrumentor should check if the advice method exists
 public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 {
-// TODO inheritance - make sure overridden methods are also instrumented in super has annot
-
     @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "simple")
     public @interface Simple {
 
@@ -30,6 +35,15 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 
     }
 
+    @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "addOne")
+    public @interface AddOne {
+
+    }
+
+    @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "uppercase")
+    public @interface Uppercase {
+
+    }
 
     public static class BeanAdvice
     {
@@ -64,7 +78,25 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
             {
                 throw new IOException();
             }
+
+            Bean bean = (Bean)invocation.getThis();
+            bean.aspectsCalled.add(invocation.getMethod().getName());
             return invocation.execute();
+        }
+
+        public static Object addOne(MethodInvocation invocation) throws Throwable
+        {
+            Bean bean = (Bean)invocation.getThis();
+            bean.aspectsCalled.add(invocation.getMethod().getName());
+            int result = (Integer)invocation.execute();
+            return result + 1;
+        }
+
+        public static Object uppercase(MethodInvocation invocation) throws Throwable
+        {
+            Bean bean = (Bean)invocation.getThis();
+            bean.aspectsCalled.add(invocation.getMethod().getName());
+            return ((String)invocation.execute()).toUpperCase();
         }
 
     }
@@ -99,6 +131,7 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
             switch (mode)
             {
                 case 0 :
+                    methodsCalled.add("test3");
                     return;
                 case 1 :
                     throw new IndexOutOfBoundsException();
@@ -107,6 +140,19 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
             }
         }
 
+        @AddOne
+        public int test4(int val)
+        {
+            methodsCalled.add("test4");
+            return val;
+        }
+
+        @Uppercase
+        public String test5(String input)
+        {
+            methodsCalled.add("test5");
+            return input;
+        }
     }
 
     @Test
@@ -137,11 +183,32 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
     }
 
     @Test
+    public void shouldHandlePrimitiveReturnTypes() throws Exception
+    {
+        Bean bean = create("Bean");
+        assertEquals(2, bean.test4(1));
+        assertTrue(bean.methodsCalled.contains("test4"));
+        assertTrue(bean.aspectsCalled.contains("test4"));
+    }
+
+    @Test
+    public void shouldHandleNonPrimitiveReturnTypes() throws Exception
+    {
+        Bean bean = create("Bean");
+        assertEquals("HELLO", bean.test5("hello"));
+        assertTrue(bean.methodsCalled.contains("test5"));
+        assertTrue(bean.aspectsCalled.contains("test5"));
+    }
+
+
+    @Test
     public void shouldHandleExceptions() throws Exception
     {
         Bean bean = create("Bean");
 
         bean.test3(0);
+        assertTrue(bean.methodsCalled.contains("test3"));
+        assertTrue(bean.aspectsCalled.contains("test3"));
 
         try
         {
