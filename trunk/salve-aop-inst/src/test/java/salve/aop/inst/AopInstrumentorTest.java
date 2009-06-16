@@ -11,13 +11,17 @@ import salve.aop.MethodAdvice;
 import salve.aop.MethodInvocation;
 import salve.aop.UndeclaredException;
 
+//TODO support advice annots on method arguments
+
 //TODO inheritance - make sure overridden methods are also instrumented in super has annot
 
-//TODO return values - partially complete
-
-//TODO multiple aspects per class and per method
-//TODO prevent double instrumentation - mark instrumented methods with a tag annot
 //TODO instrumentor should check if the advice method exists
+
+//TODO return values - void methods should always get a null value from aspect
+//TODO return values - more helpful exception then the classcast if value of wrong type is returned from the aspect
+
+
+//TODO prevent double instrumentation - mark instrumented methods with a tag annot
 public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 {
     @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "simple")
@@ -44,6 +48,12 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
     public @interface Uppercase {
 
     }
+
+    @MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "brackets")
+    public @interface Brackets {
+
+    }
+
 
     public static class BeanAdvice
     {
@@ -94,9 +104,12 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 
         public static Object uppercase(MethodInvocation invocation) throws Throwable
         {
-            Bean bean = (Bean)invocation.getThis();
-            bean.aspectsCalled.add(invocation.getMethod().getName());
             return ((String)invocation.execute()).toUpperCase();
+        }
+
+        public static Object brackets(MethodInvocation invocation) throws Throwable
+        {
+            return "[" + invocation.execute() + "]";
         }
 
     }
@@ -155,6 +168,16 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
         }
     }
 
+    public static class Bean2
+    {
+        @Uppercase
+        @Brackets
+        public String test6(String input)
+        {
+            return input;
+        }
+    }
+
     @Test
     public void shouldNotHandleMethodsWithoutAnnotations() throws Exception
     {
@@ -183,6 +206,13 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
     }
 
     @Test
+    public void shouldHandleMultipleInstrumentors() throws Exception
+    {
+        Bean2 bean = create("Bean2");
+        assertEquals("[HELLO]", bean.test6("hello"));
+    }
+
+    @Test
     public void shouldHandlePrimitiveReturnTypes() throws Exception
     {
         Bean bean = create("Bean");
@@ -197,7 +227,6 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
         Bean bean = create("Bean");
         assertEquals("HELLO", bean.test5("hello"));
         assertTrue(bean.methodsCalled.contains("test5"));
-        assertTrue(bean.aspectsCalled.contains("test5"));
     }
 
 
