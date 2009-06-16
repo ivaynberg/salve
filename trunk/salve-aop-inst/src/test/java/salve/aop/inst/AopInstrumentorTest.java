@@ -17,8 +17,6 @@ import salve.loader.BytecodePool;
 
 //FIXME inheritance - make sure overridden methods are also instrumented in super has annot?
 
-//FIXME aspect filtering in the instrumentor to allow other instrumentors to extend the aop and yet not have double instrumentation
-
 //TODO instrumentor should check if the advice method exists
 
 //TODO return values - void methods should always get a null value from aspect
