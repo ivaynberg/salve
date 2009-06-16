@@ -6,11 +6,10 @@ public class ReflectiveInvocation implements MethodInvocation
 {
     private final Object instance;
     private final Method method;
-    
+
     private final Method executor;
     private Object[] arguments;
-    
-    
+
 
     public ReflectiveInvocation(Object instance, Method executor, Method method, Object[] arguments)
     {
@@ -21,10 +20,27 @@ public class ReflectiveInvocation implements MethodInvocation
     }
 
 
-
     public Object execute() throws Throwable
     {
         return executor.invoke(instance, arguments);
+    }
+
+
+    public Object getThis()
+    {
+        return instance;
+    }
+
+
+    public Method getMethod()
+    {
+        return method;
+    }
+
+
+    public Object[] getArguments()
+    {
+        return arguments;
     }
 
 }

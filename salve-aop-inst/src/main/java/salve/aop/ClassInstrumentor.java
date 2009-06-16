@@ -73,6 +73,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
                     "java/lang/Throwable");
             origin.visitLabel(start);
 
+            final int ex = origin.newLocal(Type.getType("Ljava/lang/Throwable;"));
+
             // Object[] args=new Object[<arg count>];
             final int args = origin.newLocal(Type.getType("Ljava/lang/Object;"));
             origin.loadArgArray();
@@ -102,7 +104,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             // final Method method = clazz.getDeclaredMethod("hello", <arg types array>);
             final int method = origin.newLocal(Type.getType("Ljava/lang/reflect/Method;"));
             origin.visitVarInsn(ALOAD, clazz);
-            origin.visitLdcInsn("hello");
+            origin.visitLdcInsn(name);
             origin.loadLocal(types);
             origin.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getDeclaredMethod",
                     "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;");
@@ -135,52 +137,50 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             origin.visitInsn(RETURN);
             origin.visitLabel(end);
 
-            // catch SecurityExcepton
+            // catch (SecurityExcepton ex) throw new AspectInvocationException(ex);
             origin.visitLabel(securityException);
-            origin.visitVarInsn(ASTORE, 1); // XXX we are reusing the local var slot, hope thats ok
-            origin.visitVarInsn(ALOAD, 1);
-            origin.visitMethodInsn(INVOKEVIRTUAL, "java/lang/SecurityException", "printStackTrace",
-                    "()V");
-            origin.visitLabel(endSecurityException);
-            origin.visitInsn(RETURN);
-
-            // catch NoSuchMethodException
+            origin.visitVarInsn(ASTORE, ex);
+            origin.visitTypeInsn(NEW, "salve/aop/AspectInvocationException");
+            origin.visitInsn(DUP);
+            origin.visitVarInsn(ALOAD, ex);
+            origin.visitMethodInsn(INVOKESPECIAL, "salve/aop/AspectInvocationException", "<init>", "(Ljava/lang/Throwable;)V");
+            origin.visitInsn(ATHROW);
+            
+            // catch (NoSuchMethodException ex) throw new AspectInvocationException(ex);
             origin.visitLabel(noSuchMethodException);
-            origin.visitVarInsn(ASTORE, 1); // XXX we are reusing the local var slot, hope thats ok
-            origin.visitVarInsn(ALOAD, 1);
-            origin.visitMethodInsn(INVOKEVIRTUAL, "java/lang/NoSuchMethodException",
-                    "printStackTrace", "()V");
-            origin.visitLabel(endNoSuchMethodException);
-            origin.visitInsn(RETURN);
+            origin.visitVarInsn(ASTORE, ex);
+            origin.visitTypeInsn(NEW, "salve/aop/AspectInvocationException");
+            origin.visitInsn(DUP);
+            origin.visitVarInsn(ALOAD, ex);
+            origin.visitMethodInsn(INVOKESPECIAL, "salve/aop/AspectInvocationException", "<init>", "(Ljava/lang/Throwable;)V");
+            origin.visitInsn(ATHROW);
 
-            origin.mark(invocationException);
-            final int rtex = origin.newLocal(Type.getType("Ljava/lang/Throwable;"));
+            origin.visitLabel(invocationException);
 
             // catch Throwable t <-- from aspect invocation
-            origin.storeLocal(rtex);
-
+            origin.visitVarInsn(ASTORE, ex);
 
             // if (t instanceof RuntimeException) throw t;
-            checkCastThrow(origin, rtex, "java/lang/RuntimeException");
+            checkCastThrow(origin, ex, "java/lang/RuntimeException");
 
-            origin.visitInsn(RETURN);
-            
-            
-//
-// // if (t instanceof <throw decl>) throw t;
-// for (String ex : exceptions)
-// {
-// checkCastThrow(origin, rtex, ex);
-// }
-//
-// // unknown non-runtime ex, wrap and throw runtime ex
-// origin.visitTypeInsn(NEW, "salve/aop/UnknownAspectException");
-// origin.visitInsn(DUP);
-// origin.visitVarInsn(ALOAD, rtex);
-// origin.visitMethodInsn(INVOKESPECIAL, "salve/aop/UnknownAspectException", "<init>",
-// "(Ljava/lang/Throwable;)V");
-// origin.visitInsn(ATHROW);
-//
+
+            // if (t instanceof <any in throw decl>) throw t;
+            if (exceptions != null)
+            {
+                for (String exception : exceptions)
+                {
+                    checkCastThrow(origin, ex, exception);
+                }
+            }
+
+            // unknown non-runtime ex, wrap in runtime ex and throw
+            origin.visitTypeInsn(NEW, "salve/aop/UndeclaredException");
+            origin.visitInsn(DUP);
+            origin.visitVarInsn(ALOAD, ex);
+            origin.visitMethodInsn(INVOKESPECIAL, "salve/aop/UndeclaredException", "<init>",
+                    "(Ljava/lang/Throwable;)V");
+            origin.visitInsn(ATHROW);
+
             origin.visitMaxs(0, 0);
             origin.visitEnd();
 
