@@ -23,11 +23,13 @@ public class AopAnalyzer extends ClassVisitorAdapter
             ClassReader.SKIP_DEBUG;
 
     private final Map<Method, Collection<Aspect>> meta;
+    private final Map<Method, Collection<String>> annots;
     private final BytecodeLoader loader;
 
     public AopAnalyzer(BytecodeLoader loader)
     {
         meta = new HashMap<Method, Collection<Aspect>>();
+        annots = new HashMap<Method, Collection<String>>();
         this.loader = loader;
     }
 
@@ -47,58 +49,99 @@ public class AopAnalyzer extends ClassVisitorAdapter
                     @Override
                     public AnnotationVisitor visitAnnotation(String desc, boolean visible)
                     {
-                        final String name = Type.getType(desc).getInternalName();
-                        byte[] bytecode = loader.loadBytecode(name);
-                        if (bytecode == null)
-                        {
-                            throw new CannotLoadBytecodeException(name);
-                        }
-                        ClassReader reader = new ClassReader(bytecode);
-                        reader.accept(new ClassVisitorAdapter()
-                        {
-                            @Override
-                            public AnnotationVisitor visitAnnotation(String desc, boolean visible)
-                            {
-                                if (desc.equals("Lsalve/aop/MethodAdvice;"))
-                                {
-                                    return new AnnotationVisitorAdapter()
-                                    {
-                                        private final Aspect aspect = new Aspect();
-
-                                        @Override
-                                        public void visit(String name, Object value)
-                                        {
-                                            if (name.equals("instrumentorClass"))
-                                            {
-                                                aspect.clazz = value.toString();
-                                            }
-                                            else if (name.equals("instrumentorMethod"))
-                                            {
-                                                aspect.method = value.toString();
-                                            }
-                                        }
-
-                                        @Override
-                                        public void visitEnd()
-                                        {
-                                            addAspect(method, aspect);
-                                        }
-                                    };
-                                }
-                                else
-                                {
-                                    return super.visitAnnotation(desc, visible);
-                                }
-                            }
-                        }, META_VISITOR);
+                        recordMethodAnnotation(method, desc);
+                        analyzeAnnotation(method, desc);
                         return super.visitAnnotation(desc, visible);
                     }
+
+                    @Override
+                    public AnnotationVisitor visitParameterAnnotation(int parameter, String desc,
+                            boolean visible)
+                    {
+                        analyzeAnnotation(method, desc);
+                        return super.visitParameterAnnotation(parameter, desc, visible);
+                    }
+
                 };
             }
         }, META_VISITOR);
 
 
     }
+
+    public boolean hasAnnotation(Method method, String desc)
+    {
+        Collection<String> collection = annots.get(method);
+        if (collection == null)
+        {
+            return false;
+        }
+        else
+        {
+            return collection.contains(desc);
+        }
+    }
+
+
+    private void recordMethodAnnotation(Method method, String desc)
+    {
+        Collection<String> collection = annots.get(method);
+        if (collection == null)
+        {
+            collection = new ArrayList<String>(1);
+        }
+        collection.add(desc);
+        annots.put(method, collection);
+    }
+
+    private void analyzeAnnotation(final Method method, String annotDesc)
+    {
+        final String name = Type.getType(annotDesc).getInternalName();
+        byte[] bytecode = loader.loadBytecode(name);
+        if (bytecode == null)
+        {
+            throw new CannotLoadBytecodeException(name);
+        }
+        ClassReader reader = new ClassReader(bytecode);
+        reader.accept(new ClassVisitorAdapter()
+        {
+            @Override
+            public AnnotationVisitor visitAnnotation(String desc, boolean visible)
+            {
+                if (desc.equals("Lsalve/aop/MethodAdvice;"))
+                {
+                    return new AnnotationVisitorAdapter()
+                    {
+                        private final Aspect aspect = new Aspect();
+
+                        @Override
+                        public void visit(String name, Object value)
+                        {
+                            if (name.equals("instrumentorClass"))
+                            {
+                                aspect.clazz = value.toString();
+                            }
+                            else if (name.equals("instrumentorMethod"))
+                            {
+                                aspect.method = value.toString();
+                            }
+                        }
+
+                        @Override
+                        public void visitEnd()
+                        {
+                            addAspect(method, aspect);
+                        }
+                    };
+                }
+                else
+                {
+                    return super.visitAnnotation(desc, visible);
+                }
+            }
+        }, META_VISITOR);
+    }
+
 
     private void addAspect(Method method, Aspect aspect)
     {
@@ -107,7 +150,10 @@ public class AopAnalyzer extends ClassVisitorAdapter
         {
             aspects = new ArrayList<Aspect>(1);
         }
-        aspects.add(aspect);
+        if (!aspects.contains(aspect))
+        {
+            aspects.add(aspect);
+        }
         meta.put(method, aspects);
     }
 
