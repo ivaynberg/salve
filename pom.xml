@@ -195,6 +195,8 @@
 		</pluginManagement>
 	</build>
 
+	<!-- are these still required?? -->
+	<!-- maven central does not allow artifacts that are not self-contained -->
 	<pluginRepositories>
 		<pluginRepository>
 			<id>dstovall.org</id>
@@ -202,6 +204,8 @@
 		</pluginRepository>
 	</pluginRepositories>
 
+	<!-- are these still required?? -->
+	<!-- maven central does not allow artifacts that are not self-contained -->
 	<repositories>
 		<repository>
 			<id>fest</id>
