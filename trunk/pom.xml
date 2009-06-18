@@ -197,21 +197,21 @@
 
 	<!-- are these still required?? -->
 	<!-- maven central does not allow artifacts that are not self-contained -->
-	<pluginRepositories>
-		<pluginRepository>
-			<id>dstovall.org</id>
-			<url>http://dstovall.org/maven2/</url>
-		</pluginRepository>
-	</pluginRepositories>
+	<!--<pluginRepositories>-->
+		<!--<pluginRepository>-->
+			<!--<id>dstovall.org</id>-->
+			<!--<url>http://dstovall.org/maven2/</url>-->
+		<!--</pluginRepository>-->
+	<!--</pluginRepositories>-->
 
 	<!-- are these still required?? -->
 	<!-- maven central does not allow artifacts that are not self-contained -->
-	<repositories>
-		<repository>
-			<id>fest</id>
-			<url>http://fest.googlecode.com/svn/trunk/fest/m2/repository/</url>
-		</repository>
-	</repositories>
+	<!--<repositories>-->
+		<!--<repository>-->
+			<!--<id>fest</id>-->
+			<!--<url>http://fest.googlecode.com/svn/trunk/fest/m2/repository/</url>-->
+		<!--</repository>-->
+	<!--</repositories>-->
 
 	<distributionManagement>
 		<site>
@@ -226,6 +226,15 @@
 			<id>salve-snapshots</id>
 			<url>https://salve.googlecode.com/svn/maven2-snapshots</url>
 		</snapshotRepository>
+		<!--<repository>-->
+		<!--<id>sourceforge</id>-->
+		<!--<url>scp://shell.sourceforge.net/${sourceforge.homedir}/userweb/persistent/maven2</url>-->
+		<!--</repository>-->
+		<!-- 'snapshot' is for testing the upload to sourceforge only -->
+		<!--<snapshotRepository>-->
+		<!--<id>sourceforge</id>-->
+		<!--<url>scp://shell.sourceforge.net/${sourceforge.homedir}/userweb/persistent/maven2</url>-->
+		<!--</snapshotRepository>-->
 	</distributionManagement>
 
 </project>
