@@ -54,6 +54,16 @@ public class ProjectBytecodeLoader extends CompoundLoader {
 			}
 		}
 
+		// append test class path entries if running instrumentation of test classes
+		if(includeTestClasses) {
+			for (Object path : project.getTestClasspathElements()) {
+				dir = new File((String) path);
+				if (dir.exists()) {
+					addLoader(new FilePathLoader(dir));
+				}
+			}
+		}
+
 		// merge provided artifacts into the classpath because instrumentor jars
 		// should be scoped provided
 		Set<Artifact> artifacts = project.getDependencyArtifacts();
