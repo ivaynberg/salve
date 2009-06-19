@@ -25,6 +25,7 @@ import salve.loader.FilePathLoader;
 
 import java.io.File;
 import java.util.Set;
+import java.util.List;
 
 public class ProjectBytecodeLoader extends CompoundLoader {
 
@@ -38,7 +39,7 @@ public class ProjectBytecodeLoader extends CompoundLoader {
 			addLoader(new FilePathLoader(dir));
 		}
 
-		// add target/test-classes folder (production classes must not refer to test-classes, but vice-versa is ok)
+		// add target/test-classes folder if running instrumentation of test classes
 		if(includeTestClasses) {
 			dir = new File(project.getBuild().getTestOutputDirectory());
 			if (dir.exists()) {
@@ -47,22 +48,11 @@ public class ProjectBytecodeLoader extends CompoundLoader {
 		}
 
 		// append project class path entries
-		for (Object path : project.getCompileClasspathElements()) {
-			dir = new File((String) path);
-			if (dir.exists()) {
-				addLoader(new FilePathLoader(dir));
-			}
-		}
+		addClasspathElements(project.getCompileClasspathElements());
 
 		// append test class path entries if running instrumentation of test classes
-		if(includeTestClasses) {
-			for (Object path : project.getTestClasspathElements()) {
-				dir = new File((String) path);
-				if (dir.exists()) {
-					addLoader(new FilePathLoader(dir));
-				}
-			}
-		}
+		if(includeTestClasses)
+			addClasspathElements(project.getTestClasspathElements());
 
 		// merge provided artifacts into the classpath because instrumentor jars
 		// should be scoped provided
@@ -84,4 +74,12 @@ public class ProjectBytecodeLoader extends CompoundLoader {
 		addLoader(new ClassLoaderLoader(system));
 	}
 
+	private void addClasspathElements(final List classpathElements)	{
+		for (Object path : classpathElements) {
+			final File dir = new File((String) path);
+			if (dir.exists()) {
+				addLoader(new FilePathLoader(dir));
+			}
+		}
+	}
 }
