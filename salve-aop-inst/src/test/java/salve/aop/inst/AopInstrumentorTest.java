@@ -1,15 +1,6 @@
 package salve.aop.inst;
 
-import java.io.IOException;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
-
 import salve.Scope;
 import salve.aop.AopInstrumentor;
 import salve.aop.MethodAdvice;
@@ -17,6 +8,13 @@ import salve.aop.MethodInvocation;
 import salve.aop.UndeclaredException;
 import salve.loader.BytecodePool;
 
+import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 //FIXME inheritance - make sure overridden methods are also instrumented in super has annot?
 
@@ -65,6 +63,10 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 
     }
 
+		@MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "checkRole")
+		public @interface CheckRole {
+	    String roleName();
+		}
 
     public static class BeanAdvice
     {
@@ -123,6 +125,18 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
             return "[" + invocation.execute() + "]";
         }
 
+        public static Object checkRole(MethodInvocation invocation) throws Throwable
+        {
+	        final CheckRole checkRole = invocation.getMethod().getAnnotation(CheckRole.class);
+
+	        if(checkRole == null)
+	          return false;
+
+	        invocation.execute();
+
+	        return true;
+        }
+ 
     }
 
 
@@ -202,6 +216,12 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
             return string;
         }
 
+        @CheckRole(roleName = "Administrator")
+        public boolean testSecureOperation()
+        {
+            return true;
+        }
+
     }
 
     public static class Bean3
@@ -264,6 +284,13 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
     {
         Bean2 bean = create("Bean2");
         assertEquals("[HELLO]", bean.test6("hello"));
+    }
+
+    @Test
+    public void shouldPropagateAnnotationsToAspect() throws Exception
+    {
+        Bean2 bean = create("Bean2");
+				assertTrue(bean.testSecureOperation());
     }
 
     @Test
