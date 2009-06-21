@@ -63,11 +63,6 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
 
     }
 
-		@MethodAdvice(instrumentorClass = AopInstrumentorTest.BeanAdvice.class, instrumentorMethod = "checkRole")
-		public @interface CheckRole {
-	    String roleName();
-		}
-
     public static class BeanAdvice
     {
         public static Object simple(MethodInvocation invocation) throws Throwable
@@ -125,18 +120,6 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
             return "[" + invocation.execute() + "]";
         }
 
-        public static Object checkRole(MethodInvocation invocation) throws Throwable
-        {
-	        final CheckRole checkRole = invocation.getMethod().getAnnotation(CheckRole.class);
-
-	        if(checkRole == null)
-	          return false;
-
-	        invocation.execute();
-
-	        return true;
-        }
- 
     }
 
 
@@ -216,12 +199,6 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
             return string;
         }
 
-        @CheckRole(roleName = "Administrator")
-        public boolean testSecureOperation()
-        {
-            return true;
-        }
-
     }
 
     public static class Bean3
@@ -284,13 +261,6 @@ public class AopInstrumentorTest extends AbstractAopInstrumentorTestSupport
     {
         Bean2 bean = create("Bean2");
         assertEquals("[HELLO]", bean.test6("hello"));
-    }
-
-    @Test
-    public void shouldPropagateAnnotationsToAspect() throws Exception
-    {
-        Bean2 bean = create("Bean2");
-				assertTrue(bean.testSecureOperation());
     }
 
     @Test
