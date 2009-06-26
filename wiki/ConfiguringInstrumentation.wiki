@@ -46,13 +46,13 @@ Add the following lines to pom.xml
     <!-- salve dependency injection -->
     <groupId>salve</groupId>
     <artifactId>salve-depend</artifactId>
-    <version>1.1</version>
+    <version>1.0</version>
    </dependency>
   <dependency>
     <!-- salve dependency instrumentor -->
     <groupId>salve</groupId>
     <artifactId>salve-depend-inst</artifactId>
-    <version>1.1</version>
+    <version>1.0</version>
     <!-- no need to include this in final packaging -->
     <scope>provided</scope>
   </dependency>
@@ -63,6 +63,7 @@ Add the following lines to pom.xml
     <plugin>
       <groupId>salve</groupId>
       <artifactId>maven-salve-plugin</artifactId>
+      <version>1.0</version>
       <!--<configuration>-->
         <!-- print the instrumented classes on the console -->
         <!--<verbose>true</verbose>-->
@@ -92,13 +93,13 @@ In legacy versions before 1.1 the configuration was slightly different:
     <!-- salve dependency injection -->
     <groupId>salve</groupId>
     <artifactId>salve-depend</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
    </dependency>
   <dependency>
     <!-- salve dependency instrumentor -->
     <groupId>salve</groupId>
     <artifactId>salve-depend-inst</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <!-- no need to include this in final packaging -->
     <scope>provided</scope>
   </dependency>
@@ -109,6 +110,7 @@ In legacy versions before 1.1 the configuration was slightly different:
     <plugin>
       <groupId>salve</groupId>
       <artifactId>salve-maven2</artifactId>
+      <version>1.1</version>
       <executions>
         <execution>
           <phase>process-classes</phase>
