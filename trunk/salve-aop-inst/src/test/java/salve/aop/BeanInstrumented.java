@@ -2,8 +2,14 @@ package salve.aop;
 
 import java.lang.reflect.Method;
 
-import salve.aop.inst.AopInstrumentorTest.BeanAdvice;
+import salve.aop.inst.BasicAspectsTest.BeanAdvice;
 
+/**
+ * Simply here for bytecode exploration at dev time, nothing functional
+ * 
+ * @author igor.vaynberg
+ * 
+ */
 public class BeanInstrumented
 {
     // @Traced

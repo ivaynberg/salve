@@ -1,14 +1,13 @@
 package salve.aop;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.Label;
-import salve.asmlib.Method;
 import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
@@ -34,11 +33,12 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     {
         super.visit(version, access, name, signature, superName, interfaces);
         this.owner = name;
+//        System.out.println("instrumenting: " + owner);
     }
 
-    protected String newAopDelegateMethodName(Method method)
+    protected String newAopDelegateMethodName(Method method, Aspect aspect)
     {
-        return "_salve_aop" + uuid() + "$" + method.getName();
+        return method.getName() + "$salve_aop_" + aspect.method + "_" + uuid();
     }
 
 
@@ -46,7 +46,11 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     public MethodVisitor visitMethod(int access, final String name, final String desc,
             final String signature, final String[] exceptions)
     {
-        Method method = new Method(name, desc);
+        final String homeName = name;
+        final String homeOwner = owner;
+        final String homeDesc = desc;
+
+        Method method = new Method(access, name, desc);
         List<Aspect> aspects = new ArrayList<Aspect>();
         for (Aspect aspect : analyzer.getAspects(method))
         {
@@ -56,7 +60,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             }
         }
 
-        if (aspects.isEmpty() || analyzer.hasAnnotation(method, getMarkerAnnotationDesc()))
+        if (aspects.isEmpty() ||
+                analyzer.hasAnnotation(method, getAlreadyInstrumentedMarkerAnnotationDesc()))
         {
             return cv.visitMethod(access, name, desc, signature, exceptions);
         }
@@ -66,11 +71,14 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         MethodVisitor home = null;
         for (Aspect aspect : aspects)
         {
-            delegateName = newAopDelegateMethodName(method);
+            delegateName = newAopDelegateMethodName(method, aspect);
 
             // create origin method which will call the delegate
             MethodVisitor originmv = cv
                     .visitMethod(access, originName, desc, signature, exceptions);
+
+//            System.out.println("!adding method: " + owner + "#" + originName + " " + desc);
+
             home = (home == null) ? originmv : home;
             GeneratorAdapter origin = new GeneratorAdapter(originmv, access, name, desc);
 
@@ -245,11 +253,34 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
         }
 
-        MethodVisitor delegate = cv.visitMethod(access, delegateName, desc, signature, exceptions);
-        delegate.visitAnnotation(getMarkerAnnotationDesc(), true);
+        final OverrideInfo info = analyzer.getOverrideInfo(method);
+        if (info != null)
+        {
+            // FIXME wtf?
+            // +pubic <init> ()V is overridden by:
+            // _salve_aop5$test8@salve/aop/inst/BasicAspectsTest$Bean2
 
-        // mark entry method as processed
-        home.visitAnnotation(getMarkerAnnotationDesc(), true);
+
+//            System.out.println("+" + owner + "#" + method + " is overridden by: " +
+//                    info.getType()+"#"+info.getRootDelegateMethodName() );
+        }
+        else
+        {
+//            System.out.println("-" + method + " does not override any method");
+        }
+
+        MethodVisitor delegate = cv.visitMethod(access, delegateName, desc, signature, exceptions);
+//        System.out.println("!implementing final delegate: " + owner + "#" + delegateName + " " +
+//                desc);
+
+        // mark entry method as processed and denote the root delegate method name - the one that
+        // contains the original code
+        AnnotationVisitor visitor = home.visitAnnotation(
+                getAlreadyInstrumentedMarkerAnnotationDesc(), true);
+        visitor.visit("root", delegateName);
+//        System.out.println("!final root: " + delegateName);
+
+        visitor.visitEnd();
 
         final MethodVisitor _home = home;
         return new MethodAdapter(delegate)
@@ -258,6 +289,27 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             public AnnotationVisitor visitAnnotation(String desc, boolean visible)
             {
                 return _home.visitAnnotation(desc, visible);
+            }
+
+            @Override
+            public void visitMethodInsn(int opcode, String owner, String name, String desc)
+            {
+                if (opcode == Opcodes.INVOKESPECIAL)
+                {
+                    final OverrideInfo o = info;
+                    if (info != null && info.getType().equals(owner) &&
+                            info.getMethod().equals(name) && desc.equals(info.getDesc()))
+                    {
+//                        System.out.println(">>> DETECTED SUPER CALL in " + homeOwner + "#" +
+//                                homeName + " " + homeDesc + " to " + owner + "#" + name + " " +
+//                                desc + " REDIRECTING TO: " + info.getRootDelegateMethodName());
+
+                        super.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, info
+                                .getRootDelegateMethodName(), desc);
+                        return;
+                    }
+                }
+                super.visitMethodInsn(opcode, owner, name, desc);
             }
         };
     }
@@ -280,7 +332,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         return true;
     }
 
-    protected String getMarkerAnnotationDesc()
+    protected String getAlreadyInstrumentedMarkerAnnotationDesc()
     {
         return "Lsalve/aop/Instrumented;";
     }
@@ -297,8 +349,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         }
     }
 
-    protected int uuid()
+    protected String uuid()
     {
-        return uuid++;
+        return UUID.randomUUID().toString().replaceAll("[^a-z0-9]", "");
     }
 }

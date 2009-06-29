@@ -127,6 +127,7 @@ public class BytecodePool extends CompoundLoader {
 	@Override
 	public byte[] loadBytecode(String className) {
 		byte[] bytecode = cache.get(className);
+
 		if (bytecode == null) {
 			bytecode = super.loadBytecode(className);
 			if (bytecode == null) {
