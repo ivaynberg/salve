@@ -58,7 +58,7 @@ public class SignatureVisitorAdapter implements SignatureVisitor {
 
 	/** {@inheritDoc} */
 	public SignatureVisitor visitParameterType() {
-		System.out.println("visit param type");
+		// System.out.println("visit param type");
 		return this;
 	}
 
