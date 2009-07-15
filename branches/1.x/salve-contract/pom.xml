@@ -10,12 +10,4 @@
 	<artifactId>salve-contract</artifactId>
 	<name>Salve Contract</name>
 
-	<dependencies>
-		<dependency>
-			<groupId>salve</groupId>
-			<artifactId>salve-inst</artifactId>
-			<version>1.2-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
-
 </project>
