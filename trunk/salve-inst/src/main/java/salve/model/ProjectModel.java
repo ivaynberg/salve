@@ -33,8 +33,13 @@ public class ProjectModel {
 		return model;
 	}
 
+	BytecodeLoader getLoader() {
+		return loader;
+	}
+
 	public void update(byte[] bytecode) {
 		ClassReader reader = new ClassReader(bytecode);
 		reader.accept(new ModelUpdateVisitor(this, new ClassVisitorAdapter()), 0);
 	}
+
 }

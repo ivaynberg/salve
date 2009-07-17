@@ -42,5 +42,9 @@ class Aspect
         return true;
     }
 
-
+    @Override
+    public String toString()
+    {
+        return "[" + getClass().getSimpleName() + " clazz=" + clazz + ", method=" + method + "]";
+    }
 }
