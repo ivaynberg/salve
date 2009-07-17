@@ -20,15 +20,12 @@ public class AopInstrumentor implements Instrumentor
             throw new CannotLoadBytecodeException(className);
         }
 
-        AopAnalyzer analyzer = new AopAnalyzer(ctx.getLoader());
-        analyzer.analyze(bytecode);
-
         ClassReader reader = new ClassReader(bytecode);
 
         ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx
                 .getLoader());
 
-        reader.accept(new ClassInstrumentor(writer, analyzer), ClassReader.EXPAND_FRAMES);
+        reader.accept(new ClassInstrumentor(writer, ctx.getModel()), ClassReader.EXPAND_FRAMES);
         bytecode = writer.toByteArray();
 
         return bytecode;

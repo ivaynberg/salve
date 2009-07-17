@@ -3,6 +3,8 @@ package salve.model;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import salve.asmlib.Type;
+
 public class AnnotationModel {
 	public static class EnumField extends Field {
 		private final String desc;
@@ -81,4 +83,11 @@ public class AnnotationModel {
 		return desc;
 	}
 
+	public Field getField(String name) {
+		return fields.get(name);
+	}
+
+	public String getName() {
+		return Type.getType(desc).getInternalName();
+	}
 }

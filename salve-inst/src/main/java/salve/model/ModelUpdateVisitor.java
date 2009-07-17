@@ -95,7 +95,7 @@ public class ModelUpdateVisitor extends ClassAdapter {
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		super.visit(version, access, name, signature, superName, interfaces);
-		current = new ClassModel(access, name, signature, superName, interfaces);
+		current = new ClassModel(model, access, name, signature, superName, interfaces);
 		model.add(current);
 	}
 
@@ -122,9 +122,10 @@ public class ModelUpdateVisitor extends ClassAdapter {
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		MethodModel mm = new MethodModel(access, name, desc, signature, exceptions);
+		MethodModel mm = new MethodModel(current, access, name, desc, signature, exceptions);
 		current.add(mm);
-		return super.visitMethod(access, name, desc, signature, exceptions);
+		MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
+		return new ModelMethodVisitor(mv, mm);
 	}
 
 	@Override

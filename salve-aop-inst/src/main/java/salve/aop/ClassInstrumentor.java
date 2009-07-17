@@ -1,7 +1,9 @@
 package salve.aop;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import salve.asmlib.AnnotationVisitor;
@@ -12,19 +14,25 @@ import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
+import salve.model.AnnotationModel;
+import salve.model.ClassModel;
+import salve.model.MethodModel;
+import salve.model.ProjectModel;
+import salve.model.AnnotationModel.ValueField;
+import salve.model.MethodModel.ParameterAnnotations;
 import salve.util.asm.AsmUtil;
 import salve.util.asm.GeneratorAdapter;
 
 class ClassInstrumentor extends ClassAdapter implements Opcodes
 {
-    private final AopAnalyzer analyzer;
     private String owner;
     private int uuid;
+    private final ProjectModel model;
 
-    public ClassInstrumentor(ClassVisitor cv, AopAnalyzer analyzer)
+    public ClassInstrumentor(ClassVisitor cv, ProjectModel model)
     {
         super(cv);
-        this.analyzer = analyzer;
+        this.model = model;
     }
 
     @Override
@@ -33,7 +41,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     {
         super.visit(version, access, name, signature, superName, interfaces);
         this.owner = name;
-//        System.out.println("instrumenting: " + owner);
+// System.out.println("instrumenting: " + owner);
     }
 
     protected String newAopDelegateMethodName(Method method, Aspect aspect)
@@ -51,17 +59,68 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         final String homeDesc = desc;
 
         Method method = new Method(access, name, desc);
-        List<Aspect> aspects = new ArrayList<Aspect>();
-        for (Aspect aspect : analyzer.getAspects(method))
+        Set<Aspect> aspects = new HashSet<Aspect>();
+
+        MethodModel mm = model.getClass(owner).getMethod(name, desc);
+        boolean inheritedOnly = false;
+        while (mm != null)
         {
-            if (accept(aspect))
+            List<AnnotationModel> annots = new ArrayList();
+            annots.addAll(mm.getAnnotations());
+            if (mm.getParameterAnnots() != null)
             {
-                aspects.add(aspect);
+                for (ParameterAnnotations pa : mm.getParameterAnnots())
+                {
+                    if (pa != null)
+                    {
+                        annots.addAll(pa.getAnnotations());
+                    }
+                }
             }
+
+            for (AnnotationModel annot : annots)
+            {
+                ClassModel acm = model.getClass(annot.getName());
+                AnnotationModel aspectAnnot = acm.getAnnotation("Lsalve/aop/MethodAdvice;");
+                boolean inherited = acm.getAnnotation("Ljava/lang/annotation/Inherited;") != null;
+                if (aspectAnnot != null && (!inheritedOnly || (inheritedOnly && inherited)))
+                {
+                    final String ic = ((ValueField)aspectAnnot.getField("instrumentorClass"))
+                            .getValue().toString();
+                    final String im = ((ValueField)aspectAnnot.getField("instrumentorMethod"))
+                            .getValue().toString();
+
+                    Aspect aspect = new Aspect();
+                    aspect.clazz = ic;
+                    aspect.method = im;
+                    aspects.add(aspect);
+                }
+            }
+            mm = mm.getSuper();
+            inheritedOnly = true;
         }
+        mm = model.getClass(owner).getMethod(name, desc);
+
+// System.out.println("=============" + method + "==============");
+// for (Aspect aspect : aspects)
+// {
+// System.out.println("1: " + aspect);
+// }
+// aspects.clear();
+// for (Aspect aspect : analyzer.getAspects(method))
+// {
+// if (accept(aspect))
+// {
+// aspects.add(aspect);
+// }
+// }
+// for (Aspect aspect : aspects)
+// {
+// System.out.println("2: " + aspect);
+// }
 
         if (aspects.isEmpty() ||
-                analyzer.hasAnnotation(method, getAlreadyInstrumentedMarkerAnnotationDesc()))
+                mm.getAnnotation(getAlreadyInstrumentedMarkerAnnotationDesc()) != null)
         {
             return cv.visitMethod(access, name, desc, signature, exceptions);
         }
@@ -77,7 +136,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             MethodVisitor originmv = cv
                     .visitMethod(access, originName, desc, signature, exceptions);
 
-//            System.out.println("!adding method: " + owner + "#" + originName + " " + desc);
+// System.out.println("!adding method: " + owner + "#" + originName + " " + desc);
 
             home = (home == null) ? originmv : home;
             GeneratorAdapter origin = new GeneratorAdapter(originmv, access, name, desc);
@@ -253,7 +312,20 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
         }
 
-        final OverrideInfo info = analyzer.getOverrideInfo(method);
+        OverrideInfo info2 = null;
+        if (mm.getSuper() != null)
+        {
+            MethodModel sup = mm.getSuper();
+            AnnotationModel root = sup.getAnnotation("Lsalve/aop/Instrumented;");
+            if (root != null)
+            {
+                info2 = new OverrideInfo(sup.getClassModel().getName(), sup.getName(), sup
+                        .getDesc(), ((ValueField)root.getField("root")).getValue().toString());
+            }
+        }
+        final OverrideInfo info = info2;
+
+        // final OverrideInfo info = analyzer.getOverrideInfo(method);
         if (info != null)
         {
             // FIXME wtf?
@@ -261,24 +333,24 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             // _salve_aop5$test8@salve/aop/inst/BasicAspectsTest$Bean2
 
 
-//            System.out.println("+" + owner + "#" + method + " is overridden by: " +
-//                    info.getType()+"#"+info.getRootDelegateMethodName() );
+// System.out.println("+" + owner + "#" + method + " is overridden by: " +
+// info.getType()+"#"+info.getRootDelegateMethodName() );
         }
         else
         {
-//            System.out.println("-" + method + " does not override any method");
+// System.out.println("-" + method + " does not override any method");
         }
 
         MethodVisitor delegate = cv.visitMethod(access, delegateName, desc, signature, exceptions);
-//        System.out.println("!implementing final delegate: " + owner + "#" + delegateName + " " +
-//                desc);
+// System.out.println("!implementing final delegate: " + owner + "#" + delegateName + " " +
+// desc);
 
         // mark entry method as processed and denote the root delegate method name - the one that
         // contains the original code
         AnnotationVisitor visitor = home.visitAnnotation(
                 getAlreadyInstrumentedMarkerAnnotationDesc(), true);
         visitor.visit("root", delegateName);
-//        System.out.println("!final root: " + delegateName);
+// System.out.println("!final root: " + delegateName);
 
         visitor.visitEnd();
 
@@ -300,9 +372,9 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
                     if (info != null && info.getType().equals(owner) &&
                             info.getMethod().equals(name) && desc.equals(info.getDesc()))
                     {
-//                        System.out.println(">>> DETECTED SUPER CALL in " + homeOwner + "#" +
-//                                homeName + " " + homeDesc + " to " + owner + "#" + name + " " +
-//                                desc + " REDIRECTING TO: " + info.getRootDelegateMethodName());
+// System.out.println(">>> DETECTED SUPER CALL in " + homeOwner + "#" +
+// homeName + " " + homeDesc + " to " + owner + "#" + name + " " +
+// desc + " REDIRECTING TO: " + info.getRootDelegateMethodName());
 
                         super.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, info
                                 .getRootDelegateMethodName(), desc);

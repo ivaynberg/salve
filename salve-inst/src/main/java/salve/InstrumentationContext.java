@@ -1,5 +1,7 @@
 package salve;
 
+import salve.model.ProjectModel;
+
 /**
  * Represents context in which the instrumentor runs
  * 
@@ -11,6 +13,7 @@ public class InstrumentationContext {
 	private final BytecodeLoader loader;
 	private final InstrumentorMonitor monitor;
 	private final Scope scope;
+	private final ProjectModel model;
 
 	/**
 	 * Constructor
@@ -38,6 +41,7 @@ public class InstrumentationContext {
 		this.loader = loader;
 		this.monitor = monitor;
 		this.scope = scope;
+		this.model = new ProjectModel(loader);
 	}
 
 	/**
@@ -45,6 +49,10 @@ public class InstrumentationContext {
 	 */
 	public BytecodeLoader getLoader() {
 		return loader;
+	}
+
+	public ProjectModel getModel() {
+		return model;
 	}
 
 	/**

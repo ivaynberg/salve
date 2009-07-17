@@ -1,6 +1,7 @@
 package salve.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ public class ClassModel {
 		return name + "|" + desc;
 	}
 
+	private final ProjectModel project;
 	private final int access;
 	private final String name;
 	private final String signature;
@@ -19,10 +21,11 @@ public class ClassModel {
 	private final Map<String, MethodModel> methods = new LinkedHashMap<String, MethodModel>();
 	private final Map<String, AnnotationModel> annots = new LinkedHashMap<String, AnnotationModel>();
 	private final List<InnerClassModel> inner = new ArrayList<InnerClassModel>(0);
-
 	private OuterClassModel outer = null;
 
-	public ClassModel(int access, String name, String signature, String superClass, String[] interfaces) {
+	public ClassModel(ProjectModel project, int access, String name, String signature, String superClass,
+			String[] interfaces) {
+		this.project = project;
 		this.access = access;
 		this.name = name;
 		this.signature = signature;
@@ -50,6 +53,10 @@ public class ClassModel {
 		return access;
 	}
 
+	public AnnotationModel getAnnotation(String desc) {
+		return annots.get(desc);
+	}
+
 	public FieldModel getField(String name) {
 		return fields.get(name);
 	}
@@ -62,8 +69,16 @@ public class ClassModel {
 		return methods.get(getMethodIdentity(name, desc));
 	}
 
+	public Collection<MethodModel> getMethods() {
+		return methods.values();
+	}
+
 	public String getName() {
 		return name;
+	}
+
+	public ProjectModel getProject() {
+		return project;
 	}
 
 	public String getSignature() {
