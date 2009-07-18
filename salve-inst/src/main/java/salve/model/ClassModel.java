@@ -85,7 +85,11 @@ public class ClassModel {
 		return signature;
 	}
 
-	public String getSuperClass() {
+	public ClassModel getSuperClass() {
+		return project.getClass(superClass);
+	}
+
+	public String getSuperClassName() {
 		return superClass;
 	}
 

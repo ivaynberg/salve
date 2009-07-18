@@ -44,7 +44,9 @@ public abstract class AbstractInstrumentor implements Instrumentor {
 		if (ctx.getScope().includes(className)) {
 
 			try {
-				return internalInstrument(className, ctx);
+				byte[] bytecode = internalInstrument(className, ctx);
+				ctx.getModel().notifyUpdateListeners(className);
+				return bytecode;
 			} catch (InstrumentationException e) {
 				throw e;
 			} catch (Exception e) {

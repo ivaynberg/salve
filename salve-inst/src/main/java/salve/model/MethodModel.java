@@ -64,8 +64,8 @@ public class MethodModel {
 
 		ClassModel cursor = clazz;
 
-		while (cursor.getSuperClass() != null) {
-			cursor = cursor.getProject().getClass(cursor.getSuperClass());
+		while (cursor.getSuperClassName() != null) {
+			cursor = cursor.getProject().getClass(cursor.getSuperClassName());
 			for (MethodModel mm : cursor.getMethods()) {
 				Method m = new Method(mm.getAccess(), mm.getName(), mm.getDesc());
 				if (m.canOverride(t)) {
@@ -114,10 +114,25 @@ public class MethodModel {
 
 	public MethodModel getSuper() {
 		if (!superMethodCached) {
-			if (clazz.getSuperClass() != null) {
-				superMethod = findSuper(clazz.getSuperClass(), this);
+			if (clazz.getSuperClassName() != null) {
+				superMethod = findSuper(clazz.getSuperClassName(), this);
 			}
 			superMethodCached = true;
+
+			ClassModel parent = clazz.getSuperClass();
+			while (parent != null) {
+				clazz.getProject().register(parent.getName(), new UpdateListener() {
+
+					public Action updated() {
+						superMethodCached = false;
+						superMethod = null;
+						return Action.REMOVE;
+					}
+
+				});
+				parent = parent.getSuperClass();
+			}
+
 		}
 		return superMethod;
 	}
