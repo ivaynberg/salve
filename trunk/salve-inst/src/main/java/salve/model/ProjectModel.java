@@ -59,5 +59,6 @@ public class ProjectModel {
 	public void update(byte[] bytecode) {
 		ClassReader reader = new ClassReader(bytecode);
 		reader.accept(new ModelUpdateVisitor(this, new ClassVisitorAdapter()), 0);
+		notifyUpdateListeners(reader.getClassName());
 	}
 }

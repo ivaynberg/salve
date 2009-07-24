@@ -61,6 +61,7 @@ import salve.eclipse.JavaProjectBytecodeLoader;
 import salve.loader.BytecodePool;
 import salve.loader.CompoundLoader;
 import salve.loader.FilePathLoader;
+import salve.model.ProjectModel;
 import salve.monitor.NoopMonitor;
 import salve.util.FallbackBytecodeClassLoader;
 import salve.util.LruCache;
@@ -78,6 +79,8 @@ public class SalveBuilder extends AbstractBuilder
     private final JarEntry NOT_IN_JAR;
 
     private final Set<String> clearedMarkers = new HashSet<String>();
+
+    private ProjectModel model;
 
     public SalveBuilder()
     {
@@ -332,7 +335,7 @@ public class SalveBuilder extends AbstractBuilder
                 cl.addLoader(bloader);
 
                 InstrumentationContext ctx = new InstrumentationContext(cl, NoopMonitor.INSTANCE,
-                        config.getScope(inst));
+                        config.getScope(inst), new ProjectModel(cl));
 
                 byte[] bytecode = inst.instrument(cn, ctx);
                 file.setContents(new ByteArrayInputStream(bytecode), true, false, null);
