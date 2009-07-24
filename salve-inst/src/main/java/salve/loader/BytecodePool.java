@@ -20,6 +20,7 @@ import salve.BytecodeLoader;
 import salve.InstrumentationContext;
 import salve.Instrumentor;
 import salve.Scope;
+import salve.model.ProjectModel;
 import salve.monitor.NoopMonitor;
 import salve.util.ClassesUtil;
 import salve.util.LruCache;
@@ -39,6 +40,8 @@ public class BytecodePool extends CompoundLoader {
 
 	private final Scope scope;
 
+	private final ProjectModel model;
+
 	/**
 	 * Constructor
 	 * 
@@ -47,6 +50,7 @@ public class BytecodePool extends CompoundLoader {
 	 */
 	public BytecodePool(Scope scope) {
 		this.scope = scope;
+		this.model = new ProjectModel(this);
 	}
 
 	/**
@@ -100,7 +104,7 @@ public class BytecodePool extends CompoundLoader {
 	 * @throws Exception
 	 */
 	public byte[] instrumentIntoBytecode(String className, Instrumentor inst) throws Exception {
-		InstrumentationContext ctx = new InstrumentationContext(this, NoopMonitor.INSTANCE, scope);
+		InstrumentationContext ctx = new InstrumentationContext(this, NoopMonitor.INSTANCE, scope, model);
 		byte[] bytecode = inst.instrument(className, ctx);
 		save(className, bytecode);
 		return bytecode;

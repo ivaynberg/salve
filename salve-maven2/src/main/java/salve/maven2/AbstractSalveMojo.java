@@ -16,26 +16,33 @@
  */
 package salve.maven2;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.project.MavenProject;
-import salve.*;
-import salve.config.XmlConfig;
-import salve.config.XmlConfigReader;
-import salve.maven2.util.ClassFileVisitor;
-import salve.maven2.util.Directory;
-import salve.maven2.util.ProjectBytecodeLoader;
-import salve.monitor.ModificationMonitor;
-import salve.util.FallbackBytecodeClassLoader;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
+
+import salve.CodeMarker;
+import salve.CodeMarkerAware;
+import salve.ConfigException;
+import salve.InstrumentationContext;
+import salve.Instrumentor;
+import salve.config.XmlConfig;
+import salve.config.XmlConfigReader;
+import salve.maven2.util.ClassFileVisitor;
+import salve.maven2.util.Directory;
+import salve.maven2.util.ProjectBytecodeLoader;
+import salve.model.ProjectModel;
+import salve.monitor.ModificationMonitor;
+import salve.util.FallbackBytecodeClassLoader;
+
 /**
- * Salve maven2 base mojo. This provides instrumentation for production and test classes.
+ * Salve maven2 base mojo. This provides instrumentation for production and test
+ * classes.
  */
 public abstract class AbstractSalveMojo extends AbstractMojo {
 
@@ -43,10 +50,10 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	private int instrumented = 0;
 	private final XmlConfig config = new XmlConfig();
 	private ProjectBytecodeLoader loader;
-
+	private ProjectModel model;
 	/**
 	 * Maven project we are building
-	 *
+	 * 
 	 * @parameter expression="${project}"
 	 * @required
 	 * @readonly
@@ -55,27 +62,29 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 
 	/**
 	 * be verbose: print instrumented files on console
-	 *
+	 * 
 	 * @parameter expression="${salve.maven2.verbose}"
 	 */
-	private boolean verbose = false;
+	private final boolean verbose = false;
 
 	/**
-	 * show debug info: show which files are scanned and which instrumentors are applied
-	 *
+	 * show debug info: show which files are scanned and which instrumentors are
+	 * applied
+	 * 
 	 * @parameter expression="${salve.maven2.debug}"
 	 */
-	private boolean debug = false;
+	private final boolean debug = false;
 
 	/**
 	 * instruments either production or test classes
-	 *
-	 * @param instrumentTestClasses <code>false</code> in order to instrument production classes,
-	 *                    <code>false</code> to instrument test classes
-	 * @throws MojoExecutionException when class file instrumentation did not succeed
+	 * 
+	 * @param instrumentTestClasses
+	 *            <code>false</code> in order to instrument production classes,
+	 *            <code>false</code> to instrument test classes
+	 * @throws MojoExecutionException
+	 *             when class file instrumentation did not succeed
 	 */
-	protected final void instrumentClasses(final boolean instrumentTestClasses) throws MojoExecutionException
-	{
+	protected final void instrumentClasses(final boolean instrumentTestClasses) throws MojoExecutionException {
 		final File classesDir = new File(project.getBuild().getOutputDirectory());
 
 		// make sure target/classes has been created
@@ -89,12 +98,14 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 			throw new MojoExecutionException("Could not configure bytecode loader", e);
 		}
 
+		model = new ProjectModel(loader);
+
 		loadConfig(classesDir);
 
-		if(instrumentTestClasses) {
+		if (instrumentTestClasses) {
 			// instrument test classes (if any exist)
 			final File testClassesDir = new File(project.getBuild().getTestOutputDirectory());
-			if(testClassesDir.exists()) {
+			if (testClassesDir.exists()) {
 				instrumentClassFileDirectory(testClassesDir);
 			}
 		} else {
@@ -105,28 +116,17 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 		getLog().info(String.format("Salve: classes scanned: %d, instrumented: %d", scanned, instrumented));
 	}
 
-	private void instrumentClassFileDirectory(final File classesDir)
-	{
-		// visit class files and instrument them
-		Directory dir = new Directory(classesDir);
-		dir.visitFiles(new ClassFileVisitor(dir) {
-
-			@Override
-			protected void onClassFile(File file, String className) {
-				instrumentClassFile(className, file);
-			}
-		});
-	}
-
 	/**
 	 * Instruments the specified class file
-	 *
-	 * @param className name of the java class
-	 * @param file file to instrument
+	 * 
+	 * @param className
+	 *            name of the java class
+	 * @param file
+	 *            file to instrument
 	 */
 	private void instrumentClassFile(String className, File file) {
 
-		if(debug)
+		if (debug)
 			getLog().info("Scanning " + className);
 		scanned++;
 
@@ -135,21 +135,21 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 		try {
 			ModificationMonitor monitor = new ModificationMonitor();
 			for (Instrumentor inst : config.getInstrumentors(binClassName)) {
-				if(debug)
+				if (debug)
 					getLog().info("Checking " + className + " to apply " + inst.getClass().getName());
 
-				InstrumentationContext ctx = new InstrumentationContext(loader, monitor, config.getScope(inst));
+				InstrumentationContext ctx = new InstrumentationContext(loader, monitor, config.getScope(inst), model);
 
 				byte[] bytecode = inst.instrument(binClassName, ctx);
 				final FileOutputStream fos = new FileOutputStream(file);
-				try { 
+				try {
 					fos.write(bytecode);
-				}	finally {
+				} finally {
 					fos.close();
 				}
 			}
 			if (monitor.isModified()) {
-				if(verbose)
+				if (verbose)
 					getLog().info("Instrumented " + className);
 				instrumented++;
 			}
@@ -170,9 +170,23 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 		}
 	}
 
+	private void instrumentClassFileDirectory(final File classesDir) {
+		// visit class files and instrument them
+		Directory dir = new Directory(classesDir);
+		dir.visitFiles(new ClassFileVisitor(dir) {
+
+			@Override
+			protected void onClassFile(File file, String className) {
+				instrumentClassFile(className, file);
+			}
+		});
+	}
+
 	/**
-	 * @param classes class files root directory
-	 * @throws MojoExecutionException when config loading has failed
+	 * @param classes
+	 *            class files root directory
+	 * @throws MojoExecutionException
+	 *             when config loading has failed
 	 */
 	private void loadConfig(final File classes) throws MojoExecutionException {
 
@@ -181,8 +195,8 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 			throw new MojoExecutionException("Could not locate salve config file: " + salvexml);
 		}
 
-		XmlConfigReader reader = new XmlConfigReader(new FallbackBytecodeClassLoader(AbstractSalveMojo.class.getClassLoader(),
-				loader));
+		XmlConfigReader reader = new XmlConfigReader(new FallbackBytecodeClassLoader(AbstractSalveMojo.class
+				.getClassLoader(), loader));
 		try {
 			reader.read(new FileInputStream(salvexml), config);
 		} catch (FileNotFoundException e) {

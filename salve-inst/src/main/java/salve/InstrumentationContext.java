@@ -27,7 +27,7 @@ public class InstrumentationContext {
 	 *            scope used to identify classes that are within instrumentation
 	 *            scope
 	 */
-	public InstrumentationContext(BytecodeLoader loader, InstrumentorMonitor monitor, Scope scope) {
+	public InstrumentationContext(BytecodeLoader loader, InstrumentorMonitor monitor, Scope scope, ProjectModel model) {
 		if (loader == null) {
 			throw new IllegalArgumentException("Argument `loader` cannot be null");
 		}
@@ -37,11 +37,14 @@ public class InstrumentationContext {
 		if (scope == null) {
 			throw new IllegalArgumentException("Argument `scope` cannot be null");
 		}
+		if (model == null) {
+			throw new IllegalArgumentException("Argument `model` cannot be null");
+		}
 
 		this.loader = loader;
 		this.monitor = monitor;
 		this.scope = scope;
-		this.model = new ProjectModel(loader);
+		this.model = model;
 	}
 
 	/**
