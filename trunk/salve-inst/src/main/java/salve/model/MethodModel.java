@@ -15,10 +15,21 @@ public class MethodModel {
 			annots = new LinkedHashMap<String, AnnotationModel>();
 		}
 
+		public AnnotationModel getAnnot(String desc) {
+			return annots.get(desc);
+		}
+
 		public Collection<AnnotationModel> getAnnotations() {
 			return annots.values();
 		}
 
+		public boolean hasAnnot(String desc) {
+			return getAnnot(desc) != null;
+		}
+
+		public boolean hasAnnot(Type type) {
+			return hasAnnot(type.getDescriptor());
+		}
 	}
 
 	private final ClassModel clazz;
