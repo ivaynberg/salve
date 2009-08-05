@@ -20,6 +20,11 @@ public class ProjectModel {
 		this.loader = loader;
 	}
 
+	void add(byte[] bytecode) {
+		ClassReader reader = new ClassReader(bytecode);
+		reader.accept(new ModelUpdateVisitor(this, new ClassVisitorAdapter()), 0);
+	}
+
 	ProjectModel add(ClassModel cm) {
 		classes.put(cm.getName(), cm);
 		return this;
@@ -30,7 +35,7 @@ public class ProjectModel {
 		if (model == null) {
 			byte[] bytecode = loader.loadBytecode(name);
 			if (bytecode != null) {
-				update(bytecode);
+				add(bytecode);
 				model = classes.get(name);
 			}
 		}
