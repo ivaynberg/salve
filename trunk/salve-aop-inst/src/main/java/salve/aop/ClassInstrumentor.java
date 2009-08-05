@@ -119,8 +119,10 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 // System.out.println("2: " + aspect);
 // }
 
-        if (aspects.isEmpty() ||
-                mm.getAnnotation(getAlreadyInstrumentedMarkerAnnotationDesc()) != null)
+        boolean alreadyInstrumented = mm
+                .getAnnotation(getAlreadyInstrumentedMarkerAnnotationDesc()) != null;
+
+        if (aspects.isEmpty() || alreadyInstrumented)
         {
             return cv.visitMethod(access, name, desc, signature, exceptions);
         }

@@ -54,7 +54,7 @@ public class ProjectModel {
 					it.remove();
 			}
 		}
-		classes.remove(cn);
+
 	}
 
 	public void register(String cn, UpdateListener listener) {
@@ -63,7 +63,11 @@ public class ProjectModel {
 
 	public void update(byte[] bytecode) {
 		ClassReader reader = new ClassReader(bytecode);
-		reader.accept(new ModelUpdateVisitor(this, new ClassVisitorAdapter()), 0);
+
 		notifyUpdateListeners(reader.getClassName());
+		classes.remove(reader.getClassName());
+
+		reader.accept(new ModelUpdateVisitor(this, new ClassVisitorAdapter()), 0);
+
 	}
 }

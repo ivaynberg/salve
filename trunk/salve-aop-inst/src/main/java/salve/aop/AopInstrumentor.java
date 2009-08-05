@@ -27,7 +27,9 @@ public class AopInstrumentor implements Instrumentor
 
         reader.accept(new ClassInstrumentor(writer, ctx.getModel()), ClassReader.EXPAND_FRAMES);
         bytecode = writer.toByteArray();
-
+        
+        // TODO hacky: notify model that we have updated the class
+        ctx.getModel().update(bytecode);
         return bytecode;
 
     }
