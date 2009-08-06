@@ -121,9 +121,17 @@ public class MethodModel {
 		return method.getName();
 	}
 
+	public Type getReturnType() {
+		return method.getReturnType();
+	}
+
 	public String getSignature() {
 		return signature;
 	}
+
+	// public ParameterAnnotations[] getParameterAnnots() {
+	// return parameterAnnots;
+	// }
 
 	public MethodModel getSuper() {
 		if (!superMethodCached) {
@@ -149,10 +157,6 @@ public class MethodModel {
 		}
 		return superMethod;
 	}
-
-	// public ParameterAnnotations[] getParameterAnnots() {
-	// return parameterAnnots;
-	// }
 
 	public boolean hasArgAnnot(int idx, String desc) {
 		return getArgAnnot(idx, desc) != null;

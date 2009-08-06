@@ -5,6 +5,14 @@ class Aspect
     public String clazz;
     public String method;
 
+    
+    public Aspect(String clazz, String method)
+    {
+        super();
+        this.clazz = clazz;
+        this.method = method;
+    }
+
     @Override
     public int hashCode()
     {
