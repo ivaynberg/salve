@@ -67,15 +67,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         {
             List<AnnotationModel> annots = new ArrayList();
             annots.addAll(mm.getAnnotations());
-            if (mm.getParameterAnnots() != null)
-            {
-                for (ParameterAnnotations pa : mm.getParameterAnnots())
-                {
-                    if (pa != null)
-                    {
-                        annots.addAll(pa.getAnnotations());
-                    }
-                }
+            for (int i=0;i<mm.getArgCount();i++) {
+                annots.addAll(mm.getArgAnnots(i));
             }
 
             for (AnnotationModel annot : annots)
