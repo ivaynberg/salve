@@ -23,9 +23,6 @@ class MyArray {
     if (end<start) {
        throw new IllegalStateException("Argument end cannot be less then argument start");
     }
-    if (start>end) {
-       throw new IllegalStateException("Argument start cannot be bigger then argument end");
-    }
     for (int i=start;i<=end;i++) { .... }
 }
 }}}
@@ -40,9 +37,6 @@ class MyArray {
   public void deleteBetween(@NotNull Object obj, @GE0 int start, @GE0 int end) {
     if (end<start) {
        throw new IllegalStateException("Argument end cannot be less then argument start");
-    }
-   if (start>end) {
-       throw new IllegalStateException("Argument start cannot be bigger then argument end");
     }
     for (int i=start;i<=end;i++) { .... }
 }
