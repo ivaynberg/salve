@@ -1,6 +1,7 @@
 package salve.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -14,35 +15,17 @@ public class MethodModel {
 		public ParameterAnnotations() {
 			annots = new LinkedHashMap<String, AnnotationModel>();
 		}
-
-		public AnnotationModel getAnnot(String desc) {
-			return annots.get(desc);
-		}
-
-		public Collection<AnnotationModel> getAnnotations() {
-			return annots.values();
-		}
-
-		public boolean hasAnnot(String desc) {
-			return getAnnot(desc) != null;
-		}
-
-		public boolean hasAnnot(Type type) {
-			return hasAnnot(type.getDescriptor());
-		}
 	}
 
 	private final ClassModel clazz;
 	private final int access;
-	private final String name;
-	private final String desc;
 	private final String signature;
 	private final String[] exceptions;
 	private final Map<String, AnnotationModel> annots = new LinkedHashMap<String, AnnotationModel>();
-
+	private final String[] argNames;
 	private MethodModel superMethod;
 	private boolean superMethodCached = false;
-
+	private final salve.asmlib.Method method;
 	private ParameterAnnotations[] parameterAnnots;
 
 	private static final int META_VISITOR = ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG;
@@ -50,10 +33,10 @@ public class MethodModel {
 	public MethodModel(ClassModel clazz, int access, String name, String desc, String signature, String[] exceptions) {
 		this.clazz = clazz;
 		this.access = access;
-		this.name = name;
-		this.desc = desc;
 		this.signature = signature;
 		this.exceptions = exceptions;
+		this.method = new salve.asmlib.Method(name, desc);
+		argNames = new String[method.getArgumentTypes().length];
 	}
 
 	void add(AnnotationModel am) {
@@ -62,7 +45,7 @@ public class MethodModel {
 
 	void addParameterAnnot(int parameter, AnnotationModel am) {
 		if (parameterAnnots == null) {
-			parameterAnnots = new ParameterAnnotations[Type.getArgumentTypes(desc).length];
+			parameterAnnots = new ParameterAnnotations[method.getArgumentTypes().length];
 		}
 		if (parameterAnnots[parameter] == null) {
 			parameterAnnots[parameter] = new ParameterAnnotations();
@@ -99,12 +82,35 @@ public class MethodModel {
 		return annots.values();
 	}
 
+	public AnnotationModel getArgAnnot(int idx, String desc) {
+		if (parameterAnnots != null) {
+			if (parameterAnnots[idx] != null) {
+				return parameterAnnots[idx].annots.get(desc);
+			}
+		}
+
+		return annots.get(desc);
+	}
+
+	public Collection<AnnotationModel> getArgAnnots(int idx) {
+		if (parameterAnnots != null) {
+			if (parameterAnnots[idx] != null) {
+				return parameterAnnots[idx].annots.values();
+			}
+		}
+		return Collections.emptyList();
+	}
+
+	public int getArgCount() {
+		return method.getArgumentTypes().length;
+	}
+
 	public ClassModel getClassModel() {
 		return clazz;
 	}
 
 	public String getDesc() {
-		return desc;
+		return method.getDescriptor();
 	}
 
 	public String[] getExceptions() {
@@ -112,11 +118,7 @@ public class MethodModel {
 	}
 
 	public String getName() {
-		return name;
-	}
-
-	public ParameterAnnotations[] getParameterAnnots() {
-		return parameterAnnots;
+		return method.getName();
 	}
 
 	public String getSignature() {
@@ -148,4 +150,19 @@ public class MethodModel {
 		return superMethod;
 	}
 
+	// public ParameterAnnotations[] getParameterAnnots() {
+	// return parameterAnnots;
+	// }
+
+	public boolean hasArgAnnot(int idx, String desc) {
+		return getArgAnnot(idx, desc) != null;
+	}
+
+	public boolean hasArgAnnot(int idx, Type type) {
+		return hasArgAnnot(idx, type.getDescriptor());
+	}
+
+	void setArgName(int idx, String name) {
+		argNames[idx] = name;
+	}
 }

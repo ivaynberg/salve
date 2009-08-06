@@ -4,6 +4,7 @@ import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
 import salve.asmlib.FieldVisitor;
+import salve.asmlib.Label;
 import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
 import salve.util.asm.AnnotationAdapter;
@@ -72,6 +73,13 @@ public class ModelUpdateVisitor extends ClassAdapter {
 			AnnotationModel annot = new AnnotationModel(desc, visible);
 			method.add(annot);
 			return new ModelAnnotationVisitor(super.visitAnnotation(desc, visible), annot);
+		}
+
+		@Override
+		public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+			if (index > 0 && index < method.getArgCount()) {
+				method.setArgName(index, name);
+			}
 		}
 
 		@Override
