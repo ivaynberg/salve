@@ -35,7 +35,7 @@ class Method {
 				return false;
 			}
 			if (isPackagePrivate()) {
-				// FIXME check packages are the same
+				// FIXME check packages are the same?
 				return true;
 			} else {
 				return false;

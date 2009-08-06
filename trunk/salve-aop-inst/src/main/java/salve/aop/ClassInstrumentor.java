@@ -19,7 +19,6 @@ import salve.model.ClassModel;
 import salve.model.MethodModel;
 import salve.model.ProjectModel;
 import salve.model.AnnotationModel.ValueField;
-import salve.model.MethodModel.ParameterAnnotations;
 import salve.util.asm.AsmUtil;
 import salve.util.asm.GeneratorAdapter;
 
@@ -44,7 +43,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 // System.out.println("instrumenting: " + owner);
     }
 
-    protected String newAopDelegateMethodName(Method method, Aspect aspect)
+    protected String newAopDelegateMethodName(MethodModel method, Aspect aspect)
     {
         return method.getName() + "$salve_aop_" + aspect.method + "_" + uuid();
     }
@@ -54,66 +53,13 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     public MethodVisitor visitMethod(int access, final String name, final String desc,
             final String signature, final String[] exceptions)
     {
-        final String homeName = name;
-        final String homeOwner = owner;
-        final String homeDesc = desc;
+        //Method method = new Method(access, name, desc);
+        MethodModel method = model.getClass(owner).getMethod(name, desc);
 
-        Method method = new Method(access, name, desc);
-        Set<Aspect> aspects = new HashSet<Aspect>();
+        Set<Aspect> aspects = gatherAspects(method);
+        
 
-        MethodModel mm = model.getClass(owner).getMethod(name, desc);
-        boolean inheritedOnly = false;
-        while (mm != null)
-        {
-            List<AnnotationModel> annots = new ArrayList();
-            annots.addAll(mm.getAnnotations());
-            for (int i=0;i<mm.getArgCount();i++) {
-                annots.addAll(mm.getArgAnnots(i));
-            }
-
-            for (AnnotationModel annot : annots)
-            {
-                ClassModel acm = model.getClass(annot.getName());
-                AnnotationModel aspectAnnot = acm.getAnnotation("Lsalve/aop/MethodAdvice;");
-                boolean inherited = acm.getAnnotation("Ljava/lang/annotation/Inherited;") != null;
-                if (aspectAnnot != null && (!inheritedOnly || (inheritedOnly && inherited)))
-                {
-                    final String ic = ((ValueField)aspectAnnot.getField("instrumentorClass"))
-                            .getValue().toString();
-                    final String im = ((ValueField)aspectAnnot.getField("instrumentorMethod"))
-                            .getValue().toString();
-
-                    Aspect aspect = new Aspect();
-                    aspect.clazz = ic;
-                    aspect.method = im;
-                    aspects.add(aspect);
-                }
-            }
-            mm = mm.getSuper();
-            inheritedOnly = true;
-        }
-        mm = model.getClass(owner).getMethod(name, desc);
-
-// System.out.println("=============" + method + "==============");
-// for (Aspect aspect : aspects)
-// {
-// System.out.println("1: " + aspect);
-// }
-// aspects.clear();
-// for (Aspect aspect : analyzer.getAspects(method))
-// {
-// if (accept(aspect))
-// {
-// aspects.add(aspect);
-// }
-// }
-// for (Aspect aspect : aspects)
-// {
-// System.out.println("2: " + aspect);
-// }
-
-        boolean alreadyInstrumented = mm
-                .getAnnotation(getAlreadyInstrumentedMarkerAnnotationDesc()) != null;
+        boolean alreadyInstrumented = isAlreadyInstrumented(method);
 
         if (aspects.isEmpty() || alreadyInstrumented)
         {
@@ -308,9 +254,9 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         }
 
         OverrideInfo info2 = null;
-        if (mm.getSuper() != null)
+        if (method.getSuper() != null)
         {
-            MethodModel sup = mm.getSuper();
+            MethodModel sup = method.getSuper();
             AnnotationModel root = sup.getAnnotation("Lsalve/aop/Instrumented;");
             if (root != null)
             {
@@ -379,6 +325,49 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
                 super.visitMethodInsn(opcode, owner, name, desc);
             }
         };
+    }
+
+    private boolean isAlreadyInstrumented(MethodModel mm)
+    {
+        return mm
+                .getAnnotation(getAlreadyInstrumentedMarkerAnnotationDesc()) != null;
+    }
+
+    private Set<Aspect> gatherAspects(MethodModel mm)
+    {
+        Set<Aspect> aspects = new HashSet<Aspect>();
+
+      
+        boolean inheritedOnly = false;
+        while (mm != null)
+        {
+            List<AnnotationModel> annots = new ArrayList();
+            annots.addAll(mm.getAnnotations());
+            for (int i = 0; i < mm.getArgCount(); i++)
+            {
+                annots.addAll(mm.getArgAnnots(i));
+            }
+
+            for (AnnotationModel annot : annots)
+            {
+                ClassModel acm = model.getClass(annot.getName());
+                AnnotationModel aspectAnnot = acm.getAnnotation("Lsalve/aop/MethodAdvice;");
+                boolean inherited = acm.getAnnotation("Ljava/lang/annotation/Inherited;") != null;
+                if (aspectAnnot != null && (!inheritedOnly || (inheritedOnly && inherited)))
+                {
+                    final String ic = ((ValueField)aspectAnnot.getField("instrumentorClass"))
+                            .getValue().toString();
+                    final String im = ((ValueField)aspectAnnot.getField("instrumentorMethod"))
+                            .getValue().toString();
+
+
+                    aspects.add(new Aspect(ic, im));
+                }
+            }
+            mm = mm.getSuper();
+            inheritedOnly = true;
+        }
+        return aspects;
     }
 
     private static void checkCastThrow(MethodVisitor mv, int local, String type)
