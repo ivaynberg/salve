@@ -20,6 +20,7 @@ public class AnnotationModel {
 			return desc;
 		}
 
+		@Override
 		public Object getValue() {
 			return value;
 		}
@@ -43,6 +44,8 @@ public class AnnotationModel {
 			return type;
 		}
 
+		public abstract Object getValue();
+
 	}
 
 	public static enum FieldType {
@@ -57,6 +60,7 @@ public class AnnotationModel {
 			this.value = value;
 		}
 
+		@Override
 		public Object getValue() {
 			return value;
 		}

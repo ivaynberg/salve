@@ -17,6 +17,8 @@ public class MethodModel {
 		}
 	}
 
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
+
 	private final ClassModel clazz;
 	private final int access;
 	private final String signature;
@@ -74,7 +76,7 @@ public class MethodModel {
 		return access;
 	}
 
-	public AnnotationModel getAnnotation(String desc) {
+	public AnnotationModel getAnnot(String desc) {
 		return annots.get(desc);
 	}
 
@@ -114,7 +116,11 @@ public class MethodModel {
 	}
 
 	public String[] getExceptions() {
-		return exceptions;
+		if (exceptions != null) {
+			return exceptions;
+		} else {
+			return EMPTY_STRING_ARRAY;
+		}
 	}
 
 	public String getName() {
