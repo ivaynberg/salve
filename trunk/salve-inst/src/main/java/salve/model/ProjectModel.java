@@ -10,14 +10,13 @@ import salve.util.ListMap;
 import salve.util.asm.ClassVisitorAdapter;
 
 public class ProjectModel {
-	private final BytecodeLoader loader;
+	private BytecodeLoader loader;
 
 	private final Map<String, ClassModel> classes = new HashMap<String, ClassModel>();
 
 	private final ListMap<String, UpdateListener> listeners = new ListMap<String, UpdateListener>();
 
-	public ProjectModel(BytecodeLoader loader) {
-		this.loader = loader;
+	public ProjectModel() {
 	}
 
 	void add(byte[] bytecode) {
@@ -28,6 +27,11 @@ public class ProjectModel {
 	ProjectModel add(ClassModel cm) {
 		classes.put(cm.getName(), cm);
 		return this;
+	}
+
+	public void clear() {
+		listeners.clear();
+		classes.clear();
 	}
 
 	public ClassModel getClass(String name) {
@@ -59,6 +63,11 @@ public class ProjectModel {
 
 	public void register(String cn, UpdateListener listener) {
 		listeners.add(cn, listener);
+	}
+
+	public ProjectModel setLoader(BytecodeLoader loader) {
+		this.loader = loader;
+		return this;
 	}
 
 	public void update(byte[] bytecode) {

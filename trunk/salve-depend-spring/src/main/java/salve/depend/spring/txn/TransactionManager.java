@@ -1,9 +1,5 @@
 package salve.depend.spring.txn;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-
-import salve.depend.Key;
 
 public interface TransactionManager {
 	Object start(TransactionAttribute attr, String txnName);
@@ -13,5 +9,4 @@ public interface TransactionManager {
 	void finish(Throwable ex, Object txn);
 
 	void cleanup(Object txn);
-
 }

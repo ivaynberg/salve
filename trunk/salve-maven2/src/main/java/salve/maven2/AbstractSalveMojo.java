@@ -98,7 +98,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 			throw new MojoExecutionException("Could not configure bytecode loader", e);
 		}
 
-		model = new ProjectModel(loader);
+		model = new ProjectModel().setLoader(loader);
 
 		loadConfig(classesDir);
 

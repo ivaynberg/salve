@@ -11,7 +11,7 @@ public class ModelTest extends TestCase {
 
 	public void test() {
 		ClassLoader loader = getClass().getClassLoader();
-		ProjectModel model = new ProjectModel(new ClassLoaderLoader(loader));
+		ProjectModel model = new ProjectModel().setLoader(new ClassLoaderLoader(loader));
 
 		ClassModel cm = model.getClass(Person.class.getName().replace(".", "/"));
 		assertNotNull(cm);
@@ -31,7 +31,7 @@ public class ModelTest extends TestCase {
 
 	public void testMethodOverrides() {
 		ClassLoader loader = getClass().getClassLoader();
-		ProjectModel model = new ProjectModel(new ClassLoaderLoader(loader));
+		ProjectModel model = new ProjectModel().setLoader(new ClassLoaderLoader(loader));
 
 		ClassModel cm = model.getClass(ContactInfo.class.getName().replace(".", "/"));
 		assertNotNull(cm);

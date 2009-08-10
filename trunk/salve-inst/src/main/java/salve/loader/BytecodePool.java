@@ -40,6 +40,7 @@ public class BytecodePool extends CompoundLoader {
 
 	private final Scope scope;
 
+	// FIXME remove
 	private final ProjectModel model;
 
 	/**
@@ -50,7 +51,7 @@ public class BytecodePool extends CompoundLoader {
 	 */
 	public BytecodePool(Scope scope) {
 		this.scope = scope;
-		this.model = new ProjectModel(this);
+		this.model = new ProjectModel().setLoader(this);
 	}
 
 	/**
