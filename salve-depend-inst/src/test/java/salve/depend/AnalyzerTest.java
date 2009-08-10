@@ -14,7 +14,7 @@ public class AnalyzerTest extends TestCase {
 		ClassAnalyzer analyzer = null;
 
 		InstrumentationContext ctx = new InstrumentationContext(loader, NoopMonitor.INSTANCE, Scope.ALL,
-				new ProjectModel(loader));
+				new ProjectModel().setLoader(loader));
 
 		analyzer = new ClassAnalyzer("salve/depend/BeanWithoutDependencies", ctx);
 		assertTrue(!analyzer.shouldInstrument());

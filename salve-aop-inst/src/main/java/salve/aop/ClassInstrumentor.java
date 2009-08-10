@@ -25,7 +25,6 @@ import salve.util.asm.GeneratorAdapter;
 class ClassInstrumentor extends ClassAdapter implements Opcodes
 {
     private String owner;
-    private int uuid;
     private final ProjectModel model;
 
     public ClassInstrumentor(ClassVisitor cv, ProjectModel model)
@@ -104,18 +103,21 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         // of the super method so that they skip the aspect chain. inherited aspects would have been
         // applied directly to this method.
 
+        // we also forward any annotations from the root method to the origin method
+
 
         final OverrideInfo info = getOverrideInfo(method);
-        
+
         MethodVisitor root = cv.visitMethod(access, rootName, desc, signature, exceptions);
 
-        final MethodVisitor _home = origin;
+        final MethodVisitor _origin = origin;
         return new MethodAdapter(root)
         {
             @Override
             public AnnotationVisitor visitAnnotation(String desc, boolean visible)
             {
-                return _home.visitAnnotation(desc, visible);
+                // forward annots to the root to the origin
+                return _origin.visitAnnotation(desc, visible);
             }
 
             @Override
@@ -123,14 +125,10 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             {
                 if (opcode == Opcodes.INVOKESPECIAL)
                 {
-                    final OverrideInfo o = info;
+                    // rewrite super calls
                     if (info != null && info.getType().equals(owner) &&
                             info.getMethod().equals(name) && desc.equals(info.getDesc()))
                     {
-// System.out.println(">>> DETECTED SUPER CALL in " + homeOwner + "#" +
-// homeName + " " + homeDesc + " to " + owner + "#" + name + " " +
-// desc + " REDIRECTING TO: " + info.getRootDelegateMethodName());
-
                         super.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, info
                                 .getRootDelegateMethodName(), desc);
                         return;
@@ -342,7 +340,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         boolean inheritedOnly = false;
         while (mm != null)
         {
-            List<AnnotationModel> annots = new ArrayList();
+            List<AnnotationModel> annots = new ArrayList<AnnotationModel>();
             annots.addAll(mm.getAnnotations());
             for (int i = 0; i < mm.getArgCount(); i++)
             {
@@ -393,19 +391,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     {
         return "Lsalve/aop/Instrumented;";
     }
-
-    private static void pushInteger(MethodVisitor mv, int val)
-    {
-        if (val > 5)
-        {
-            mv.visitIntInsn(BIPUSH, val);
-        }
-        else
-        {
-            mv.visitInsn(ICONST_0 + val);
-        }
-    }
-
+   
     protected String uuid()
     {
         return UUID.randomUUID().toString().replaceAll("[^a-z0-9]", "");

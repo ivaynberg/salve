@@ -80,12 +80,13 @@ public class SalveBuilder extends AbstractBuilder
 
     private final Set<String> clearedMarkers = new HashSet<String>();
 
-    private ProjectModel model;
+    private final ProjectModel model;
 
     public SalveBuilder()
     {
         super(MARKER_ID);
         NOT_IN_JAR = new JarEntry("string");
+        model = new ProjectModel();
     }
 
     /*
@@ -193,6 +194,7 @@ public class SalveBuilder extends AbstractBuilder
         ResourceBuilder builder = new ResourceBuilder(config, bytecodePool, monitor);
         if (kind == FULL_BUILD)
         {
+            model.clear();
             getProject().accept(builder);
         }
         else
@@ -324,6 +326,7 @@ public class SalveBuilder extends AbstractBuilder
         try
         {
 
+
             final String cn = readClassName(file);
 
             for (Instrumentor inst : config.getInstrumentors(cn))
@@ -334,10 +337,13 @@ public class SalveBuilder extends AbstractBuilder
                 cl.addLoader(new FileBytecodeLoader(file));
                 cl.addLoader(bloader);
 
+                model.setLoader(cl);
                 InstrumentationContext ctx = new InstrumentationContext(cl, NoopMonitor.INSTANCE,
-                        config.getScope(inst), new ProjectModel(cl));
+                        config.getScope(inst), model);
 
                 byte[] bytecode = inst.instrument(cn, ctx);
+
+                model.setLoader(null);
                 file.setContents(new ByteArrayInputStream(bytecode), true, false, null);
             }
         }

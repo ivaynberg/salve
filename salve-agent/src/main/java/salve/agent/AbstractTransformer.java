@@ -61,7 +61,8 @@ public abstract class AbstractTransformer implements ClassFileTransformer
                 CompoundLoader bl = new CompoundLoader();
                 bl.addLoader(new MemoryLoader(className, bytecode));
                 bl.addLoader(new ClassLoaderLoader(loader));
-                ProjectModel model = new ProjectModel(bl);
+                // FIXME optimize, at least move model outside the loop
+                ProjectModel model = new ProjectModel().setLoader(bl);
                 InstrumentationContext ctx = new InstrumentationContext(bl, NoopMonitor.INSTANCE,
                         config.getScope(inst), model);
 
