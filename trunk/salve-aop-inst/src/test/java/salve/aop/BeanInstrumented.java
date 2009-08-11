@@ -12,7 +12,9 @@ import salve.aop.inst.BasicAspectsTest.BeanAdvice;
  */
 public class BeanInstrumented
 {
-    // @Traced
+  private static final Class[] NO_PARAM_TYPES = new Class[]{null};
+
+  // @Traced
     public Integer hello()
     {
         Object[] args = new Object[0];
@@ -20,8 +22,9 @@ public class BeanInstrumented
         try
         {
             final Class< ? > clazz = getClass();
-            final Method executor = clazz.getDeclaredMethod("_salve_aop$hello", null);
-            final Method method = clazz.getDeclaredMethod("hello", null);
+
+          final Method executor = clazz.getDeclaredMethod("_salve_aop$hello", NO_PARAM_TYPES);
+            final Method method = clazz.getDeclaredMethod("hello", NO_PARAM_TYPES);
             final MethodInvocation invocation = new ReflectiveInvocation(this, executor, method,
                     null);
             try
