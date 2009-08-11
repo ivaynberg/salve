@@ -219,12 +219,12 @@
 			<url>file:target/site/</url>
 		</site>
 		<repository>
-			<id>salve-releases</id>
-			<url>https://salve.googlecode.com/svn/maven2</url>
+			<id>moreinput</id>
+			<url>https://www.moreinput.de/nexus/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>salve-snapshots</id>
-			<url>https://salve.googlecode.com/svn/maven2-snapshots</url>
+			<id>moreinput</id>
+			<url>https://www.moreinput.de/nexus/content/repositories/snapshots</url>
 		</snapshotRepository>
 		<!--<repository>-->
 		<!--<id>sourceforge</id>-->
