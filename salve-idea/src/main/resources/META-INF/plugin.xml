@@ -17,4 +17,5 @@
 	<change-notes>
 		compile against current 2.0-SNAPSHOT of salve
 	</change-notes>
+
 </idea-plugin>
