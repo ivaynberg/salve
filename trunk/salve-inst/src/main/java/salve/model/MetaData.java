@@ -36,7 +36,8 @@ public class MetaData implements Serializable {
 		return map.containsKey(key);
 	}
 
-	public <T> T get(final Key<T> key) {
+	@SuppressWarnings({"unchecked"})
+  public <T> T get(final Key<T> key) {
 		return (T) map.get(key);
 	}
 
