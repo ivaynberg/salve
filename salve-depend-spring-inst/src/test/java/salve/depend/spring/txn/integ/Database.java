@@ -68,6 +68,7 @@ public class Database implements InitializingBean
     }
 
 
+    @SuppressWarnings({"unchecked"})
     public List<String> list() throws Exception
     {
         return template.queryForList("SELECT * FROM test ORDER BY val", String.class);
