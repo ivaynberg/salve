@@ -13,7 +13,7 @@
  */
 package salve.depend.spring.txn;
 
-import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Method;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.NoRollbackRuleAttribute;
@@ -46,28 +46,17 @@ public class TransactionAttribute extends RuleBasedTransactionAttribute {
 	public TransactionAttribute(Class<?> clazz, String methodName,
 			Class<?>[] methodArgTypes) {
 		try {
-			AccessibleObject ao;
 			if ("<init>".equals(methodName)) {
-				ao = clazz.getDeclaredConstructor(methodArgTypes);
+				throw new IllegalArgumentException(
+						"Transactional annotations are not supported on consturctors");
+				// AccessibleObject ao =
+				// clazz.getDeclaredConstructor(methodArgTypes);
+				// init(ao); // see init(Method)
 			} else {
-				ao = clazz.getDeclaredMethod(methodName, methodArgTypes);
+				Method method = clazz.getDeclaredMethod(methodName,
+						methodArgTypes);
+				init(method);
 			}
-			SpringTransactional t = ao.getAnnotation(SpringTransactional.class);
-			if (t == null) {
-				t = (SpringTransactional) clazz
-						.getAnnotation(SpringTransactional.class);
-				if (t == null) {
-
-					throw new IllegalStateException(
-							String
-									.format(
-											"Instrumented method nor class %s.%s() contains %s annotation",
-											clazz.getName(), methodName,
-											Transactional.class.getName()));
-				}
-
-			}
-			init(t);
 		} catch (Exception e) {
 			throw new RuntimeException(
 					String
@@ -81,10 +70,40 @@ public class TransactionAttribute extends RuleBasedTransactionAttribute {
 	/**
 	 * Constructor
 	 * 
+	 * @param method
+	 *            method that contains the transactional annotation
+	 */
+	public TransactionAttribute(Method method) {
+		init(method);
+	}
+
+	/**
+	 * Constructor
+	 * 
 	 * @param transactional
 	 */
 	public TransactionAttribute(SpringTransactional transactional) {
 		init(transactional);
+	}
+
+	private void init(Method method) {
+		SpringTransactional t = method.getAnnotation(SpringTransactional.class);
+		if (t == null) {
+			t = method.getDeclaringClass().getAnnotation(
+					SpringTransactional.class);
+			if (t == null) {
+
+				throw new IllegalStateException(
+						String
+								.format(
+										"Instrumented method nor class %s.%s() contains %s annotation",
+										method.getDeclaringClass().getName(),
+										method.getName(), Transactional.class
+												.getName()));
+			}
+
+		}
+		init(t);
 	}
 
 	@SuppressWarnings("unchecked")
