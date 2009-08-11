@@ -12,7 +12,7 @@ import javax.swing.*;
 public class SalveConfigurationForm
 {
   private JPanel rootComponent;
-  private JTextArea salveIDEAIntegrationPluginTextArea;
+  private JTextArea salve2IDEAIntegrationTextArea;
 
   public SalveConfigurationForm(final SalveConfiguration configuration)
   {
