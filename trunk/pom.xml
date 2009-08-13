@@ -218,23 +218,14 @@
 			<id>local</id>
 			<url>file:target/site/</url>
 		</site>
-		<repository>
-			<id>moreinput</id>
-			<url>https://www.moreinput.de/nexus/content/repositories/releases</url>
+        <repository>
+			<id>salve-releases</id>
+			<url>https://salve.googlecode.com/svn/maven2</url>
 		</repository>
 		<snapshotRepository>
-			<id>moreinput</id>
-			<url>https://www.moreinput.de/nexus/content/repositories/snapshots</url>
+			<id>salve-snapshots</id>
+			<url>https://salve.googlecode.com/svn/maven2-snapshots</url>
 		</snapshotRepository>
-		<!--<repository>-->
-		<!--<id>sourceforge</id>-->
-		<!--<url>scp://shell.sourceforge.net/${sourceforge.homedir}/userweb/persistent/maven2</url>-->
-		<!--</repository>-->
-		<!-- 'snapshot' is for testing the upload to sourceforge only -->
-		<!--<snapshotRepository>-->
-		<!--<id>sourceforge</id>-->
-		<!--<url>scp://shell.sourceforge.net/${sourceforge.homedir}/userweb/persistent/maven2</url>-->
-		<!--</snapshotRepository>-->
 	</distributionManagement>
 
 </project>
