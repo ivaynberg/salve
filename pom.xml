@@ -218,7 +218,7 @@
 			<id>local</id>
 			<url>file:target/site/</url>
 		</site>
-        <repository>
+		<repository>
 			<id>salve-releases</id>
 			<url>https://salve.googlecode.com/svn/maven2</url>
 		</repository>
