@@ -38,6 +38,8 @@ Make sure salve-guice.jar is in the classpath, and add the following line after 
 DependencyLibrary.addLocator(new GuiceBeanLocator(injector));
 }}}
 
+For a more complete example see the [SalveWIthGuice Salve With Guice] page.
+
 === Notes ===
 Because Guice uses the concept of implicit-bindings to instantiate types that have not been explicitly bound in modules it makes GuiceBeanLocator hard to chain, therefore it is recommended to be installed at the end of the chain.
 
