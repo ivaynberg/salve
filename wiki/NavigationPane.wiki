@@ -12,3 +12,4 @@
   * Misc
     * [BuildingSalve Salve From Source]
     * [Using_Salve_with_Java_14 Salve with Java 1.4]
+    * [SalveWithGuice Salve with Guice Example]
