@@ -20,6 +20,7 @@ import junit.framework.Assert;
 
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,6 +45,12 @@ public class TransactionalInstrumentorTest extends Assert
     private static TransactionManager tm;
 
     private static DummyTransactionManager transactionManager;
+
+    @AfterClass
+    public static void cleanup()
+    {
+        DependencyLibrary.clear();
+    }
 
     @Before
     public void initMocks()
