@@ -38,6 +38,10 @@ public class Bean extends AbstractBean {
 		Bean.staticBlack = staticBlack;
 	}
 
+	public static void setStaticBlue(BlueDependency staticBlue) {
+		Bean.staticBlue = staticBlue;
+	}
+
 	@Square
 	@Dependency
 	@Circle
@@ -48,6 +52,13 @@ public class Bean extends AbstractBean {
 
 	@Circle
 	private BlackDependency black;
+
+	@Dependency
+	private static BlueDependency staticBlue;
+
+	public static BlueDependency getStaticBlue() {
+		return staticBlue;
+	}
 
 	public Bean() {
 
