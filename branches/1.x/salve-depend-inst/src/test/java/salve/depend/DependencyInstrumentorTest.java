@@ -16,24 +16,25 @@
  */
 package salve.depend;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.Assert;
+
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import salve.Scope;
 import salve.depend.cache.NoopCacheProvider;
 import salve.loader.BytecodePool;
 import salve.loader.ClassLoaderLoader;
 import salve.util.EasyMockTemplate;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
-
-public class DependencyInstrumentorTest extends Assert implements Constants
-{
+public class DependencyInstrumentorTest extends Assert implements Constants {
 	private static Class<?> beanClass;
 
 	private static BlueDependency blue;
@@ -41,14 +42,12 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 	private static Locator locator;
 
 	@BeforeClass
-	public static void initClass() throws Exception
-	{
+	public static void initClass() throws Exception {
 		loadBeans();
 		initDependencyLibrary();
 	}
 
-	private static void initDependencyLibrary()
-	{
+	private static void initDependencyLibrary() {
 		DependencyLibrary.clear();
 
 		blue = EasyMock.createMock(BlueDependency.class);
@@ -58,8 +57,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 		DependencyLibrary.setCacheProvider(new NoopCacheProvider());
 	}
 
-	private static void loadBeans() throws Exception
-	{
+	private static void loadBeans() throws Exception {
 		final DependencyInstrumentor inst = new DependencyInstrumentor();
 		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
 		BytecodePool pool = new BytecodePool(Scope.ALL);
@@ -71,20 +69,19 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 	}
 
 	@Before
-	public void resetMocks()
-	{
+	public void resetMocks() {
 		EasyMock.reset(blue, red, locator);
 	}
 
 	@Test
-	public void testAnnotations() throws Exception
-	{
+	public void testAnnotations() throws Exception {
 		Annotation[] annots = beanClass.getDeclaredField(REMOVED_FIELD_PREFIX + "red").getAnnotations();
 		assertNotNull(annots);
 
 		List<Class<?>> types = new ArrayList<Class<?>>(annots.length);
-		for (final Annotation annot : annots)
+		for (final Annotation annot : annots) {
 			types.add(annot.annotationType());
+		}
 
 		assertEquals(3, types.size());
 		assertTrue(types.contains(Square.class));
@@ -102,21 +99,17 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 	}
 
 	@Test
-	public void testAnonClassFieldRead() throws Exception
-	{
-		new EasyMockTemplate(locator, red)
-		{
+	public void testAnonClassFieldRead() throws Exception {
+		new EasyMockTemplate(locator, red) {
 
 			@Override
-			protected void setupExpectations()
-			{
+			protected void setupExpectations() {
 				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "red"))).andReturn(red);
 				red.method1();
 			}
 
 			@Override
-			protected void testExpectations() throws Exception
-			{
+			protected void testExpectations() throws Exception {
 
 				Bean bean = (Bean) beanClass.newInstance();
 				bean.methodAnonymous();
@@ -126,15 +119,13 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 
 	@SuppressWarnings("static-access")
 	@Test
-	public void testClinitMerge() throws Exception
-	{
+	public void testClinitMerge() throws Exception {
 		Bean bean = (Bean) beanClass.newInstance();
 		assertTrue(Bean.FORCE_CLINIT != 0);
 	}
 
 	@Test
-	public void testDoubleInstrumentation() throws Exception
-	{
+	public void testDoubleInstrumentation() throws Exception {
 		final DependencyInstrumentor inst = new DependencyInstrumentor();
 		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
 		BytecodePool pool = new BytecodePool(Scope.ALL);
@@ -145,22 +136,18 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 	}
 
 	@Test
-	public void testFieldAccessInConstructor() throws Exception
-	{
+	public void testFieldAccessInConstructor() throws Exception {
 
-		new EasyMockTemplate(locator)
-		{
+		new EasyMockTemplate(locator) {
 
 			@Override
-			protected void setupExpectations()
-			{
+			protected void setupExpectations() {
 				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "red"))).andReturn(red);
 				EasyMock.expect(locator.locate(new TestKey(BlueDependency.class))).andReturn(blue);
 			}
 
 			@Override
-			protected void testExpectations() throws Exception
-			{
+			protected void testExpectations() throws Exception {
 				Constructor<?> c = beanClass.getConstructor(int.class);
 				c.newInstance(5);
 			}
@@ -168,15 +155,12 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 	}
 
 	@Test
-	public void testFieldRead() throws Exception
-	{
+	public void testFieldRead() throws Exception {
 
-		new EasyMockTemplate(locator, red, blue)
-		{
+		new EasyMockTemplate(locator, red, blue) {
 
 			@Override
-			protected void setupExpectations()
-			{
+			protected void setupExpectations() {
 				/*
 				 * when we call bean.method1() both red and blue will be looked
 				 * up. when we call bean.method2() only red will be looked up.
@@ -197,35 +181,36 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 				red.method1();
 				EasyMock.expect(red.method2()).andReturn(null);
 				EasyMock.expect(red.method2()).andReturn(null);
+
+				// Bean.getStaticBlue().method1();
+				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "staticBlue")))
+						.andReturn(blue);
+				blue.method1();
 			}
 
 			@Override
-			protected void testExpectations() throws Exception
-			{
+			protected void testExpectations() throws Exception {
 				Bean bean = (Bean) beanClass.newInstance();
 				bean.method1();
 				bean.method2();
+				Bean.getStaticBlue().method1();
 			}
 		}.test();
 	}
 
 	@Test
-	public void testFieldReadOnReturn() throws Exception
-	{
+	public void testFieldReadOnReturn() throws Exception {
 
-		new EasyMockTemplate(locator, red, blue)
-		{
+		new EasyMockTemplate(locator, red, blue) {
 
 			@Override
-			protected void setupExpectations()
-			{
+			protected void setupExpectations() {
 				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "red"))).andReturn(red);
 				EasyMock.expect(locator.locate(new TestKey(BlueDependency.class))).andReturn(blue);
 			}
 
 			@Override
-			protected void testExpectations() throws Exception
-			{
+			protected void testExpectations() throws Exception {
 				Bean bean = (Bean) beanClass.newInstance();
 				assertTrue(bean.getRed() == red);
 				assertTrue(bean.getBlue() == blue);
@@ -234,40 +219,29 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 	}
 
 	@Test
-	public void testFieldRemoval() throws Exception
-	{
-		try
-		{
+	public void testFieldRemoval() throws Exception {
+		try {
 			beanClass.getDeclaredField("red");
 			fail("Field `red` should have been removed");
-		}
-		catch (NoSuchFieldException e)
-		{
+		} catch (NoSuchFieldException e) {
 			// noop
 		}
 	}
 
 	@Test
-	public void testFieldWrite() throws Exception
-	{
+	public void testFieldWrite() throws Exception {
 		final Bean bean = (Bean) beanClass.newInstance();
 
-		try
-		{
+		try {
 			bean.setBlue(blue);
 			Assert.fail("Attempted to write to removed dependency field and did not get IllegalFieldWriteException");
-		}
-		catch (IllegalFieldWriteException e)
-		{
+		} catch (IllegalFieldWriteException e) {
 			// noop
 		}
-		try
-		{
+		try {
 			bean.setRed(red);
 			Assert.fail("Attempted to write to removed dependency field and did not get IllegalFieldWriteException");
-		}
-		catch (IllegalFieldWriteException e)
-		{
+		} catch (IllegalFieldWriteException e) {
 			// noop
 		}
 
@@ -276,21 +250,14 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 		assertTrue(bean.getBlack() == null);
 		bean.setBlack(black);
 		assertTrue(bean.getBlack() == black);
-
-		assertTrue(Bean.getStaticBlack() == null);
-		Bean.setStaticBlack(black);
-		assertTrue(Bean.getStaticBlack() == black);
 	}
 
 	@Test
-	public void testInnerClassFieldRead() throws Exception
-	{
-		new EasyMockTemplate(locator, red, blue)
-		{
+	public void testInnerClassFieldRead() throws Exception {
+		new EasyMockTemplate(locator, red, blue) {
 
 			@Override
-			protected void setupExpectations()
-			{
+			protected void setupExpectations() {
 				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "red"))).andReturn(red);
 				EasyMock.expect(locator.locate(new TestKey(BlueDependency.class))).andReturn(blue);
 
@@ -299,8 +266,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 			}
 
 			@Override
-			protected void testExpectations() throws Exception
-			{
+			protected void testExpectations() throws Exception {
 				Bean bean = (Bean) beanClass.newInstance();
 				bean.methodInner();
 			}
@@ -308,13 +274,51 @@ public class DependencyInstrumentorTest extends Assert implements Constants
 	}
 
 	@Test
-	public void testInterfaceInstrumentation() throws Exception
-	{
+	public void testInterfaceInstrumentation() throws Exception {
 		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
 		BytecodePool pool = new BytecodePool(Scope.ALL);
 		pool.addLoader(new ClassLoaderLoader(classLoader));
 
 		@SuppressWarnings("unused")
 		Class<?> interfaceClass = pool.instrumentIntoClass("salve/depend/Interface", new DependencyInstrumentor());
+	}
+
+	@Test
+	public void testStaticFieldRead() throws Exception {
+
+		new EasyMockTemplate(locator, red, blue) {
+
+			@Override
+			protected void setupExpectations() {
+				EasyMock.expect(locator.locate(new FieldKey(Bean.class, REMOVED_FIELD_PREFIX + "staticBlue")))
+						.andReturn(blue);
+				blue.method1();
+			}
+
+			@Override
+			protected void testExpectations() throws Exception {
+				Bean bean = (Bean) beanClass.newInstance();
+				Bean.getStaticBlue().method1();
+			}
+		}.test();
+	}
+
+	@Test
+	public void testStaticFieldWrite() throws Exception {
+		final Bean bean = (Bean) beanClass.newInstance();
+
+		try {
+			Bean.setStaticBlue(blue);
+			Assert.fail("Attempted to write to removed dependency field and did not get IllegalFieldWriteException");
+		} catch (IllegalFieldWriteException e) {
+			// noop
+		}
+
+		// make sure non dependency fields are left alone
+		BlackDependency black = EasyMock.createMock(BlackDependency.class);
+
+		assertTrue(Bean.getStaticBlack() == null);
+		Bean.setStaticBlack(black);
+		assertTrue(Bean.getStaticBlack() == black);
 	}
 }
