@@ -129,30 +129,29 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 			boolean instrument = false;
 			DependencyField field = null;
 
-			if (opcode == GETSTATIC || opcode == PUTSTATIC) {
-				instrument = false;
-			} else {
-				field = analyzer.getDependency(owner, name);
-				instrument = field != null;
-			}
+			field = analyzer.getDependency(owner, name);
+			instrument = field != null;
 
 			if (!instrument) {
 				mv.visitFieldInsn(opcode, owner, name, desc);
 				return;
 			}
 
-			if (opcode == PUTFIELD) {
-				mv.visitInsn(POP); // Pop off ALOAD 0 ;this
+			if (opcode == GETFIELD || opcode == PUTFIELD) {
+				visitInsn(POP);// Pop off ALOAD 0 ;this
+			}
+
+			if (opcode == PUTFIELD || opcode == PUTSTATIC) {
 				throwIllegalFieldWriteException(mv, field);
 				return;
 			}
 
 			if (STRAT_REMOVE.equals(field.getStrategy())) {
 				final int local = getLocalForField(field);
-				visitInsn(POP);// Pop off ALOAD 0 ;this
 				loadDependencyIntoLocal(mv, field, local);
 			} else if (STRAT_INJECT.equals(field.getStrategy())) {
 				// ALOAD 0 ;this is already on the stack
+				mv.visitVarInsn(ALOAD, 0);
 				loadDependencyIntoField(mv, field);
 				mv.visitVarInsn(ALOAD, 0);
 				mv.visitFieldInsn(opcode, owner, name, desc);
