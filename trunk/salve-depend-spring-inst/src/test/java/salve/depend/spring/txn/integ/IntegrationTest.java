@@ -3,6 +3,7 @@ package salve.depend.spring.txn.integ;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import salve.Scope;
+import salve.depend.DependencyLibrary;
 import salve.depend.spring.txn.TransactionalInstrumentor;
 import salve.loader.BytecodePool;
 
@@ -24,6 +26,11 @@ public class IntegrationTest
         pool.instrumentIntoClass("salve/depend/spring/txn/integ/Database", inst);
     }
 
+    @AfterClass
+    public static void cleanup()
+    {
+        DependencyLibrary.clear();
+    }
 
     @Test
     public void test() throws Exception
