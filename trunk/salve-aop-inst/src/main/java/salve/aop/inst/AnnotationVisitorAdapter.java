@@ -1,4 +1,4 @@
-package salve.aop;
+package salve.aop.inst;
 
 import salve.asmlib.AnnotationVisitor;
 

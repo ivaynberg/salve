@@ -20,7 +20,7 @@ import salve.asmlib.ClassReader;
 import salve.asmlib.ClassWriter;
 import salve.util.BytecodeLoadingClassWriter;
 
-public class TransactionalInstrumentor extends AbstractInstrumentor {
+public class OldTransactionalInstrumentor extends AbstractInstrumentor {
 
 	protected byte[] internalInstrument(String className,
 			InstrumentationContext ctx) throws InstrumentationException {

@@ -1,8 +1,7 @@
-package salve.aop;
+package salve.aop.inst;
 
-import java.util.ArrayList;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,10 +14,8 @@ import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
 import salve.model.AnnotationModel;
-import salve.model.ClassModel;
 import salve.model.MethodModel;
 import salve.model.ProjectModel;
-import salve.model.AnnotationModel.ValueField;
 import salve.util.asm.AsmUtil;
 import salve.util.asm.GeneratorAdapter;
 
@@ -26,11 +23,34 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 {
     private String owner;
     private final ProjectModel model;
+    private final Set< ? extends AspectDiscoveryStrategy> discoveryStrategies;
 
-    public ClassInstrumentor(ClassVisitor cv, ProjectModel model)
+    public ClassInstrumentor(ClassVisitor cv,
+            Set< ? extends AspectDiscoveryStrategy> discoveryStrategies, ProjectModel model)
     {
         super(cv);
+        this.discoveryStrategies = discoveryStrategies;
         this.model = model;
+    }
+
+    private Set<Aspect> gatherAspects(MethodModel mm)
+    {
+        Set<Aspect> aspects = new HashSet<Aspect>();
+        for (AspectDiscoveryStrategy strategy : discoveryStrategies)
+        {
+            strategy.discover(mm, aspects);
+        }
+// for (Aspect aspect : aspects)
+// {
+// System.out.println(aspect);
+// }
+        return aspects;
+    }
+
+
+    protected ProjectModel getModel()
+    {
+        return model;
     }
 
     @Override
@@ -39,12 +59,11 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     {
         super.visit(version, access, name, signature, superName, interfaces);
         this.owner = name;
-// System.out.println("instrumenting: " + owner);
     }
 
-    protected String newDelegateMethodName(MethodModel method, Aspect aspect)
+    private String newDelegateMethodName(MethodModel method, Aspect aspect)
     {
-        return method.getName() + "$salve_aop_" + aspect.method + "_" + uuid();
+        return method.getName() + "$aop$" + aspect.getMethod() + "_" + uuid();
     }
 
 
@@ -54,24 +73,22 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     {
         MethodModel method = model.getClass(owner).getMethod(name, desc);
 
-        if (isAlreadyInstrumented(method))
-        {
-            return cv.visitMethod(access, name, desc, signature, exceptions);
-        }
-
         final Set<Aspect> aspects = gatherAspects(method);
 
-        if (aspects.isEmpty())
+        AnnotationModel marker = method.getAnnot(getInstrumentationMarkerAnnotationDesc());
+
+        if (aspects.isEmpty() || marker != null)
         {
             return cv.visitMethod(access, name, desc, signature, exceptions);
         }
+
+        String wrapperName = name;
 
         // origin->delegate->delegate->root
         // orogin - original method
         // delegate - delegate methods generated as part of call chain
         // root - final delegate containing original method's code
 
-        String wrapperName = name;
         MethodVisitor origin = null;
         for (Aspect aspect : aspects)
         {
@@ -90,10 +107,21 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         }
         final String rootName = wrapperName;
 
-        // add @Instrumented(root=<root method name>) to the origin method
+        // TODO factor out into a method
+        // add @Instrumented(root=<root method name>, aspects=<...>) to the origin method
         AnnotationVisitor visitor = origin.visitAnnotation(
-                getAlreadyInstrumentedMarkerAnnotationDesc(), true);
+                getInstrumentationMarkerAnnotationDesc(), true);
         visitor.visit("root", rootName);
+// StringBuilder _aspects = new StringBuilder();
+// for (Aspect aspect : aspects)
+// {
+// if (_aspects.length() > 0)
+// {
+// _aspects.append(",");
+// }
+// _aspects.append(aspect.encode());
+// }
+// visitor.visit("aspects", _aspects.toString());
         visitor.visitEnd();
 
 
@@ -105,7 +133,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
         // we also forward any annotations from the root method to the origin method
 
-
         final OverrideInfo info = getOverrideInfo(method);
 
         MethodVisitor root = cv.visitMethod(access, rootName, desc, signature, exceptions);
@@ -116,7 +143,22 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             @Override
             public AnnotationVisitor visitAnnotation(String desc, boolean visible)
             {
+                // ignore previous instrumentation markers
+                if (desc.equals(getInstrumentationMarkerAnnotationDesc()))
+                {
+                    return null;
+                }
                 // forward annots to the root to the origin
+
+                for (Aspect aspect : aspects)
+                {
+                    final AnnotationProcessor processor = aspect.getAnnotationProcessor();
+                    if (processor != null && processor.filter(desc))
+                    {
+                        return processor.filter(_origin, desc, visible);
+                    }
+                }
+
                 return _origin.visitAnnotation(desc, visible);
             }
 
@@ -233,8 +275,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         origin.mark(invocationStart);
         // return <advice class>.<advice method>(invocation);
         origin.visitVarInsn(ALOAD, invocation);
-        origin.visitMethodInsn(INVOKESTATIC, aspect.clazz.replace(".", "/"), aspect.method,
-                "(Lsalve/aop/MethodInvocation;)Ljava/lang/Object;");
+        origin.visitMethodInsn(INVOKESTATIC, aspect.getClazz().replace(".", "/"), aspect
+                .getMethod(), "(Lsalve/aop/MethodInvocation;)Ljava/lang/Object;");
 
         // return value returned by the invocation
         final Type ret = method.getReturnType();
@@ -327,47 +369,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         return delegateName;
     }
 
-    private boolean isAlreadyInstrumented(MethodModel mm)
-    {
-        return mm.getAnnot(getAlreadyInstrumentedMarkerAnnotationDesc()) != null;
-    }
-
-    private Set<Aspect> gatherAspects(MethodModel mm)
-    {
-        Set<Aspect> aspects = new HashSet<Aspect>();
-
-
-        boolean inheritedOnly = false;
-        while (mm != null)
-        {
-            List<AnnotationModel> annots = new ArrayList<AnnotationModel>();
-            annots.addAll(mm.getAnnotations());
-            for (int i = 0; i < mm.getArgCount(); i++)
-            {
-                annots.addAll(mm.getArgAnnots(i));
-            }
-
-            for (AnnotationModel annot : annots)
-            {
-                ClassModel acm = model.getClass(annot.getName());
-                AnnotationModel aspectAnnot = acm.getAnnotation("Lsalve/aop/MethodAdvice;");
-                boolean inherited = acm.getAnnotation("Ljava/lang/annotation/Inherited;") != null;
-                if (aspectAnnot != null && (!inheritedOnly || (inheritedOnly && inherited)))
-                {
-                    final String ic = ((ValueField)aspectAnnot.getField("instrumentorClass"))
-                            .getValue().toString();
-                    final String im = ((ValueField)aspectAnnot.getField("instrumentorMethod"))
-                            .getValue().toString();
-
-
-                    aspects.add(new Aspect(ic, im));
-                }
-            }
-            mm = mm.getSuper();
-            inheritedOnly = true;
-        }
-        return aspects;
-    }
 
     private static void checkCastThrow(MethodVisitor mv, int local, String type)
     {
@@ -382,18 +383,14 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         mv.visitLabel(after);
     }
 
-    protected boolean accept(Aspect aspect)
-    {
-        return true;
-    }
-
-    protected String getAlreadyInstrumentedMarkerAnnotationDesc()
+    private String getInstrumentationMarkerAnnotationDesc()
     {
         return "Lsalve/aop/Instrumented;";
     }
-   
-    protected String uuid()
+
+    private String uuid()
     {
         return UUID.randomUUID().toString().replaceAll("[^a-z0-9]", "");
     }
+
 }

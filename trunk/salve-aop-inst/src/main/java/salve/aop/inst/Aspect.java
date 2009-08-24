@@ -1,17 +1,27 @@
-package salve.aop;
+package salve.aop.inst;
 
-class Aspect
+public class Aspect
 {
-    public String clazz;
-    public String method;
+    private String clazz;
+    private String method;
+    private AnnotationProcessor annotationProcessor;
 
-    
     public Aspect(String clazz, String method)
     {
-        super();
         this.clazz = clazz;
         this.method = method;
     }
+
+    public AnnotationProcessor getAnnotationProcessor()
+    {
+        return annotationProcessor;
+    }
+
+    public void setAnnotationProcessor(AnnotationProcessor annotationProcessor)
+    {
+        this.annotationProcessor = annotationProcessor;
+    }
+
 
     @Override
     public int hashCode()
@@ -55,4 +65,27 @@ class Aspect
     {
         return "[" + getClass().getSimpleName() + " clazz=" + clazz + ", method=" + method + "]";
     }
+
+//    public String encode()
+//    {
+//        return clazz + "#" + method;
+//    }
+//
+//    public static Aspect decode(String value)
+//    {
+//        String[] parts = value.split("#");
+//        return new Aspect(parts[0], parts[1]);
+//    }
+
+    public String getClazz()
+    {
+        return clazz;
+    }
+
+    public String getMethod()
+    {
+        return method;
+    }
+    
+    
 }

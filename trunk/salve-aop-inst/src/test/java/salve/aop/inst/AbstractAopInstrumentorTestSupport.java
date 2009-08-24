@@ -8,14 +8,14 @@ import org.junit.Assert;
 import org.junit.Before;
 
 import salve.Scope;
-import salve.aop.AopInstrumentor;
+import salve.aop.inst.AopInstrumentor;
 import salve.loader.BytecodePool;
 
 public class AbstractAopInstrumentorTestSupport extends Assert
 {
     private static final ClassLoader CL = AbstractAopInstrumentorTestSupport.class.getClassLoader();
     private static final AopInstrumentor INST = new AopInstrumentor();
-    private static BytecodePool pool= new BytecodePool(Scope.ALL).addLoaderFor(CL);
+    protected static BytecodePool pool= new BytecodePool(Scope.ALL).addLoaderFor(CL);
     private static final Map<String, Class< ? >> loaded = new HashMap<String, Class< ? >>();
 
     @SuppressWarnings("unchecked")
