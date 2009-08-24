@@ -1,11 +1,31 @@
 package salve.model;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import salve.asmlib.Type;
 
 public class AnnotationModel {
+	public static class ArrayField extends Field {
+		private final List<Field> values = new ArrayList<Field>(1);
+
+		public ArrayField(String name) {
+			super(FieldType.ARRAY, name);
+		}
+
+		void add(Field field) {
+			values.add(field);
+		}
+
+		@Override
+		public Object getValue() {
+			return values;
+		}
+
+	}
+
 	public static class EnumField extends Field {
 		private final String desc;
 		private final String value;

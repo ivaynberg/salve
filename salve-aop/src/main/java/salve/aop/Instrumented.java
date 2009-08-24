@@ -13,4 +13,5 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Instrumented {
     String root();
+    //String aspects();
 }

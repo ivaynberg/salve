@@ -1,4 +1,7 @@
-package salve.aop;
+package salve.aop.inst;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationContext;
@@ -25,13 +28,24 @@ public class AopInstrumentor implements Instrumentor
         ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx
                 .getLoader());
 
-        reader.accept(new ClassInstrumentor(writer, ctx.getModel()), ClassReader.EXPAND_FRAMES);
+        reader.accept(newInstrumentor(ctx, writer), ClassReader.EXPAND_FRAMES);
         bytecode = writer.toByteArray();
-        
+
         // TODO hacky: notify model that we have updated the class
         ctx.getModel().update(bytecode);
         return bytecode;
 
     }
 
+    private ClassInstrumentor newInstrumentor(InstrumentationContext ctx, ClassWriter writer)
+    {
+        return new ClassInstrumentor(writer, getAspectDiscoveryStrategies(), ctx.getModel());
+    }
+
+    protected Set<AspectDiscoveryStrategy> getAspectDiscoveryStrategies()
+    {
+        Set<AspectDiscoveryStrategy> aspects = new HashSet<AspectDiscoveryStrategy>();
+        aspects.add(new AnnotationAspectDiscoveryStrategy());
+        return aspects;
+    }
 }
