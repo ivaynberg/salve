@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -14,7 +13,7 @@
 	<url>http://code.google.com/p/salve/</url>
 
 	<properties>
-		<spring.version>2.5.5</spring.version>
+		<spring.version>2.5.6</spring.version>
 	</properties>
 
 	<scm>
@@ -41,7 +40,8 @@
 		<!--<module>salve-expr-validator</module>-->
 		<module>salve-aop</module>
 		<module>salve-aop-inst</module>
-	</modules>
+    <module>salve-config</module>
+  </modules>
 
 
 	<licenses>
