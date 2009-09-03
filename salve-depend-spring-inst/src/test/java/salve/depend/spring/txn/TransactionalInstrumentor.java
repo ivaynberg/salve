@@ -19,11 +19,8 @@ import salve.aop.inst.AopInstrumentor;
 import salve.aop.inst.AspectDiscoveryStrategy;
 
 /**
- * @deprecated should be installed as plugin into aop instrumentor
  * @author igor.vaynberg
- * 
  */
-@Deprecated
 public class TransactionalInstrumentor extends AopInstrumentor
 {
     @Override
