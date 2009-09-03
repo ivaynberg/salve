@@ -1,7 +1,9 @@
-package salve.config;
+package salve.config.xml;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -12,13 +14,28 @@ import org.xml.sax.SAXException;
 
 public class ConfigLoader
 {
+    private final ClassLoader classloader;
+    private final Map<String, String> aliases = new HashMap<String, String>();
+
+    public ConfigLoader(ClassLoader classloader)
+    {
+        this.classloader = classloader;
+    }
+
+
+    public ConfigLoader addAlias(String alias, String cn)
+    {
+        aliases.put(alias, cn);
+        return this;
+    }
+
     /**
      * Reads xml config into the specified config object
      * 
      * @param is
      *            input stream to configuration xml
      */
-    public static Object read(InputStream is)
+    public Object read(InputStream is)
     {
         SAXParser parser;
         try
@@ -26,7 +43,7 @@ public class ConfigLoader
             SAXParserFactory factory = SAXParserFactory.newInstance();
             parser = factory.newSAXParser();
 
-            ConfigBuilder builder = new ConfigBuilder();
+            ConfigBuilder builder = new ConfigBuilder(classloader, aliases);
             parser.parse(is, builder);
             return builder.getObject();
         }

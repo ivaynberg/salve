@@ -54,8 +54,7 @@ import salve.InstrumentationException;
 import salve.Instrumentor;
 import salve.Scope;
 import salve.asmlib.ClassReader;
-import salve.config.XmlConfig;
-import salve.config.XmlConfigReader;
+import salve.config.xml.XmlConfigReader;
 import salve.eclipse.Activator;
 import salve.eclipse.JavaProjectBytecodeLoader;
 import salve.loader.BytecodePool;
@@ -135,11 +134,11 @@ public class SalveBuilder extends AbstractBuilder
         };
         ClassLoader cloader = new FallbackBytecodeClassLoader(getClass().getClassLoader(), bloader);
 
-        final XmlConfig config = new XmlConfig();
+        final Config config;
         XmlConfigReader reader = new XmlConfigReader(cloader);
         try
         {
-            reader.read(((IFile)configResource).getContents(), config);
+            config = reader.read(((IFile)configResource).getContents());
         }
         catch (ConfigException e)
         {

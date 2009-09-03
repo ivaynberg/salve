@@ -40,10 +40,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         {
             strategy.discover(mm, aspects);
         }
-// for (Aspect aspect : aspects)
-// {
-// System.out.println(aspect);
-// }
         return aspects;
     }
 
@@ -211,7 +207,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         final Label invocationStart = new Label();
         final Label invocationEnd = new Label();
         final Label invocationException = new Label();
-
+        
         origin.visitTryCatchBlock(start, end, securityException, "java/lang/SecurityException");
         origin.visitTryCatchBlock(start, end, noSuchMethodException,
                 "java/lang/NoSuchMethodException");

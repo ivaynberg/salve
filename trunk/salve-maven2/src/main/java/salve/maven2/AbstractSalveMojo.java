@@ -28,11 +28,10 @@ import org.apache.maven.project.MavenProject;
 
 import salve.CodeMarker;
 import salve.CodeMarkerAware;
-import salve.ConfigException;
 import salve.InstrumentationContext;
 import salve.Instrumentor;
-import salve.config.XmlConfig;
-import salve.config.XmlConfigReader;
+import salve.config.xml.XmlConfig;
+import salve.config.xml.XmlConfigReader;
 import salve.maven2.util.ClassFileVisitor;
 import salve.maven2.util.Directory;
 import salve.maven2.util.ProjectBytecodeLoader;
@@ -48,7 +47,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 
 	private int scanned = 0;
 	private int instrumented = 0;
-	private final XmlConfig config = new XmlConfig();
+	private XmlConfig config;
 	private ProjectBytecodeLoader loader;
 	private ProjectModel model;
 	/**
@@ -198,10 +197,10 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 		XmlConfigReader reader = new XmlConfigReader(new FallbackBytecodeClassLoader(AbstractSalveMojo.class
 				.getClassLoader(), loader));
 		try {
-			reader.read(new FileInputStream(salvexml), config);
+			config = reader.read(new FileInputStream(salvexml));
 		} catch (FileNotFoundException e) {
 			throw new MojoExecutionException("Could not open " + salvexml + " for reading");
-		} catch (ConfigException e) {
+		} catch (Exception e) {
 			throw new MojoExecutionException("Could not configure salve instrumentation", e);
 		}
 	}

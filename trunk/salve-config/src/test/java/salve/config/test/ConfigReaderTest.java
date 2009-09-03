@@ -1,9 +1,10 @@
-package salve.config;
+package salve.config.test;
 
 import java.io.InputStream;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
+import salve.config.xml.ConfigLoader;
 
 public class ConfigReaderTest extends TestCase
 {
@@ -12,7 +13,7 @@ public class ConfigReaderTest extends TestCase
     {
         InputStream xml = Config.class.getResourceAsStream("config.xml");
         assertNotNull(xml);
-        Config config = (Config)ConfigLoader.read(xml);
+        Config config = (Config)new ConfigLoader(getClass().getClassLoader()).read(xml);
         assertNotNull(config);
         assertEquals(2, config.getPackages().size());
         Iterator<Package> packages = config.getPackages().iterator();

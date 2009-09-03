@@ -20,6 +20,8 @@ public interface Config {
 	 * 
 	 * @param instrumentor
 	 * @return instrumentor scope
+	 * 
+	 *         FIXME see if this can be removed, not very useful
 	 */
 	Scope getScope(Instrumentor instrumentor);
 }

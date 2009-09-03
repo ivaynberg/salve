@@ -1,5 +1,6 @@
 package salve.aop;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class ReflectiveInvocation implements MethodInvocation
@@ -22,9 +23,19 @@ public class ReflectiveInvocation implements MethodInvocation
 
     public Object execute() throws Throwable
     {
-        return executor.invoke(instance, arguments);
+        try
+        {
+            return executor.invoke(instance, arguments);
+        }
+        catch (Throwable e)
+        {
+            if (e instanceof InvocationTargetException)
+            {
+                e = e.getCause();
+            }
+            throw e;
+        }
     }
-
 
     public Object getThis()
     {

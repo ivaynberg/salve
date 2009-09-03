@@ -1,7 +1,8 @@
-package salve.config;
+package salve.config.xml;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Stack;
 
 import org.xml.sax.Attributes;
@@ -12,6 +13,15 @@ class ConfigBuilder extends DefaultHandler
 {
     private Object result;
     private Stack<Handler> handlers;
+    private final ClassLoader classloader;
+    private final Map<String, String> aliases;
+
+    public ConfigBuilder(ClassLoader classloader, Map<String, String> aliases)
+    {
+        this.classloader = classloader;
+        this.aliases = aliases;
+    }
+
 
     private void setResult(Object result)
     {
@@ -82,7 +92,7 @@ class ConfigBuilder extends DefaultHandler
     }
 
 
-    private static class PropertyHandler extends Handler
+    private class PropertyHandler extends Handler
     {
         private final Object dest;
 
@@ -105,7 +115,7 @@ class ConfigBuilder extends DefaultHandler
     }
 
 
-    private static class ValueHandler extends Handler
+    private class ValueHandler extends Handler
     {
         private final Object dest;
         private final String property;
@@ -121,7 +131,13 @@ class ConfigBuilder extends DefaultHandler
         {
             try
             {
-                Class< ? > clazz = Class.forName(tag);
+                String cn = aliases.get(tag);
+                if (cn == null)
+                {
+                    cn = tag;
+                }
+
+                Class< ? > clazz = classloader.loadClass(cn);
 
                 Object value = clazz.newInstance();
                 set(value);

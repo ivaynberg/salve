@@ -4,7 +4,7 @@ Bundle-Name: salve
 Bundle-SymbolicName: salve.inst
 Bundle-Version: 0.10.0
 Export-Package: salve,
- salve.config;uses:="salve",
+ salve.config.xml;uses:="salve",
  salve.loader;uses:="salve",
  salve.model,
  salve.monitor;uses:="salve",
