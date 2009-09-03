@@ -135,10 +135,6 @@ public class MethodModel {
 		return signature;
 	}
 
-	// public ParameterAnnotations[] getParameterAnnots() {
-	// return parameterAnnots;
-	// }
-
 	public MethodModel getSuper() {
 		if (!superMethodCached) {
 			if (clazz.getSuperClassName() != null) {
@@ -164,6 +160,10 @@ public class MethodModel {
 		return superMethod;
 	}
 
+	// public ParameterAnnotations[] getParameterAnnots() {
+	// return parameterAnnots;
+	// }
+
 	public boolean hasArgAnnot(int idx, String desc) {
 		return getArgAnnot(idx, desc) != null;
 	}
@@ -174,5 +174,10 @@ public class MethodModel {
 
 	void setArgName(int idx, String name) {
 		argNames[idx] = name;
+	}
+
+	@Override
+	public String toString() {
+		return clazz.getName() + "#" + method.getName();
 	}
 }
