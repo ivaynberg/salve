@@ -3,6 +3,7 @@
   <comment/>
   <projects>
     <project>salve-asm</project>
+    <project>salve-config</project>
     <project>salve-contract</project>
     <project>salve-inst</project>
   </projects>

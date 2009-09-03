@@ -10,7 +10,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.SAXException;
 
 
-public class ConfigReader
+public class ConfigLoader
 {
     /**
      * Reads xml config into the specified config object

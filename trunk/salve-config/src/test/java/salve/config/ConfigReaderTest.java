@@ -12,7 +12,7 @@ public class ConfigReaderTest extends TestCase
     {
         InputStream xml = Config.class.getResourceAsStream("config.xml");
         assertNotNull(xml);
-        Config config = (Config)ConfigReader.read(xml);
+        Config config = (Config)ConfigLoader.read(xml);
         assertNotNull(config);
         assertEquals(2, config.getPackages().size());
         Iterator<Package> packages = config.getPackages().iterator();

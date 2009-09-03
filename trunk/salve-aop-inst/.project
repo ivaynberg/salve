@@ -4,6 +4,7 @@
   <projects>
     <project>salve-aop</project>
     <project>salve-asm</project>
+    <project>salve-config</project>
     <project>salve-inst</project>
   </projects>
   <buildSpec>
