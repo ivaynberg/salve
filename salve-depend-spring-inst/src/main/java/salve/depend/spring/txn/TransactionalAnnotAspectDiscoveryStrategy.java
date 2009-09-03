@@ -16,7 +16,8 @@ public class TransactionalAnnotAspectDiscoveryStrategy implements AspectDiscover
 
     public void discover(MethodModel method, Set<Aspect> aspects)
     {
-        if (method.getAnnot("Lorg/springframework/transaction/annotation/Transactional;") != null)
+        if (method.getAnnot(TRANSACTIONAL_DESC) != null ||
+                method.getClassModel().getAnnotation(TRANSACTIONAL_DESC) != null)
         {
             Aspect aspect = new Aspect("salve/depend/spring/txn/TransactionalAdvice", "transact");
             aspect.setAnnotationProcessor(new AnnotationProcessor()
