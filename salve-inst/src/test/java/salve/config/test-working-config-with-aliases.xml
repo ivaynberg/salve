@@ -1,19 +1,19 @@
-<salve.config.xml.XmlConfig>
+<config>
 	<packages>
-		<salve.config.xml.XmlPackage>
+		<package>
 			<name>salve.package1</name>
 			<instrumentors>
 				<salve.config.Instrumentor1/>
 			</instrumentors>		
-		</salve.config.xml.XmlPackage>	
+		</package>	
 		
-		<salve.config.xml.XmlPackage>
+		<package>
 			<name>salve.package2</name>
 			<instrumentors>
 				<salve.config.Instrumentor1/>
 				<salve.config.Instrumentor2/>
 			</instrumentors>		
-		</salve.config.xml.XmlPackage>
+		</package>
 		
 	</packages>
-</salve.config.xml.XmlConfig>
+</config>

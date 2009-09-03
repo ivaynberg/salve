@@ -1,4 +1,4 @@
-package salve.config;
+package salve.config.xml;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +11,7 @@ import salve.Scope;
  * @author igor.vaynberg
  * 
  */
-public class PackageScope implements Scope {
+public class XmlPackageScope implements Scope {
 
 	private final Set<String> packages = new HashSet<String>();
 

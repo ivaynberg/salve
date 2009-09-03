@@ -1,4 +1,4 @@
-package salve.config;
+package salve.config.test;
 
 import java.util.HashSet;
 import java.util.Set;

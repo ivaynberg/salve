@@ -1,7 +1,6 @@
 package salve.depend.spring.txn;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 
 import salve.aop.MethodInvocation;
@@ -40,10 +39,6 @@ public class TransactionalAdvice {
 			txnman.finish(txn);
 			return ret;
 		} catch (Throwable e) {
-			// TODO unwrap the invocation target exception automatically
-			if (e instanceof InvocationTargetException) {
-				e = e.getCause();
-			}
 			txnman.finish(e, txn);
 			throw e;
 		} finally {

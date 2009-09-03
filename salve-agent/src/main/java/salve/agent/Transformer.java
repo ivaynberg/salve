@@ -9,9 +9,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
-import salve.Config;
-import salve.config.XmlConfig;
-import salve.config.XmlConfigReader;
+import salve.config.xml.XmlConfig;
+import salve.config.xml.XmlConfigReader;
 
 /**
  * Default class transformer that uses salve's xml configuration
@@ -31,7 +30,7 @@ class Transformer extends AbstractTransformer
     private final XmlConfig config = new XmlConfig();
 
     @Override
-    protected Config getConfig(ClassLoader loader, String className)
+    protected salve.config.xml.XmlConfig getConfig(ClassLoader loader, String className)
     {
         // see if this is a new classloader, and if it is try to load any
         // salve config files
