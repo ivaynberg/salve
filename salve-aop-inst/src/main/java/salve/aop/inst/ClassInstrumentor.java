@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import salve.InstrumentationContext;
+import salve.InstrumentorMonitor;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
@@ -24,13 +26,15 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     private String owner;
     private final ProjectModel model;
     private final Set< ? extends AspectDiscoveryStrategy> discoveryStrategies;
+    private final InstrumentorMonitor monitor;
 
     public ClassInstrumentor(ClassVisitor cv,
-            Set< ? extends AspectDiscoveryStrategy> discoveryStrategies, ProjectModel model)
+            Set< ? extends AspectDiscoveryStrategy> discoveryStrategies, InstrumentationContext ctx)
     {
         super(cv);
         this.discoveryStrategies = discoveryStrategies;
-        this.model = model;
+        this.monitor = ctx.getMonitor();
+        this.model = ctx.getModel();
     }
 
     private Set<Aspect> gatherAspects(MethodModel mm)
@@ -198,6 +202,9 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         GeneratorAdapter origin = new GeneratorAdapter(originmv, method.getAccess(), method
                 .getName(), method.getDesc());
 
+        monitor.methodModified(owner, method.getAccess(), method.getName(), method.getDesc());
+
+
         origin.visitCode();
 
         final Label start = new Label();
@@ -207,7 +214,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         final Label invocationStart = new Label();
         final Label invocationEnd = new Label();
         final Label invocationException = new Label();
-        
+
         origin.visitTryCatchBlock(start, end, securityException, "java/lang/SecurityException");
         origin.visitTryCatchBlock(start, end, noSuchMethodException,
                 "java/lang/NoSuchMethodException");
@@ -364,7 +371,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
         return delegateName;
     }
-
 
     private static void checkCastThrow(MethodVisitor mv, int local, String type)
     {

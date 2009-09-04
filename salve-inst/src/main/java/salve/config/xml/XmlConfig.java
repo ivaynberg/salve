@@ -72,31 +72,38 @@ public class XmlConfig implements salve.Config {
 
 	}
 
-	private Instrumentor instantiateInstrumentor(String instClassName, ClassLoader instrumentorClassLoader) {
-		Class<?> instClass = null;
-		try {
-			instClass = instrumentorClassLoader.loadClass(instClassName);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Could not load instrumentor class " + instClassName
-					+ ", make sure it is available on the classpath at the time of instrumentation");
-		}
-
-		Object inst;
-		try {
-			inst = instClass.newInstance();
-		} catch (InstantiationException e) {
-			throw new RuntimeException("Could not instantiate instrumentor of class " + instClassName, e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException("Could not access instrumentor of class " + instClassName, e);
-		}
-
-		if (!(inst instanceof Instrumentor)) {
-			throw new RuntimeException(String.format("Instrumentor class %s does not implement %s", instClassName,
-					Instrumentor.class.getName()));
-		}
-
-		return (Instrumentor) inst;
-	}
+	// private Instrumentor instantiateInstrumentor(String instClassName,
+	// ClassLoader instrumentorClassLoader) {
+	// Class<?> instClass = null;
+	// try {
+	// instClass = instrumentorClassLoader.loadClass(instClassName);
+	// } catch (ClassNotFoundException e) {
+	// throw new RuntimeException("Could not load instrumentor class " +
+	// instClassName
+	// +
+	// ", make sure it is available on the classpath at the time of instrumentation");
+	// }
+	//
+	// Object inst;
+	// try {
+	// inst = instClass.newInstance();
+	// } catch (InstantiationException e) {
+	// throw new RuntimeException("Could not instantiate instrumentor of class "
+	// + instClassName, e);
+	// } catch (IllegalAccessException e) {
+	// throw new RuntimeException("Could not access instrumentor of class " +
+	// instClassName, e);
+	// }
+	//
+	// if (!(inst instanceof Instrumentor)) {
+	// throw new
+	// RuntimeException(String.format("Instrumentor class %s does not implement %s",
+	// instClassName,
+	// Instrumentor.class.getName()));
+	// }
+	//
+	// return (Instrumentor) inst;
+	// }
 
 	public void setPackages(List<XmlPackage> packages) {
 		this.packages = packages;

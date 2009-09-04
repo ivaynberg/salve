@@ -24,7 +24,7 @@ import salve.aop.inst.AspectDiscoveryStrategy;
 public class TransactionalInstrumentor extends AopInstrumentor
 {
     @Override
-    protected Set<AspectDiscoveryStrategy> getAspectDiscoveryStrategies()
+    public Set<AspectDiscoveryStrategy> getAspectDiscoveryStrategies()
     {
         Set<AspectDiscoveryStrategy> strategies = super.getAspectDiscoveryStrategies();
         strategies.add(new TransactionalAnnotAspectDiscoveryStrategy());
