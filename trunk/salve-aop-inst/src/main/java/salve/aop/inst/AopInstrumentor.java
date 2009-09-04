@@ -14,6 +14,13 @@ import salve.util.BytecodeLoadingClassWriter;
 public class AopInstrumentor implements Instrumentor
 {
 
+    Set<AspectDiscoveryStrategy> aspects = new HashSet<AspectDiscoveryStrategy>();
+
+    public AopInstrumentor()
+    {
+        aspects.add(new AnnotationAspectDiscoveryStrategy());
+    }
+    
     public byte[] instrument(String className, InstrumentationContext ctx)
             throws InstrumentationException
     {
@@ -39,13 +46,11 @@ public class AopInstrumentor implements Instrumentor
 
     private ClassInstrumentor newInstrumentor(InstrumentationContext ctx, ClassWriter writer)
     {
-        return new ClassInstrumentor(writer, getAspectDiscoveryStrategies(), ctx.getModel());
+        return new ClassInstrumentor(writer, getAspectDiscoveryStrategies(), ctx);
     }
 
-    protected Set<AspectDiscoveryStrategy> getAspectDiscoveryStrategies()
+    public Set<AspectDiscoveryStrategy> getAspectDiscoveryStrategies()
     {
-        Set<AspectDiscoveryStrategy> aspects = new HashSet<AspectDiscoveryStrategy>();
-        aspects.add(new AnnotationAspectDiscoveryStrategy());
         return aspects;
     }
 }

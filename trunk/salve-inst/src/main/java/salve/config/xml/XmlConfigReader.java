@@ -4,7 +4,6 @@ import java.io.InputStream;
 
 import salve.ConfigException;
 import salve.Instrumentor;
-import salve.config.xml.ConfigLoader;
 
 public class XmlConfigReader {
 	private final ClassLoader classloader;
@@ -71,6 +70,7 @@ public class XmlConfigReader {
 			existing.initialize(classloader);
 			return existing;
 		} else {
+			config.initialize(classloader);
 			return config;
 		}
 	}
