@@ -64,7 +64,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	 * 
 	 * @parameter expression="${salve.maven2.verbose}"
 	 */
-	private final boolean verbose = true;
+	private final boolean verbose = false;
 
 	/**
 	 * show debug info: show which files are scanned and which instrumentors are
@@ -72,7 +72,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	 * 
 	 * @parameter expression="${salve.maven2.debug}"
 	 */
-	private final boolean debug = true;
+	private final boolean debug = false;
 
 	private void debug(String message, Object... params) {
 		if (debug) {
