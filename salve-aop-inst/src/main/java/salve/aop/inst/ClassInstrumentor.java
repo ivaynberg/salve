@@ -92,9 +92,15 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         MethodVisitor origin = null;
         for (Aspect aspect : aspects)
         {
+            int wrapperAccess = ACC_PRIVATE ;
+            if (origin == null)
+            {
+                wrapperAccess = access;
+            }
+            
             // create aspect wrapper method which will call the delegate
-            MethodVisitor wrapper = cv
-                    .visitMethod(access, wrapperName, desc, signature, exceptions);
+            MethodVisitor wrapper = cv.visitMethod(wrapperAccess, wrapperName, desc, signature,
+                    exceptions);
 
             // remember the origin method
             if (origin == null)
@@ -135,7 +141,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
         final OverrideInfo info = getOverrideInfo(method);
 
-        MethodVisitor root = cv.visitMethod(access, rootName, desc, signature, exceptions);
+        MethodVisitor root = cv.visitMethod(ACC_PROTECTED, rootName, desc, signature,
+                exceptions);
 
         final MethodVisitor _origin = origin;
         return new MethodAdapter(root)
