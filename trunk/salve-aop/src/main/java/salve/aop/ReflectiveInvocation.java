@@ -25,6 +25,7 @@ public class ReflectiveInvocation implements MethodInvocation
     {
         try
         {
+            executor.setAccessible(true);
             return executor.invoke(instance, arguments);
         }
         catch (Throwable e)
