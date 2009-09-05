@@ -1,32 +1,39 @@
 package salve.testbed;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.annotation.Transactional;
 
-public class ApplicationTest extends TestCase
+public class ApplicationTest
 {
+    private ConfigurableApplicationContext ctx;
+
+    @Before
+    public void setup()
+    {
+        ctx = new ClassPathXmlApplicationContext("META-INF/application.xml");
+        ctx.registerShutdownHook();
+    }
+
+    @After
+    public void teardown()
+    {
+        ctx.close();
+    }
+
     @Test
+    @Transactional
     public void test()
     {
-        ApplicationContext ctx = new ClassPathXmlApplicationContext("META-INF/application.xml");
-
-        PlatformTransactionManager ptm = (PlatformTransactionManager)ctx.getBean("data.transactionManager");
-        TransactionStatus txn=ptm.getTransaction(new DefaultTransactionDefinition());
-
         assertTrue(Article.findAll().isEmpty());
         Article article = new Article("test");
         article.setContent("test");
         article.save();
         assertTrue(Article.findAll().size() == 1);
-        
-        txn.setRollbackOnly();
-        ptm.rollback(txn);
-        
     }
 }
