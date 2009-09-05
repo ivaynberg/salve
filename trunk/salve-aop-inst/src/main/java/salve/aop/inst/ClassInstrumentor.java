@@ -63,7 +63,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
     private String newDelegateMethodName(MethodModel method, Aspect aspect)
     {
-        return method.getName() + "$aop$" + aspect.getMethod() + "_" + uuid();
+        return "_"+method.getName() + "$aop$" + aspect.getMethod() + "_" + uuid();
     }
 
 
