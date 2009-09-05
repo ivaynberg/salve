@@ -7,24 +7,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Test;
 
-import salve.InstrumentationContext;
-import salve.Instrumentor;
 import salve.Scope;
 import salve.aop.MethodAdvice;
 import salve.aop.MethodInvocation;
 import salve.aop.UndeclaredException;
-import salve.aop.inst.AopInstrumentor;
-import salve.aop.inst.Aspect;
-import salve.aop.inst.ClassInstrumentor;
-import salve.asmlib.ClassWriter;
 import salve.loader.BytecodePool;
-import salve.model.MethodModel;
 
 
 //FIXME inheritance - aspect inheritance for argument annots?
@@ -264,6 +255,7 @@ public class BasicAspectsTest extends AbstractAopInstrumentorTestSupport
         }
     }
 
+
     @Test
     public void shouldNotHandleMethodsWithoutAnnotations() throws Exception
     {
@@ -289,6 +281,17 @@ public class BasicAspectsTest extends AbstractAopInstrumentorTestSupport
         Method method = bean.getClass().getMethod("test1", (Class< ? >[])null);
         assertNotNull(method.getAnnotation(Simple.class));
         assertNotNull(method.getAnnotation(Blue.class));
+
+        // @Blue should only be on the origin method
+        int count = 0;
+        for (Method m : bean.getClass().getDeclaredMethods())
+        {
+            if (m.getAnnotation(Blue.class) != null)
+            {
+                count++;
+            }
+        }
+        assertEquals(1, count);
     }
 
 
@@ -407,70 +410,5 @@ public class BasicAspectsTest extends AbstractAopInstrumentorTestSupport
         }
     }
 
-//    @Test
-//    public void shouldSupportSequentialInstrumentors() throws Exception
-//    {
-//
-//        Instrumentor inst1 = new AopInstrumentor()
-//        {
-//            @Override
-//            protected ClassInstrumentor newInstrumentor(InstrumentationContext ctx,
-//                    ClassWriter writer)
-//            {
-//                return new ClassInstrumentor(writer, ctx.getModel())
-//                {
-//
-//                    @Override
-//                    protected Set<Aspect> gatherAspects(MethodModel mm)
-//                    {
-//                        Set<Aspect> aspects = new HashSet<Aspect>();
-//                        if (mm.getName().equals("test0"))
-//                        {
-//
-//                            aspects.add(new Aspect(BasicAspectsTest.BeanAdvice.class.getName(),
-//                                    "uppercase"));
-//                        }
-//                        return aspects;
-//                    }
-//
-//                };
-//            }
-//        };
-//
-//        Instrumentor inst2 = new AopInstrumentor()
-//        {
-//            @Override
-//            protected ClassInstrumentor newInstrumentor(InstrumentationContext ctx,
-//                    ClassWriter writer)
-//            {
-//                return new ClassInstrumentor(writer, ctx.getModel())
-//                {
-//
-//                    @Override
-//                    protected Set<Aspect> gatherAspects(MethodModel mm)
-//                    {
-//                        Set<Aspect> aspects = new HashSet<Aspect>();
-//                        if (mm.getName().equals("test0"))
-//                        {
-//                            aspects.add(new Aspect(BasicAspectsTest.BeanAdvice.class.getName(),
-//                                    "brackets"));
-//                        }
-//                        return aspects;
-//                    }
-//
-//                };
-//            }
-//        };
-//
-//
-//        final String cn = getClass().getName().replace(".", "/") + "$" + "Bean4";
-//        pool.instrumentIntoBytecode(cn, inst1);
-//        pool.instrumentIntoBytecode(cn, inst2);
-//
-//        Class< ? > clazz = pool.loadClass(cn);
-//
-//        Bean4 bean = (Bean4)clazz.newInstance();
-//        assertEquals("[TEST]", bean.test0("test"));
-//
-//    }
+
 }
