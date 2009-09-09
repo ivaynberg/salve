@@ -15,6 +15,7 @@ package salve.depend.spring.txn;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +65,16 @@ public class TransactionalKey extends AbstractKey {
 									"Error while attempting to retrieve method annotations from method %s.%s()",
 									clazz.getName(), methodName), e);
 		}
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param method
+	 *            transactional method
+	 */
+	public TransactionalKey(Method method) {
+		annots = method.getAnnotations();
 	}
 
 	/** {@inheritDoc} */
