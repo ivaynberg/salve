@@ -37,35 +37,35 @@ public class BasicAspectsTest extends AbstractAopInstrumentorTestSupport
     }
 
     @Retention(RetentionPolicy.RUNTIME)
-    @MethodAdvice(instrumentorClass = BasicAspectsTest.BeanAdvice.class, instrumentorMethod = "simple")
+    @MethodAdvice(adviceClass = BasicAspectsTest.BeanAdvice.class, adviceMethod = "simple")
     public @interface Simple {
 
     }
 
-    @MethodAdvice(instrumentorClass = BasicAspectsTest.BeanAdvice.class, instrumentorMethod = "args")
+    @MethodAdvice(adviceClass = BasicAspectsTest.BeanAdvice.class, adviceMethod = "args")
     public @interface Args {
 
     }
 
-    @MethodAdvice(instrumentorClass = BasicAspectsTest.BeanAdvice.class, instrumentorMethod = "exceptions")
+    @MethodAdvice(adviceClass = BasicAspectsTest.BeanAdvice.class, adviceMethod = "exceptions")
     public @interface Exceptions {
 
     }
 
-    @MethodAdvice(instrumentorClass = BasicAspectsTest.BeanAdvice.class, instrumentorMethod = "addOne")
+    @MethodAdvice(adviceClass = BasicAspectsTest.BeanAdvice.class, adviceMethod = "addOne")
     public @interface AddOne {
 
     }
 
     @Retention(RetentionPolicy.RUNTIME)
-    @MethodAdvice(instrumentorClass = BasicAspectsTest.BeanAdvice.class, instrumentorMethod = "uppercase")
+    @MethodAdvice(adviceClass = BasicAspectsTest.BeanAdvice.class, adviceMethod = "uppercase")
     @Inherited
     public @interface Uppercase {
 
     }
 
     @Retention(RetentionPolicy.RUNTIME)
-    @MethodAdvice(instrumentorClass = BasicAspectsTest.BeanAdvice.class, instrumentorMethod = "brackets")
+    @MethodAdvice(adviceClass = BasicAspectsTest.BeanAdvice.class, adviceMethod = "brackets")
     public @interface Brackets {
 
     }

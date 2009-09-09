@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface MethodAdvice {
-    Class<?> instrumentorClass();
+    Class<?> adviceClass();
 
-    String instrumentorMethod();
+    String adviceMethod();
 }

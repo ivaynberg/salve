@@ -14,14 +14,14 @@ import salve.aop.MethodInvocation;
 public class AspectInheritanceTest extends AbstractAopInstrumentorTestSupport
 {
     @Retention(RetentionPolicy.RUNTIME)
-    @MethodAdvice(instrumentorClass = Advice.class, instrumentorMethod = "appendA")
+    @MethodAdvice(adviceClass = Advice.class, adviceMethod = "appendA")
     @Inherited
     public @interface AppendA {
 
     }
 
     @Retention(RetentionPolicy.RUNTIME)
-    @MethodAdvice(instrumentorClass = Advice.class, instrumentorMethod = "appendB")
+    @MethodAdvice(adviceClass = Advice.class, adviceMethod = "appendB")
     public @interface AppendB {
 
     }

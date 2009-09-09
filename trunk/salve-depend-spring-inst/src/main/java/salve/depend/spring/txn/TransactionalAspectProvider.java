@@ -1,20 +1,21 @@
 package salve.depend.spring.txn;
 
-import java.util.Set;
+import java.util.Collection;
+import java.util.Collections;
 
 import salve.aop.inst.AnnotationProcessor;
 import salve.aop.inst.Aspect;
-import salve.aop.inst.AspectDiscoveryStrategy;
+import salve.aop.inst.AspectProvider;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.MethodVisitor;
 import salve.model.MethodModel;
 
-public class TransactionalAnnotAspectDiscoveryStrategy implements AspectDiscoveryStrategy
+public class TransactionalAspectProvider implements AspectProvider
 {
     static final String TRANSACTIONAL_DESC = "Lorg/springframework/transaction/annotation/Transactional;";
     static final String SPRINGTRANSACTIONAL_DESC = "Lsalve/depend/spring/txn/SpringTransactional;";
 
-    public void discover(MethodModel method, Set<Aspect> aspects)
+    public Collection<Aspect> getAspects(MethodModel method)
     {
         if (method.getAnnot(TRANSACTIONAL_DESC) != null ||
                 method.getClassModel().getAnnotation(TRANSACTIONAL_DESC) != null)
@@ -34,9 +35,10 @@ public class TransactionalAnnotAspectDiscoveryStrategy implements AspectDiscover
                 }
 
             });
-            aspects.add(aspect);
+            return Collections.singletonList(aspect);
         }
 
+        return null;
     }
 
 }
