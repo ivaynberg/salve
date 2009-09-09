@@ -27,6 +27,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     private final ProjectModel model;
     private final Set< ? extends AspectDiscoveryStrategy> discoveryStrategies;
     private final InstrumentorMonitor monitor;
+    private int delegateCounter = 0;
 
     public ClassInstrumentor(ClassVisitor cv,
             Set< ? extends AspectDiscoveryStrategy> discoveryStrategies, InstrumentationContext ctx)
@@ -63,7 +64,29 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
     private String newDelegateMethodName(MethodModel method, Aspect aspect)
     {
-        return "_"+method.getName() + "$aop$" + aspect.getMethod() + "_" + uuid();
+        final String base = method.getName() + "$salveaop";
+
+        while (true)
+        {
+            delegateCounter++;
+
+            final String delegate = base + delegateCounter;
+            boolean valid = true;
+            for (MethodModel m : method.getClassModel().getMethods())
+            {
+                if (m.getName().equals(delegate))
+                {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid)
+            {
+                return delegate;
+            }
+        }
+
     }
 
 
@@ -92,12 +115,12 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         MethodVisitor origin = null;
         for (Aspect aspect : aspects)
         {
-            int wrapperAccess = ACC_PRIVATE ;
+            int wrapperAccess = ACC_PRIVATE;
             if (origin == null)
             {
                 wrapperAccess = access;
             }
-            
+
             // create aspect wrapper method which will call the delegate
             MethodVisitor wrapper = cv.visitMethod(wrapperAccess, wrapperName, desc, signature,
                     exceptions);
@@ -141,8 +164,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
         final OverrideInfo info = getOverrideInfo(method);
 
-        MethodVisitor root = cv.visitMethod(ACC_PROTECTED, rootName, desc, signature,
-                exceptions);
+        MethodVisitor root = cv.visitMethod(ACC_PROTECTED, rootName, desc, signature, exceptions);
 
         final MethodVisitor _origin = origin;
         return new MethodAdapter(root)
