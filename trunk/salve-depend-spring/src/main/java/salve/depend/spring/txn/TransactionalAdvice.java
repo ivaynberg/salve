@@ -1,34 +1,19 @@
 package salve.depend.spring.txn;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-
 import salve.aop.MethodInvocation;
 import salve.depend.DependencyLibrary;
-import salve.depend.Key;
 
+/**
+ * Transactional advice
+ * 
+ * @author igor.vaynberg
+ */
 public class TransactionalAdvice {
-
-	// TODO user TransactionalKey instead
-	private static final Key TXNMAN_KEY = new Key() {
-		public Class<?> getType() {
-			return TransactionManager.class;
-		}
-
-		public Annotation[] getAnnotations() {
-			return null;
-		}
-
-		public Type getGenericType() {
-
-			return TransactionManager.class;
-		}
-	};
 
 	public static Object transact(MethodInvocation invocation) throws Throwable {
 
 		TransactionManager txnman = (TransactionManager) DependencyLibrary
-				.locate(TXNMAN_KEY);
+				.locate(new TransactionalKey(invocation.getMethod()));
 
 		TransactionAttribute attr = new TransactionAttribute(invocation
 				.getMethod());
