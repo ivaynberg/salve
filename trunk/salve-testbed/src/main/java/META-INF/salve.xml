@@ -4,9 +4,9 @@
 			<name>salve.testbed</name>
 			<instrumentors>
 				<salve.aop.inst.AopInstrumentor>
-					<aspectDiscoveryStrategies>
-						<salve.depend.spring.txn.TransactionalAnnotAspectDiscoveryStrategy/>
-					</aspectDiscoveryStrategies>
+					<aspectProviders>
+						<salve.depend.spring.txn.TransactionalAspectProvider/>
+					</aspectProviders>
 				</salve.aop.inst.AopInstrumentor>
 				<salve.depend.DependencyInstrumentor/>
 			</instrumentors>

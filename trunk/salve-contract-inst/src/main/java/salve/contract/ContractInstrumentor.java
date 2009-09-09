@@ -17,6 +17,7 @@
 package salve.contract;
 
 import salve.AbstractInstrumentor;
+import salve.Bytecode;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationContext;
 import salve.InstrumentationException;
@@ -64,12 +65,14 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 	@Override
 	protected byte[] internalInstrument(String className, InstrumentationContext ctx) throws InstrumentationException {
 
-		byte[] bytecode = ctx.getLoader().loadBytecode(className);
+		Bytecode bytecode = ctx.getLoader().loadBytecode(className);
 		if (bytecode == null) {
 			throw new CannotLoadBytecodeException(className);
 		}
 
-		ClassReader reader = new ClassReader(bytecode);
+		byte[] bytes = bytecode.getBytes();
+
+		ClassReader reader = new ClassReader(bytes);
 
 		final ClassAnalyzer initOnceAnalyzer = new ClassAnalyzer(ctx);
 		ContractAnalyzer analyzer = new ContractAnalyzer(initOnceAnalyzer);
@@ -80,9 +83,9 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx.getLoader());
 			reader.accept(new ClassInstrumentor(new ConditionalChecksInstrumentor(writer, ctx.getMonitor()),
 					initOnceAnalyzer), ClassReader.EXPAND_FRAMES);
-			bytecode = writer.toByteArray();
+			bytes = writer.toByteArray();
 		}
-		return bytecode;
+		return bytes;
 	}
 
 }

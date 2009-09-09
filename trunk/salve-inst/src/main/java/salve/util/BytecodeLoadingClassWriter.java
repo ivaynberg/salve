@@ -2,6 +2,7 @@ package salve.util;
 
 import java.util.HashMap;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassWriter;
@@ -26,11 +27,12 @@ public class BytecodeLoadingClassWriter extends ClassWriter {
 		private final boolean isInterface;
 
 		public ClassInfo(String type, BytecodeLoader loader) {
-			byte[] bytecode = loader.loadBytecode(type);
+			Bytecode bytecode = loader.loadBytecode(type);
 			if (bytecode == null) {
 				throw new IllegalStateException("Bytecode loader could not load bytecode for type: " + type);
 			}
-			ClassReader reader = new ClassReader(bytecode);
+			byte[] bytes = bytecode.getBytes();
+			ClassReader reader = new ClassReader(bytes);
 			this.name = reader.getClassName();
 			String superType = reader.getSuperName();
 			if (superType != null) {

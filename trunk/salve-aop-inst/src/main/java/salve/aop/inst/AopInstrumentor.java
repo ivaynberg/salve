@@ -3,6 +3,7 @@ package salve.aop.inst;
 import java.util.HashSet;
 import java.util.Set;
 
+import salve.Bytecode;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationContext;
 import salve.InstrumentationException;
@@ -24,23 +25,24 @@ public class AopInstrumentor implements Instrumentor
     public byte[] instrument(String className, InstrumentationContext ctx)
             throws InstrumentationException
     {
-        byte[] bytecode = ctx.getLoader().loadBytecode(className);
+        Bytecode bytecode = ctx.getLoader().loadBytecode(className);
         if (bytecode == null)
         {
             throw new CannotLoadBytecodeException(className);
         }
 
-        ClassReader reader = new ClassReader(bytecode);
+        byte[] bytes = bytecode.getBytes();
+        ClassReader reader = new ClassReader(bytes);
 
         ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx
                 .getLoader());
 
         reader.accept(newInstrumentor(ctx, writer), ClassReader.EXPAND_FRAMES);
-        bytecode = writer.toByteArray();
+        bytes = writer.toByteArray();
 
         // TODO hacky: notify model that we have updated the class
-        ctx.getModel().update(bytecode);
-        return bytecode;
+        ctx.getModel().update(bytes);
+        return bytes;
 
     }
 

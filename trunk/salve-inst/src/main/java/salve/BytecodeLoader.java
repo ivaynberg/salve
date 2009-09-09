@@ -24,5 +24,5 @@ package salve;
  * 
  */
 public interface BytecodeLoader {
-	byte[] loadBytecode(String className);
+	Bytecode loadBytecode(String className);
 }

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import salve.Bytecode;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationContext;
 import salve.asmlib.AnnotationVisitor;
@@ -227,11 +228,13 @@ class ClassAnalyzer implements Opcodes, Constants {
 		if (!scannedClasses.contains(owner)) {
 			scannedClasses.add(owner);
 
-			byte[] bytecode = ctx.getLoader().loadBytecode(owner);
+			Bytecode bytecode = ctx.getLoader().loadBytecode(owner);
 			if (bytecode == null) {
 				throw new CannotLoadBytecodeException(owner);
 			}
-			ClassReader reader = new ClassReader(bytecode);
+
+			byte[] bytes = bytecode.getBytes();
+			ClassReader reader = new ClassReader(bytes);
 			reader.accept(new Analyzer(), ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES);
 		}
 	}

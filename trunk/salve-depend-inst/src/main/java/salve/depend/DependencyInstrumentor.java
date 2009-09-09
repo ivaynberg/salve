@@ -17,7 +17,7 @@
 package salve.depend;
 
 import salve.AbstractInstrumentor;
-import salve.BytecodeLoader;
+import salve.Bytecode;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationContext;
 import salve.asmlib.ClassReader;
@@ -37,25 +37,25 @@ import salve.util.asm.AsmUtil;
  */
 public class DependencyInstrumentor extends AbstractInstrumentor {
 
-	private static class TracingBytecodeLoader implements BytecodeLoader {
-		private final BytecodeLoader delegate;
-
-		public TracingBytecodeLoader(BytecodeLoader delegate) {
-			this.delegate = delegate;
-		}
-
-		public byte[] loadBytecode(String className) {
-			if (!className.startsWith("biggie")) {
-				trace("loading bytecode: " + className);
-				Exception e = new Exception();
-				for (StackTraceElement ste : e.getStackTrace()) {
-					trace("  " + ste.toString());
-				}
-			}
-			return delegate.loadBytecode(className);
-		}
-
-	}
+	// private static class TracingBytecodeLoader implements BytecodeLoader {
+	// private final BytecodeLoader delegate;
+	//
+	// public TracingBytecodeLoader(BytecodeLoader delegate) {
+	// this.delegate = delegate;
+	// }
+	//
+	// public byte[] loadBytecode(String className) {
+	// if (!className.startsWith("biggie")) {
+	// trace("loading bytecode: " + className);
+	// Exception e = new Exception();
+	// for (StackTraceElement ste : e.getStackTrace()) {
+	// trace("  " + ste.toString());
+	// }
+	// }
+	// return delegate.loadBytecode(className);
+	// }
+	//
+	// }
 
 	private static void trace(String str) {
 		// try {
@@ -73,16 +73,14 @@ public class DependencyInstrumentor extends AbstractInstrumentor {
 	 */
 	@Override
 	protected byte[] internalInstrument(String className, InstrumentationContext ctx) throws Exception {
-		BytecodeLoader loader = new TracingBytecodeLoader(ctx.getLoader());
-		trace("instrumenting: " + className);
-
-		byte[] bytecode = loader.loadBytecode(className);
+		Bytecode bytecode = ctx.getLoader().loadBytecode(className);
 		if (bytecode == null) {
 			throw new CannotLoadBytecodeException(className);
 		}
 
-		ClassReader reader = new ClassReader(bytecode);
-		byte[] instrumented = bytecode;
+		byte[] bytes = bytecode.getBytes();
+		ClassReader reader = new ClassReader(bytes);
+		byte[] instrumented = bytes;
 
 		int access = reader.getAccess();
 		if (AsmUtil.isSet(access, Opcodes.ACC_INTERFACE)) {
@@ -96,7 +94,7 @@ public class DependencyInstrumentor extends AbstractInstrumentor {
 
 			ClassAnalyzer analyzer = new ClassAnalyzer(className, ctx);
 			if (analyzer.shouldInstrument() && !analyzer.isInstrumented(className)) {
-				ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, loader);
+				ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx.getLoader());
 				ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, ctx.getMonitor());
 				reader.accept(inst, ClassReader.EXPAND_FRAMES);
 				instrumented = writer.toByteArray();

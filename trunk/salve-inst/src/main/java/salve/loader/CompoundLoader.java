@@ -19,6 +19,7 @@ package salve.loader;
 import java.util.ArrayList;
 import java.util.List;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 
 /**
@@ -48,9 +49,9 @@ public class CompoundLoader implements BytecodeLoader {
 	/**
 	 * {@inheritDoc}
 	 */
-	public byte[] loadBytecode(String className) {
+	public Bytecode loadBytecode(String className) {
 		for (BytecodeLoader loader : delegates) {
-			byte[] bytecode = loader.loadBytecode(className);
+			Bytecode bytecode = loader.loadBytecode(className);
 			if (bytecode != null) {
 				return bytecode;
 			}

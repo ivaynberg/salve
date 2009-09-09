@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 import salve.asmlib.ClassReader;
 import salve.util.ListMap;
@@ -37,9 +38,9 @@ public class ProjectModel {
 	public ClassModel getClass(String name) {
 		ClassModel model = classes.get(name);
 		if (model == null) {
-			byte[] bytecode = loader.loadBytecode(name);
+			Bytecode bytecode = loader.loadBytecode(name);
 			if (bytecode != null) {
-				add(bytecode);
+				add(bytecode.getBytes());
 				model = classes.get(name);
 			}
 		}

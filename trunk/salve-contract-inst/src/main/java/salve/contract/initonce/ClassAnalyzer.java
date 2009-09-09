@@ -3,6 +3,8 @@ package salve.contract.initonce;
 import java.util.HashSet;
 import java.util.Set;
 
+import salve.Bytecode;
+import salve.CannotLoadBytecodeException;
 import salve.InstrumentationContext;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassReader;
@@ -28,8 +30,13 @@ public class ClassAnalyzer {
 	}
 
 	private void analyze(final String cn) {
-		byte[] bytecode = ctx.getLoader().loadBytecode(cn);
-		ClassReader reader = new ClassReader(bytecode);
+		Bytecode bytecode = ctx.getLoader().loadBytecode(cn);
+		if (bytecode == null) {
+			throw new CannotLoadBytecodeException(cn);
+		}
+
+		byte[] bytes = bytecode.getBytes();
+		ClassReader reader = new ClassReader(bytes);
 		reader.accept(new ClassVisitorAdapter() {
 			@Override
 			public FieldVisitor visitField(int access, final String fieldName, String desc, String signature,

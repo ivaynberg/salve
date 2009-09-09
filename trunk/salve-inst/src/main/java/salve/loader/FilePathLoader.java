@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 import salve.util.StreamsUtil;
 
@@ -67,17 +68,17 @@ public class FilePathLoader implements BytecodeLoader {
 	/**
 	 * {@inheritDoc}
 	 */
-	public byte[] loadBytecode(String className) {
+	public Bytecode loadBytecode(String className) {
 		final String fileName = className + ".class";
 		final String pathName = base.getAbsolutePath();
 		if (pathName.endsWith(".jar") || pathName.endsWith(".zip")) {
-			return loadFromJar(base, fileName);
+			return loadFromJar(className, base, fileName);
 		} else {
-			return loadFromFile(new File(base, fileName));
+			return loadFromFile(className, new File(base, fileName));
 		}
 	}
 
-	protected byte[] loadFromFile(File file) {
+	protected Bytecode loadFromFile(String className, File file) {
 		// do not check if file exists upfront as it is an expensive check,
 		// instead handle thatvia FileNotFoundException
 
@@ -91,7 +92,9 @@ public class FilePathLoader implements BytecodeLoader {
 		}
 
 		try {
-			return StreamsUtil.drain(fis, FILE_ERROR_MSG, file.getAbsolutePath());
+			final byte[] bytes = StreamsUtil.drain(fis, FILE_ERROR_MSG, file.getAbsolutePath());
+			// FIXME should utilize a specialized file loader
+			return new Bytecode(className, bytes, this);
 		} catch (RuntimeException e) {
 			if (e.getCause() != null && e.getCause() instanceof FileNotFoundException) {
 				return null;
@@ -101,18 +104,23 @@ public class FilePathLoader implements BytecodeLoader {
 
 	}
 
-	protected byte[] loadFromJar(File jar, String name) {
+	protected Bytecode loadFromJar(String className, File jar, String name) {
 		// do not check if file exists upfront as it is an expensive check,
 		// instead handle thatvia FileNotFoundException
 
 		try {
-			byte[] bytecode = null;
+			byte[] bytes = null;
 
 			JarEntry entry = findJarEntry(jar, name);
 			if (entry != null) {
-				bytecode = readJarEntry(jar, entry);
+				bytes = readJarEntry(jar, entry);
 			}
-			return bytecode;
+			if (bytes == null) {
+				return null;
+			} else {
+				// FIXME should utilize a specialized jar loader
+				return new Bytecode(className, bytes, this);
+			}
 		} catch (FileNotFoundException e) {
 			return null;
 		} catch (IOException e) {
