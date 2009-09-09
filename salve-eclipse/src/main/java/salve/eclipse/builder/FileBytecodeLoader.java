@@ -21,30 +21,40 @@ import java.io.InputStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 import salve.util.StreamsUtil;
 
-public class FileBytecodeLoader implements BytecodeLoader {
-	private final IFile file;
+public class FileBytecodeLoader implements BytecodeLoader
+{
+    private final IFile file;
 
-	public FileBytecodeLoader(IFile file) {
-		if (file == null) {
-			throw new IllegalArgumentException("Argument `file` cannot be null");
-		}
-		this.file = file;
-	}
+    public FileBytecodeLoader(IFile file)
+    {
+        if (file == null)
+        {
+            throw new IllegalArgumentException("Argument `file` cannot be null");
+        }
+        this.file = file;
+    }
 
-	public byte[] loadBytecode(String className) {
-		if (!file.getFullPath().toString().endsWith(className + ".class")) {
-			return null;
-		}
-		try {
-			InputStream in = file.getContents();
-			return StreamsUtil.drain(in, "Could not read bytecode from {}",
-					file.getFullPath().toOSString());
-		} catch (CoreException e) {
-			throw new RuntimeException("Could not read contents of: "
-					+ file.getFullPath().toOSString());
-		}
-	}
+    public Bytecode loadBytecode(String className)
+    {
+        if (!file.getFullPath().toString().endsWith(className + ".class"))
+        {
+            return null;
+        }
+        try
+        {
+            InputStream in = file.getContents();
+            final byte[] bytes = StreamsUtil.drain(in, "Could not read bytecode from {}", file
+                    .getFullPath().toOSString());
+            return new Bytecode(className, bytes, this);
+        }
+        catch (CoreException e)
+        {
+            throw new RuntimeException("Could not read contents of: " +
+                    file.getFullPath().toOSString());
+        }
+    }
 }

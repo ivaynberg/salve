@@ -16,11 +16,12 @@
  */
 package salve.loader;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 
 /**
- * Simple {@link BytecodeLoader} that loads bytecode from the specified
- * {@code byte[]} array
+ * Simple {@link BytecodeLoader} that loads bytecode from the specified {@code
+ * byte[]} array
  * 
  * @author ivaynberg
  * 
@@ -52,9 +53,9 @@ public class MemoryLoader implements BytecodeLoader {
 	/**
 	 * {@inheritDoc}
 	 */
-	public byte[] loadBytecode(String className) {
+	public Bytecode loadBytecode(String className) {
 		if (this.className.equals(className)) {
-			return bytecode;
+			return new Bytecode(className, bytecode, this);
 		}
 		return null;
 	}

@@ -16,6 +16,7 @@
  */
 package salve.util;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 
 /**
@@ -51,25 +52,26 @@ public class FallbackBytecodeClassLoader extends ClassLoader {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Class<?> loadClass(String name) throws ClassNotFoundException {
-		try {
-			return classLoader.loadClass(name);
-		} catch (ClassNotFoundException e) {
-			return super.loadClass(name);
+	protected Class<?> findClass(String name) throws ClassNotFoundException {
+		final String className = name.replace(".", "/");
+		Bytecode bytecode = bl.loadBytecode(className);
+		if (bytecode == null) {
+			throw new ClassNotFoundException(name);
 		}
+		byte[] bytes = bytecode.getBytes();
+		return defineClass(name, bytes, 0, bytes.length);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected Class<?> findClass(String name) throws ClassNotFoundException {
-		final String className = name.replace(".", "/");
-		byte[] bytecode = bl.loadBytecode(className);
-		if (bytecode == null) {
-			throw new ClassNotFoundException(name);
+	public Class<?> loadClass(String name) throws ClassNotFoundException {
+		try {
+			return classLoader.loadClass(name);
+		} catch (ClassNotFoundException e) {
+			return super.loadClass(name);
 		}
-		return defineClass(name, bytecode, 0, bytecode.length);
 	}
 
 }

@@ -54,11 +54,12 @@ public abstract class AbstractInstrumentor implements Instrumentor {
 						+ getClass().getName(), e);
 			}
 		} else {
-			byte[] bytecode = ctx.getLoader().loadBytecode(className);
+			Bytecode bytecode = ctx.getLoader().loadBytecode(className);
 			if (bytecode == null) {
 				throw new CannotLoadBytecodeException(className);
 			}
-			return bytecode;
+			return bytecode.getBytes();
+
 		}
 	}
 

@@ -18,6 +18,7 @@ package salve.loader;
 
 import java.io.InputStream;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 import salve.util.StreamsUtil;
 
@@ -47,10 +48,11 @@ public class ClassLoaderLoader implements BytecodeLoader {
 	/**
 	 * {@inheritDoc}
 	 */
-	public byte[] loadBytecode(String className) {
+	public Bytecode loadBytecode(String className) {
 		InputStream in = loader.getResourceAsStream(className + ".class");
 		if (in != null) {
-			return StreamsUtil.drain(in, ERROR_MSG, className, loader);
+			final byte[] bytes = StreamsUtil.drain(in, ERROR_MSG, className, loader);
+			return new Bytecode(className, bytes, this);
 		} else {
 			return null;
 		}

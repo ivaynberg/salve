@@ -16,6 +16,7 @@
  */
 package salve.loader;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 import salve.InstrumentationContext;
 import salve.Instrumentor;
@@ -34,9 +35,9 @@ import salve.util.LruCache;
  */
 public class BytecodePool extends CompoundLoader {
 
-	private static final byte[] NOT_FOUND = new byte[] {};
+	private static final Bytecode NOT_FOUND = new Bytecode();
 
-	private final LruCache<String, byte[]> cache = new LruCache<String, byte[]>(5000);
+	private final LruCache<String, Bytecode> cache = new LruCache<String, Bytecode>(5000);
 
 	private final Scope scope;
 
@@ -130,8 +131,8 @@ public class BytecodePool extends CompoundLoader {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public byte[] loadBytecode(String className) {
-		byte[] bytecode = cache.get(className);
+	public Bytecode loadBytecode(String className) {
+		Bytecode bytecode = cache.get(className);
 
 		if (bytecode == null) {
 			bytecode = super.loadBytecode(className);
@@ -158,11 +159,11 @@ public class BytecodePool extends CompoundLoader {
 	 */
 	public Class<?> loadClass(final String className) throws ClassNotFoundException {
 		ClassesUtil.checkClassNameArg(className);
-		byte[] bytecode = loadBytecode(className);
+		Bytecode bytecode = loadBytecode(className);
 		if (bytecode == null) {
 			throw new ClassNotFoundException(className);
 		}
-		return loadClass(className, bytecode);
+		return loadClass(className, bytecode.getBytes());
 	}
 
 	/**
@@ -198,6 +199,6 @@ public class BytecodePool extends CompoundLoader {
 		if (bytecode == null) {
 			throw new IllegalArgumentException("Argument `bytecode` cannot be null");
 		}
-		cache.put(className, bytecode);
+		cache.put(className, new Bytecode(className, bytecode, null));
 	}
 }

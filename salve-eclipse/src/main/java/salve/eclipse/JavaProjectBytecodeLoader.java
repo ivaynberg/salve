@@ -29,6 +29,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 import salve.loader.CompoundLoader;
 import salve.loader.FilePathLoader;
@@ -83,7 +84,7 @@ public class JavaProjectBytecodeLoader implements BytecodeLoader {
 
 	}
 
-	public byte[] loadBytecode(String className) {
+	public Bytecode loadBytecode(String className) {
 		return delegate.loadBytecode(className);
 	}
 
