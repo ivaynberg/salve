@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project relativePaths="false" version="4">
+  <component name="DependencyValidationManager">
+    <option name="SKIP_IMPORT_STATEMENTS" value="false" />
+  </component>
+  <component name="JavadocGenerationManager">
+    <option name="OUTPUT_DIRECTORY" />
+    <option name="OPTION_SCOPE" value="protected" />
+    <option name="OPTION_HIERARCHY" value="true" />
+    <option name="OPTION_NAVIGATOR" value="true" />
+    <option name="OPTION_INDEX" value="true" />
+    <option name="OPTION_SEPARATE_INDEX" value="true" />
+    <option name="OPTION_DOCUMENT_TAG_USE" value="false" />
+    <option name="OPTION_DOCUMENT_TAG_AUTHOR" value="false" />
+    <option name="OPTION_DOCUMENT_TAG_VERSION" value="false" />
+    <option name="OPTION_DOCUMENT_TAG_DEPRECATED" value="true" />
+    <option name="OPTION_DEPRECATED_LIST" value="true" />
+    <option name="OTHER_OPTIONS" value="" />
+    <option name="HEAP_SIZE" />
+    <option name="LOCALE" />
+    <option name="OPEN_IN_BROWSER" value="true" />
+  </component>
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectDetails">
+    <option name="projectName" value="salve-idea" />
+  </component>
+  <component name="ProjectFileVersion" converted="true" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="IDEA8 JDK" project-jdk-type="IDEA JDK">
+    <output url="file://$PROJECT_DIR$/classes" />
+  </component>
+  <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://salve.googlecode.com/svn/branches">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1244998324817" />
+                          <option name="revision" value="510" />
+                          <option name="url" value="https://salve.googlecode.com/svn/branches/1.x" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1213244282088" />
+                          <option name="revision" value="306" />
+                          <option name="url" value="https://salve.googlecode.com/svn/branches/0.8" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://salve.googlecode.com/svn/eclipse-update-site">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245000832909" />
+                          <option name="revision" value="517" />
+                          <option name="url" value="https://salve.googlecode.com/svn/eclipse-update-site/features" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245000832909" />
+                          <option name="revision" value="517" />
+                          <option name="url" value="https://salve.googlecode.com/svn/eclipse-update-site/plugins" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245000832909" />
+                          <option name="revision" value="517" />
+                          <option name="url" value="https://salve.googlecode.com/svn/eclipse-update-site/web" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245000832909" />
+                          <option name="revision" value="517" />
+                          <option name="url" value="https://salve.googlecode.com/svn/eclipse-update-site/.project" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245000832909" />
+                          <option name="revision" value="517" />
+                          <option name="url" value="https://salve.googlecode.com/svn/eclipse-update-site/artifacts.xml" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245000832909" />
+                          <option name="revision" value="517" />
+                          <option name="url" value="https://salve.googlecode.com/svn/eclipse-update-site/content.xml" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245000832909" />
+                          <option name="revision" value="517" />
+                          <option name="url" value="https://salve.googlecode.com/svn/eclipse-update-site/index.html" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245000832909" />
+                          <option name="revision" value="517" />
+                          <option name="url" value="https://salve.googlecode.com/svn/eclipse-update-site/site.xml" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://salve.googlecode.com/svn/maven2">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1244999844215" />
+                          <option name="revision" value="515" />
+                          <option name="url" value="https://salve.googlecode.com/svn/maven2/salve" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://salve.googlecode.com/svn/sandbox">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1221079631929" />
+                          <option name="revision" value="335" />
+                          <option name="url" value="https://salve.googlecode.com/svn/sandbox/myproject" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://salve.googlecode.com/svn/tags">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1244998414413" />
+                          <option name="revision" value="512" />
+                          <option name="url" value="https://salve.googlecode.com/svn/tags/releases" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://salve.googlecode.com/svn/wiki">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245006811409" />
+                          <option name="revision" value="538" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/WhySalve.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245006255531" />
+                          <option name="revision" value="537" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/SpringTransactionManager.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245006178522" />
+                          <option name="revision" value="536" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/DesignByContract.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245005971191" />
+                          <option name="revision" value="535" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/NavigationPane.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245004338433" />
+                          <option name="revision" value="528" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/GettingStarted.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245003668799" />
+                          <option name="revision" value="526" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/ConfiguringInstrumentation.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1245002866940" />
+                          <option name="revision" value="522" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/ComparisonWithSpringsConfigurable.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1242727267555" />
+                          <option name="revision" value="488" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/Using_Salve_with_Java_14.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1239206924312" />
+                          <option name="revision" value="456" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/AnnotatedTransactionManager.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1186461206658" />
+                          <option name="revision" value="181" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/ConfiguringDependencyLibrary.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1183704210329" />
+                          <option name="revision" value="39" />
+                          <option name="url" value="https://salve.googlecode.com/svn/wiki/BuildingSalve.wiki" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://salve.googlecode.com/svn/branches" />
+                  <option value="https://salve.googlecode.com/svn/eclipse-update-site" />
+                  <option value="https://salve.googlecode.com/svn/maven2" />
+                  <option value="https://salve.googlecode.com/svn/sandbox" />
+                  <option value="https://salve.googlecode.com/svn/tags" />
+                  <option value="https://salve.googlecode.com/svn/wiki" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://salve.googlecode.com/svn/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="mySupportsUserInfoFilter" value="true" />
+  </component>
+</project>
+
