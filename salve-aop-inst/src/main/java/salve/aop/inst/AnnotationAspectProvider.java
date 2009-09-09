@@ -1,8 +1,8 @@
 package salve.aop.inst;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import salve.model.AnnotationModel;
 import salve.model.ClassModel;
@@ -10,11 +10,12 @@ import salve.model.MethodModel;
 import salve.model.AnnotationModel.ValueField;
 
 
-public class AnnotationAspectDiscoveryStrategy implements AspectDiscoveryStrategy
+public class AnnotationAspectProvider implements AspectProvider
 {
 
-    public void discover(MethodModel mm, Set<Aspect> aspects)
+    public Collection<Aspect> getAspects(MethodModel mm)
     {
+        List<Aspect> aspects = new ArrayList<Aspect>(1);
         boolean inheritedOnly = false;
         while (mm != null)
         {
@@ -32,9 +33,9 @@ public class AnnotationAspectDiscoveryStrategy implements AspectDiscoveryStrateg
                 boolean inherited = acm.getAnnotation("Ljava/lang/annotation/Inherited;") != null;
                 if (aspectAnnot != null && (!inheritedOnly || (inheritedOnly && inherited)))
                 {
-                    final String ic = ((ValueField)aspectAnnot.getField("instrumentorClass"))
+                    final String ic = ((ValueField)aspectAnnot.getField("adviceClass"))
                             .getValue().toString();
-                    final String im = ((ValueField)aspectAnnot.getField("instrumentorMethod"))
+                    final String im = ((ValueField)aspectAnnot.getField("adviceMethod"))
                             .getValue().toString();
 
 
@@ -44,6 +45,7 @@ public class AnnotationAspectDiscoveryStrategy implements AspectDiscoveryStrateg
             mm = mm.getSuper();
             inheritedOnly = true;
         }
+        return aspects;
     }
 
 }

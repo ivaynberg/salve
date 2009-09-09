@@ -16,7 +16,7 @@ package salve.depend.spring.txn;
 import java.util.Set;
 
 import salve.aop.inst.AopInstrumentor;
-import salve.aop.inst.AspectDiscoveryStrategy;
+import salve.aop.inst.AspectProvider;
 
 /**
  * @author igor.vaynberg
@@ -24,10 +24,10 @@ import salve.aop.inst.AspectDiscoveryStrategy;
 public class TransactionalInstrumentor extends AopInstrumentor
 {
     @Override
-    public Set<AspectDiscoveryStrategy> getAspectDiscoveryStrategies()
+    public Set<AspectProvider> getAspectProviders()
     {
-        Set<AspectDiscoveryStrategy> strategies = super.getAspectDiscoveryStrategies();
-        strategies.add(new TransactionalAnnotAspectDiscoveryStrategy());
+        Set<AspectProvider> strategies = super.getAspectProviders();
+        strategies.add(new TransactionalAspectProvider());
         return strategies;
     }
 

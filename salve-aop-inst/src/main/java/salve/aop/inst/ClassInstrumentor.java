@@ -1,6 +1,7 @@
 package salve.aop.inst;
 
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -25,12 +26,12 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 {
     private String owner;
     private final ProjectModel model;
-    private final Set< ? extends AspectDiscoveryStrategy> discoveryStrategies;
+    private final Set< ? extends AspectProvider> discoveryStrategies;
     private final InstrumentorMonitor monitor;
     private int delegateCounter = 0;
 
-    public ClassInstrumentor(ClassVisitor cv,
-            Set< ? extends AspectDiscoveryStrategy> discoveryStrategies, InstrumentationContext ctx)
+    public ClassInstrumentor(ClassVisitor cv, Set< ? extends AspectProvider> discoveryStrategies,
+            InstrumentationContext ctx)
     {
         super(cv);
         this.discoveryStrategies = discoveryStrategies;
@@ -41,9 +42,13 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     private Set<Aspect> gatherAspects(MethodModel mm)
     {
         Set<Aspect> aspects = new HashSet<Aspect>();
-        for (AspectDiscoveryStrategy strategy : discoveryStrategies)
+        for (AspectProvider strategy : discoveryStrategies)
         {
-            strategy.discover(mm, aspects);
+            Collection<Aspect> provided = strategy.getAspects(mm);
+            if (provided != null)
+            {
+                aspects.addAll(provided);
+            }
         }
         return aspects;
     }
