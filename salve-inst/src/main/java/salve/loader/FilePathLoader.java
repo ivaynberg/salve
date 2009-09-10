@@ -93,7 +93,6 @@ public class FilePathLoader implements BytecodeLoader {
 
 		try {
 			final byte[] bytes = StreamsUtil.drain(fis, FILE_ERROR_MSG, file.getAbsolutePath());
-			// FIXME should utilize a specialized file loader
 			return new Bytecode(className, bytes, this);
 		} catch (RuntimeException e) {
 			if (e.getCause() != null && e.getCause() instanceof FileNotFoundException) {
@@ -118,7 +117,6 @@ public class FilePathLoader implements BytecodeLoader {
 			if (bytes == null) {
 				return null;
 			} else {
-				// FIXME should utilize a specialized jar loader
 				return new Bytecode(className, bytes, this);
 			}
 		} catch (FileNotFoundException e) {
