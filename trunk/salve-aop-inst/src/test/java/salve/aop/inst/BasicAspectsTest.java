@@ -255,6 +255,39 @@ public class BasicAspectsTest extends AbstractAopInstrumentorTestSupport
         }
     }
 
+    public static class Bean5
+    {
+        @Uppercase
+        public String echo(String s)
+        {
+            return s;
+        }
+
+        public String execute1()
+        {
+            return echo("hi");
+        }
+
+    }
+
+    public static class Bean6 extends Bean5
+    {
+        public String execute2()
+        {
+            return echo("hi");
+        }
+    }
+
+    @Test
+    public void shouldProperlyHandleSubclasses() throws Exception
+    {
+        // force instrument Bean5
+        Bean5 temp = create("Bean5");
+
+        Bean6 bean = create("Bean6");
+        assertEquals("HI", bean.execute1());
+        assertEquals("HI", bean.execute2());
+    }
 
     @Test
     public void shouldNotHandleMethodsWithoutAnnotations() throws Exception

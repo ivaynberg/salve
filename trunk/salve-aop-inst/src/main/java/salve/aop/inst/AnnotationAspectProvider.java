@@ -7,6 +7,7 @@ import java.util.List;
 import salve.model.AnnotationModel;
 import salve.model.ClassModel;
 import salve.model.MethodModel;
+import salve.model.ProjectModel;
 import salve.model.AnnotationModel.ValueField;
 
 
@@ -28,18 +29,23 @@ public class AnnotationAspectProvider implements AspectProvider
 
             for (AnnotationModel annot : annots)
             {
-                ClassModel acm = mm.getClassModel().getProject().getClass(annot.getName());
-                AnnotationModel aspectAnnot = acm.getAnnotation("Lsalve/aop/MethodAdvice;");
-                boolean inherited = acm.getAnnotation("Ljava/lang/annotation/Inherited;") != null;
-                if (aspectAnnot != null && (!inheritedOnly || (inheritedOnly && inherited)))
+                ProjectModel pm = mm.getClassModel().getProject();
+                ClassModel acm = pm.getClass(annot.getName());
+                
+                if (acm != null)
                 {
-                    final String ic = ((ValueField)aspectAnnot.getField("adviceClass"))
-                            .getValue().toString();
-                    final String im = ((ValueField)aspectAnnot.getField("adviceMethod"))
-                            .getValue().toString();
+                    AnnotationModel aspectAnnot = acm.getAnnotation("Lsalve/aop/MethodAdvice;");
+                    boolean inherited = acm.getAnnotation("Ljava/lang/annotation/Inherited;") != null;
+                    if (aspectAnnot != null && (!inheritedOnly || (inheritedOnly && inherited)))
+                    {
+                        final String ic = ((ValueField)aspectAnnot.getField("adviceClass"))
+                                .getValue().toString();
+                        final String im = ((ValueField)aspectAnnot.getField("adviceMethod"))
+                                .getValue().toString();
 
 
-                    aspects.add(new Aspect(ic, im));
+                        aspects.add(new Aspect(ic, im));
+                    }
                 }
             }
             mm = mm.getSuper();

@@ -268,12 +268,9 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         origin.loadArgTypesArray();
         origin.storeLocal(types);
 
-        // final Class<?> clazz=getClass();
+        // final Class<?> clazz=<InstrumentedClassName>.class;
         final int clazz = origin.newLocal(Type.getType("Ljava/lang/Object;"));
-        origin.visitVarInsn(ALOAD, 0);
-        origin
-                .visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
-                        "()Ljava/lang/Class;");
+        origin.visitLdcInsn(Type.getObjectType(method.getClassModel().getName()));
         origin.visitVarInsn(ASTORE, clazz);
 
         // final Method executor = clazz.getDeclaredMethod("_salve_aop$hello", null);
