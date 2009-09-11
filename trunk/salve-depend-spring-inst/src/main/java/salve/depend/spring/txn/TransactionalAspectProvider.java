@@ -8,6 +8,8 @@ import salve.aop.inst.Aspect;
 import salve.aop.inst.AspectProvider;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.MethodVisitor;
+import salve.model.AnnotationModel;
+import salve.model.ClassModel;
 import salve.model.MethodModel;
 
 public class TransactionalAspectProvider implements AspectProvider
@@ -17,8 +19,15 @@ public class TransactionalAspectProvider implements AspectProvider
 
     public Collection<Aspect> getAspects(MethodModel method)
     {
-        if (method.getAnnot(TRANSACTIONAL_DESC) != null ||
-                method.getClassModel().getAnnotation(TRANSACTIONAL_DESC) != null)
+        if (method == null)
+        {
+            throw new IllegalArgumentException("Argument `method` cannot be null");
+        }
+        AnnotationModel methodAnnot = method.getAnnot(TRANSACTIONAL_DESC);
+        ClassModel classModel = method.getClassModel();
+        AnnotationModel classAnnot = classModel.getAnnotation(TRANSACTIONAL_DESC);
+        if (methodAnnot != null ||
+                classAnnot != null)
         {
             Aspect aspect = new Aspect("salve/depend/spring/txn/TransactionalAdvice", "transact");
             aspect.setAnnotationProcessor(new AnnotationProcessor()
@@ -40,5 +49,4 @@ public class TransactionalAspectProvider implements AspectProvider
 
         return null;
     }
-
 }

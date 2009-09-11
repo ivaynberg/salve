@@ -21,6 +21,9 @@ public class ProjectModel {
 	}
 
 	void add(byte[] bytecode) {
+		if (bytecode == null) {
+			throw new IllegalArgumentException("Argument `bytecode` cannot be null");
+		}
 		ClassReader reader = new ClassReader(bytecode);
 		reader.accept(new ModelUpdateVisitor(this, new ClassVisitorAdapter()), 0);
 	}
@@ -40,6 +43,12 @@ public class ProjectModel {
 		if (model == null) {
 			Bytecode bytecode = loader.loadBytecode(name);
 			if (bytecode != null) {
+				if (bytecode.getBytes() == null) {
+					// FIXME debug
+					int a = 0;
+					int b = a + 1;// debug
+					bytecode = loader.loadBytecode(name);
+				}
 				add(bytecode.getBytes());
 				model = classes.get(name);
 			}

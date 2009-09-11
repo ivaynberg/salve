@@ -86,6 +86,9 @@ public class ClassModel {
 	}
 
 	public ClassModel getSuperClass() {
+		if (superClass == null) {
+			return null;
+		}
 		return project.getClass(superClass);
 	}
 

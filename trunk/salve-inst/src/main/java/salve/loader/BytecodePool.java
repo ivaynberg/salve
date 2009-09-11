@@ -132,6 +132,7 @@ public class BytecodePool extends CompoundLoader {
 	 */
 	@Override
 	public Bytecode loadBytecode(String className) {
+		// return super.loadBytecode(className);// FIXME debug
 		Bytecode bytecode = cache.get(className);
 
 		if (bytecode == null) {

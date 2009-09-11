@@ -17,14 +17,11 @@
 package salve.eclipse.builder;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.jar.JarEntry;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -48,9 +45,7 @@ import salve.BytecodeLoader;
 import salve.CodeMarker;
 import salve.CodeMarkerAware;
 import salve.Config;
-import salve.ConfigException;
 import salve.InstrumentationContext;
-import salve.InstrumentationException;
 import salve.Instrumentor;
 import salve.Scope;
 import salve.asmlib.ClassReader;
@@ -59,11 +54,9 @@ import salve.eclipse.Activator;
 import salve.eclipse.JavaProjectBytecodeLoader;
 import salve.loader.BytecodePool;
 import salve.loader.CompoundLoader;
-import salve.loader.FilePathLoader;
 import salve.model.ProjectModel;
 import salve.monitor.NoopMonitor;
 import salve.util.FallbackBytecodeClassLoader;
-import salve.util.LruCache;
 import salve.util.StreamsUtil;
 
 public class SalveBuilder extends AbstractBuilder
@@ -72,11 +65,6 @@ public class SalveBuilder extends AbstractBuilder
     public static final String BUILDER_ID = "salve.eclipse.Builder";
     public static final String MARKER_ID = "salve.eclipse.marker.error.instrument";
 
-    private LruCache<String, JarEntry> jarEntryCache = new LruCache<String, JarEntry>(100000);
-
-    private final ReentrantReadWriteLock jarEntryCacheLock = new ReentrantReadWriteLock();
-    private final JarEntry NOT_IN_JAR;
-
     private final Set<String> clearedMarkers = new HashSet<String>();
 
     private final ProjectModel model;
@@ -84,7 +72,6 @@ public class SalveBuilder extends AbstractBuilder
     public SalveBuilder()
     {
         super(MARKER_ID);
-        NOT_IN_JAR = new JarEntry("string");
         model = new ProjectModel();
     }
 
@@ -100,16 +87,6 @@ public class SalveBuilder extends AbstractBuilder
 
         long buildStart = System.currentTimeMillis();
 
-        try
-        {
-            jarEntryCacheLock.writeLock().lock();
-            jarEntryCache.resetStatistics();
-        }
-        finally
-        {
-            jarEntryCacheLock.writeLock().unlock();
-        }
-
         removeMarks(getProject());
         clearedMarkers.clear();
 
@@ -124,14 +101,7 @@ public class SalveBuilder extends AbstractBuilder
         removeMarks(configResource);
 
         // load config
-        BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject())
-        {
-            @Override
-            protected BytecodeLoader newFilePathLoader(File file)
-            {
-                return new CachingFilePathLoader(file);
-            }
-        };
+        BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject());
         ClassLoader cloader = new FallbackBytecodeClassLoader(getClass().getClassLoader(), bloader);
 
         final Config config;
@@ -140,7 +110,7 @@ public class SalveBuilder extends AbstractBuilder
         {
             config = reader.read(((IFile)configResource).getContents());
         }
-        catch (ConfigException e)
+        catch (Throwable e)
         {
             markError(configResource, "Could not configure Salve: " + e.getMessage());
             return null;
@@ -213,10 +183,8 @@ public class SalveBuilder extends AbstractBuilder
         long buildEnd = System.currentTimeMillis();
         long buildSeconds = (buildEnd - buildStart) / 1000;
 
-        String info = String.format(
-                "Salve build stats: jar cache: %dh/%dm bytecode cache: %dh/%dm build time: %ds",
-                jarEntryCache.getHitCount(), jarEntryCache.getMissCount(), bytecodePool
-                        .getCacheHitCount(), bytecodePool.getCacheMissCount(), buildSeconds);
+        String info = String.format("Salve build stats: bytecode cache: %dh/%dm build time: %ds",
+                bytecodePool.getCacheHitCount(), bytecodePool.getCacheMissCount(), buildSeconds);
 
         mark(getProject(), info, IMarker.SEVERITY_INFO);
 
@@ -330,6 +298,9 @@ public class SalveBuilder extends AbstractBuilder
 
             for (Instrumentor inst : config.getInstrumentors(cn))
             {
+                // FIXME we should not save the file every time it is instrumented, only after all
+                // instrumentors are done
+
                 // System.out.println("instrumenting: " + cn + " with: "
                 // + inst.getClass().getName());
                 CompoundLoader cl = new CompoundLoader();
@@ -346,8 +317,9 @@ public class SalveBuilder extends AbstractBuilder
                 file.setContents(new ByteArrayInputStream(bytecode), true, false, null);
             }
         }
-        catch (InstrumentationException e)
+        catch (Throwable e)
         {
+            e.printStackTrace();
             log(IStatus.ERROR, "Error instrumenting: " + file.getName(), e);
             int lineNumber = -1;
             if (e instanceof CodeMarkerAware)
@@ -361,7 +333,8 @@ public class SalveBuilder extends AbstractBuilder
             }
             // e.printStackTrace();
             final IResource res = (source != null) ? source : file;
-            markError(res, "Salve: " + e.getMessage(), lineNumber);
+            markError(res, "Salve: " + e.getClass().getSimpleName() + "/" + e.getMessage(),
+                    lineNumber);
         }
     }
 
@@ -429,56 +402,4 @@ public class SalveBuilder extends AbstractBuilder
 
     }
 
-    private class CachingFilePathLoader extends FilePathLoader
-    {
-
-        public CachingFilePathLoader(File path)
-        {
-            super(path);
-        }
-
-        @Override
-        protected JarEntry findJarEntry(File jar, String name) throws IOException
-        {
-
-            final String cacheKey = jar.lastModified() + jar.getAbsolutePath() + name;
-            jarEntryCacheLock.readLock().lock();
-            try
-            {
-                JarEntry cached = jarEntryCache.get(cacheKey);
-                if (cached != null)
-                {
-                    if (cached == NOT_IN_JAR)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        return cached;
-                    }
-                }
-            }
-            finally
-            {
-                jarEntryCacheLock.readLock().unlock();
-            }
-
-            // XXX instead of releasing read lock and acquiring write lock we
-            // should upgrade the read lock to write lock
-
-            JarEntry entry = super.findJarEntry(jar, name);
-
-            jarEntryCacheLock.writeLock().lock();
-            try
-            {
-                jarEntryCache.put(cacheKey, (entry == null) ? NOT_IN_JAR : entry);
-            }
-            finally
-            {
-                jarEntryCacheLock.writeLock().unlock();
-            }
-            return entry;
-
-        }
-    }
 }

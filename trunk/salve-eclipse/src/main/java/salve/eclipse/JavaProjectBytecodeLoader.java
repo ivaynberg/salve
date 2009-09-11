@@ -16,97 +16,156 @@
  */
 package salve.eclipse;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
 import salve.Bytecode;
 import salve.BytecodeLoader;
-import salve.loader.CompoundLoader;
-import salve.loader.FilePathLoader;
+import salve.eclipse.builder.FileBytecodeLoader;
 
-public class JavaProjectBytecodeLoader implements BytecodeLoader {
+public class JavaProjectBytecodeLoader implements BytecodeLoader
+{
 
-	private final CompoundLoader delegate;
+    private final IJavaProject project;
 
-	public JavaProjectBytecodeLoader(IProject project)
-			throws JavaModelException {
-		delegate = new CompoundLoader();
-		Set<IProject> scanned = new HashSet<IProject>();
-		addProject(project, scanned);
-	}
+    public JavaProjectBytecodeLoader(IProject project) throws JavaModelException
+    {
+        this.project = JavaCore.create(project);
+    }
 
-	private void addProject(IProject project, Set<IProject> scanned)
-			throws JavaModelException {
-		if (!scanned.contains(project)) {
-			scanned.add(project);
+    public Bytecode loadBytecode(String className)
+    {
+        if (className == null)
+        {
+            throw new IllegalArgumentException("Argument `className` cannot be null");
+        }
+        try
+        {
+            IType type = findType(className);
+            if (type == null)
+            {
+                for (IPackageFragmentRoot root : project.getPackageFragmentRoots())
+                {
+                    IPath out = root.getRawClasspathEntry().getOutputLocation();
+                    if (out == null)
+                    {
+                        out = project.getJavaProject().getOutputLocation();
+                    }
+                    IFolder output = project.getJavaProject().getProject().getWorkspace().getRoot()
+                            .getFolder(out);
+                    IFile file = output.getFile(new Path(className + ".class"));
+                    if (file.exists())
+                    {
+                        FileBytecodeLoader loader = new FileBytecodeLoader(file);
+                        Bytecode bytecode = loader.loadBytecode(className);
+                        if (bytecode == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return new Bytecode(className, bytecode.getBytes(), this);
+                        }
+                    }
+                }
+            }
 
-			IJavaProject jp = JavaCore.create(project);
-			if (jp != null) {
-				addPath(project, jp.getOutputLocation());
+            final IClassFile classFile = type.getClassFile();
 
-				for (IClasspathEntry cpe : jp.getResolvedClasspath(true)) {
-					switch (cpe.getEntryKind()) {
-					case IClasspathEntry.CPE_SOURCE:
-						addPath(project, cpe.getOutputLocation());
-						break;
-					case IClasspathEntry.CPE_LIBRARY:
-						addPath(project, cpe.getPath());
-						break;
-					case IClasspathEntry.CPE_PROJECT:
-						IPath path = cpe.getPath();
-						IProject other = (IProject) project.getWorkspace()
-								.getRoot().findMember(path);
-						addProject(other, scanned);
-						break;
-					case IClasspathEntry.CPE_CONTAINER:
-					case IClasspathEntry.CPE_VARIABLE:
-						// TODO figure out what to do about container and
-						// variable
-					}
-				}
-			} else {
-				Activator.getDefault().getLog().log(
-						new Status(Status.WARNING, Activator.PLUGIN_ID,
-								"could not create java project for iproject: "
-										+ project.toString()));
-			}
-		}
+            if (classFile != null)
+            {
+                byte[] bytecode = classFile.getBytes();
+                if (bytecode != null)
+                {
+                    return new Bytecode(className, bytecode, this);
+                }
+                else
+                {
+                    return null;
+                }
+            }
 
-	}
 
-	public Bytecode loadBytecode(String className) {
-		return delegate.loadBytecode(className);
-	}
+            IPath out = type.getJavaProject().getOutputLocation();
+            IFolder output = type.getJavaProject().getProject().getWorkspace().getRoot().getFolder(
+                    out);
+            IFile file = output.getFile(new Path(className + ".class"));
 
-	private void addPath(IProject project, IPath path) {
-		if (path != null) {
-			IResource res = project.getWorkspace().getRoot().findMember(path);
-			if (res != null) {
-				File file = new File(res.getLocation().toOSString());
-				if (file != null && file.exists()) {
-					delegate.addLoader(newFilePathLoader(file));
-				}
-			} else {
-				File file = new File(path.toOSString());
-				if (file.exists()) {
-					delegate.addLoader(newFilePathLoader(file));
-				}
-			}
-		}
-	}
+            if (!file.exists())
+            {
+                IClasspathEntry[] cp = type.getJavaProject().getRawClasspath();
+                for (IClasspathEntry entry : cp)
+                {
+                    out = entry.getOutputLocation();
+                    if (out != null)
+                    {
+                        output = type.getJavaProject().getProject().getWorkspace().getRoot()
+                                .getFolder(out);
+                        file = output.getFile(new Path(className + ".class"));
+                        if (file.exists())
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
 
-	protected BytecodeLoader newFilePathLoader(File file) {
-		return new FilePathLoader(file);
-	}
+            if (file == null)
+            {
+                return null;
+            }
+            else
+            {
+                FileBytecodeLoader loader = new FileBytecodeLoader(file);
+                Bytecode bytecode = loader.loadBytecode(className);
+                if (bytecode == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    return new Bytecode(className, bytecode.getBytes(), this);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Activator.getDefault().getLog().log(
+                    new Status(Status.ERROR, Activator.PLUGIN_ID,
+                            "Could not load bytecode for class: " + className, e));
+            return null;
+        }
+    }
+
+    private IType findType(String className)
+    {
+        String cn = className.replace("/", ".");
+
+        try
+        {
+            IType type = project.getJavaProject().findType(cn);
+            if (type == null)
+            {
+                cn = cn.replace("$", ".");
+                type = project.getJavaProject().findType(cn);
+            }
+            return type;
+        }
+        catch (JavaModelException e)
+        {
+            throw new RuntimeException("Error resolving type for class: " + className, e);
+        }
+    }
 
 }
