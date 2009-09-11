@@ -182,8 +182,9 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
                 {
                     return null;
                 }
-                // forward annots to the root to the origin
-
+                // XXX this should use a chain instead of the first found handles it, that way we
+                // also dont need a separate filter method
+                // forward annots to the origin
                 for (Aspect aspect : aspects)
                 {
                     final AnnotationProcessor processor = aspect.getAnnotationProcessor();
@@ -194,23 +195,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
                 }
 
                 return _origin.visitAnnotation(desc, visible);
-            }
-
-            @Override
-            public void visitMethodInsn(int opcode, String owner, String name, String desc)
-            {
-                if (opcode == Opcodes.INVOKESPECIAL)
-                {
-                    // rewrite super calls
-                    if (info != null && info.getType().equals(owner) &&
-                            info.getMethod().equals(name) && desc.equals(info.getDesc()))
-                    {
-                        super.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, info
-                                .getRootDelegateMethodName(), desc);
-                        return;
-                    }
-                }
-                super.visitMethodInsn(opcode, owner, name, desc);
             }
         };
     }
