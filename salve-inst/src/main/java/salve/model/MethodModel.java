@@ -61,7 +61,12 @@ public class MethodModel {
 		ClassModel cursor = clazz;
 
 		while (cursor.getSuperClassName() != null) {
-			cursor = cursor.getProject().getClass(cursor.getSuperClassName());
+			final String sn = cursor.getSuperClassName();
+			cursor = cursor.getProject().getClass(sn);
+			// if (cursor == null) {
+			// System.out.println(sn);
+			// System.out.println(sn.length());
+			// }
 			for (MethodModel mm : cursor.getMethods()) {
 				Method m = new Method(mm.getAccess(), mm.getName(), mm.getDesc());
 				if (m.canOverride(t)) {
