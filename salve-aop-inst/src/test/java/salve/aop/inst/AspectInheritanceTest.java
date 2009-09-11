@@ -126,23 +126,5 @@ public class AspectInheritanceTest extends AbstractAopInstrumentorTestSupport
         }
     }
 
-    @Test
-    public void shouldProperlyRouteSuperCalls() throws Exception
-    {
-        {
-            Bean bean = create("BeanSubclassDoesCallSuper");
-            // neither A or B are directly applied, but A should be inherited
-            final String result = bean.echo("echo");
-            assertEquals("ECHOa", result);
-        }
-
-        {
-            Bean bean = create("DeepInheritanceDoesCallSuper");
-            // B is directly applied, while A should be inherited
-            final String result = bean.echo("echo");
-            assertEquals("ECHOab", result);
-        }
-
-    }
 
 }
