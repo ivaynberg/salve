@@ -5,12 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import salve.aop.MethodAdvice;
 import salve.aop.MethodInvocation;
 
-
+@Ignore
 public class AspectInheritanceTest extends AbstractAopInstrumentorTestSupport
 {
     @Retention(RetentionPolicy.RUNTIME)
