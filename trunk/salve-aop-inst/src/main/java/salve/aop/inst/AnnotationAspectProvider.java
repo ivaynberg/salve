@@ -31,7 +31,7 @@ public class AnnotationAspectProvider implements AspectProvider
             {
                 ProjectModel pm = mm.getClassModel().getProject();
                 ClassModel acm = pm.getClass(annot.getName());
-                
+
                 if (acm != null)
                 {
                     AnnotationModel aspectAnnot = acm.getAnnotation("Lsalve/aop/MethodAdvice;");
@@ -48,10 +48,10 @@ public class AnnotationAspectProvider implements AspectProvider
                     }
                 }
             }
-            mm = mm.getSuper();
-            inheritedOnly = true;
+            // mm = mm.getSuper();
+            // inheritedOnly = true;
+            mm = null;
         }
         return aspects;
     }
-
 }

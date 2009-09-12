@@ -146,16 +146,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         AnnotationVisitor visitor = origin.visitAnnotation(
                 getInstrumentationMarkerAnnotationDesc(), true);
         visitor.visit("root", rootName);
-// StringBuilder _aspects = new StringBuilder();
-// for (Aspect aspect : aspects)
-// {
-// if (_aspects.length() > 0)
-// {
-// _aspects.append(",");
-// }
-// _aspects.append(aspect.encode());
-// }
-// visitor.visit("aspects", _aspects.toString());
+
         visitor.visitEnd();
 
 
@@ -167,7 +158,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
         // we also forward any annotations from the root method to the origin method
 
-        final OverrideInfo info = getOverrideInfo(method);
+//        final OverrideInfo info = getOverrideInfo(method);
 
         MethodVisitor root = cv.visitMethod(ACC_PROTECTED, rootName, desc, signature, exceptions);
 
@@ -199,20 +190,20 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         };
     }
 
-    private OverrideInfo getOverrideInfo(MethodModel method)
-    {
-        if (method.getSuper() != null)
-        {
-            MethodModel sup = method.getSuper();
-            AnnotationModel annot = sup.getAnnot("Lsalve/aop/Instrumented;");
-            if (annot != null)
-            {
-                return new OverrideInfo(sup.getClassModel().getName(), sup.getName(),
-                        sup.getDesc(), annot.getField("root").getValue().toString());
-            }
-        }
-        return null;
-    }
+//    private OverrideInfo getOverrideInfo(MethodModel method)
+//    {
+//        if (method.getSuper() != null)
+//        {
+//            MethodModel sup = method.getSuper();
+//            AnnotationModel annot = sup.getAnnot("Lsalve/aop/Instrumented;");
+//            if (annot != null)
+//            {
+//                return new OverrideInfo(sup.getClassModel().getName(), sup.getName(),
+//                        sup.getDesc(), annot.getField("root").getValue().toString());
+//            }
+//        }
+//        return null;
+//    }
 
     private String generateWrapperMethod(MethodModel method, MethodVisitor originmv, Aspect aspect)
     {
