@@ -26,7 +26,7 @@ public class MethodModel {
 	private final Map<String, AnnotationModel> annots = new LinkedHashMap<String, AnnotationModel>();
 	private final String[] argNames;
 	private MethodModel superMethod;
-	private boolean superMethodCached = false;
+	private final boolean superMethodCached = false;
 	private final salve.asmlib.Method method;
 	private ParameterAnnotations[] parameterAnnots;
 
@@ -140,30 +140,30 @@ public class MethodModel {
 		return signature;
 	}
 
-	public MethodModel getSuper() {
-		if (!superMethodCached) {
-			if (clazz.getSuperClassName() != null) {
-				superMethod = findSuper(clazz.getSuperClassName(), this);
-			}
-			superMethodCached = true;
-
-			ClassModel parent = clazz.getSuperClass();
-			while (parent != null) {
-				clazz.getProject().register(parent.getName(), new UpdateListener() {
-
-					public Action updated() {
-						superMethodCached = false;
-						superMethod = null;
-						return Action.REMOVE;
-					}
-
-				});
-				parent = parent.getSuperClass();
-			}
-
-		}
-		return superMethod;
-	}
+	// public MethodModel getSuper() {
+	// if (!superMethodCached) {
+	// if (clazz.getSuperClassName() != null) {
+	// superMethod = findSuper(clazz.getSuperClassName(), this);
+	// }
+	// superMethodCached = true;
+	//
+	// ClassModel parent = clazz.getSuperClass();
+	// while (parent != null) {
+	// clazz.getProject().register(parent.getName(), new UpdateListener() {
+	//
+	// public Action updated() {
+	// superMethodCached = false;
+	// superMethod = null;
+	// return Action.REMOVE;
+	// }
+	//
+	// });
+	// parent = parent.getSuperClass();
+	// }
+	//
+	// }
+	// return superMethod;
+	// }
 
 	// public ParameterAnnotations[] getParameterAnnots() {
 	// return parameterAnnots;
