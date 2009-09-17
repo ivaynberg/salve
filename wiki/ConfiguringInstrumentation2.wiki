@@ -19,6 +19,6 @@ You need a small configuration file telling salve which instrumentors to run. Th
 
 Replace <com.mycompany.myproject> with the base package name of your application. The `<packages>` element can contain multiple `<package>` elements.
 
----
+----
 
 See the [InstrumentationSetup2 Instrumentation Setup] page for instructions on how to setup bytecode instrumentation.
