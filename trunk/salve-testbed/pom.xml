@@ -142,7 +142,7 @@
                 +-->
 			<plugin>
 				<groupId>salve</groupId>
-				<artifactId>salve-maven-plugin</artifactId>
+				<artifactId>maven-salve-plugin</artifactId>
 				<version>2.0-SNAPSHOT</version>
 				<configuration>
 					<verbose>true</verbose>
