@@ -1,0 +1,15 @@
+<config>
+	<packages>
+		<package>
+			<name>salve.testbed</name>
+			<instrumentors>
+				<salve.aop.inst.AopInstrumentor>
+					<aspectProviders>
+						<salve.depend.spring.txn.TransactionalAspectProvider/>
+					</aspectProviders>
+				</salve.aop.inst.AopInstrumentor>
+				<salve.depend.DependencyInstrumentor/>
+			</instrumentors>
+		</package>
+	</packages>
+</config>

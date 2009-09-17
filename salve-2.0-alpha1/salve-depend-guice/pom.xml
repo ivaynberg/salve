@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>salve</artifactId>
+		<groupId>salve</groupId>
+		<version>2.0-alpha1</version>
+	</parent>
+
+	<artifactId>salve-depend-guice</artifactId>
+	<name>Salve Dependencies Guice Integration</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.google.code.guice</groupId>
+			<artifactId>guice</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>salve</groupId>
+			<artifactId>salve-depend</artifactId>
+			<version>2.0-alpha1</version>
+		</dependency>
+		<dependency>
+			<groupId>salve</groupId>
+			<artifactId>salve-depend-inst</artifactId>
+			<version>2.0-alpha1</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+</project>
