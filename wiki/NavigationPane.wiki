@@ -10,7 +10,14 @@
         * [SpringTransactionManager Spring's @Transactional]
         * [AnnotatedTransactionManager @Transactional without Spring]
       * [DesignByContract Contract Module]
-    * Misc
-      * [BuildingSalve Salve From Source]
-      * [Using_Salve_with_Java_14 Salve with Java 1.4]
       * [SalveWIthGuice Salve with Guice Example]
+  * Salve 2.x
+    * Aspects
+      * [CreatingAspects2 Creating Aspects]
+      * [AspectInstrumentation2 Instrumentation]
+    * Dependency Lookups
+      * [ConfiguringDependencyLibrary2 Setup]
+      * [ConfiguringInstrumentation2 Instrumentation]
+  * Misc
+    * [BuildingSalve Salve From Source]
+    * [Using_Salve_with_Java_14 Salve with Java 1.4]
