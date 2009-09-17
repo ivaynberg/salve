@@ -1,41 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<?metadataRepository class='org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository' version='1.0.0'?>
-<repository name='file:/C:/dev/src/salve-eclipse-update-site/ - metadata' type='org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository' version='1'>
+<?metadataRepository version='1.1.0'?>
+<repository name='${p2.metadata.repo.name}' type='org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository' version='1.0.0'>
   <properties size='2'>
     <property name='p2.compressed' value='false'/>
-    <property name='p2.timestamp' value='1245000722343'/>
+    <property name='p2.timestamp' value='1253168036843'/>
   </properties>
-  <units size='10'>
-    <unit id='salve.eclipse' version='1.1.0'>
-      <update id='salve.eclipse' range='[0.0.0,1.1.0)' severity='0'/>
-      <properties size='1'>
-        <property name='org.eclipse.equinox.p2.name' value='Salve Eclipse Integration'/>
-      </properties>
-      <provides size='3'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.eclipse' version='1.1.0'/>
-        <provided namespace='osgi.bundle' name='salve.eclipse' version='1.1.0'/>
-        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
-      </provides>
-      <requires size='6'>
-        <required namespace='osgi.bundle' name='org.eclipse.jdt.core' range='3.4.2'/>
-        <required namespace='osgi.bundle' name='org.eclipse.core.resources' range='3.4.1'/>
-        <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='3.4.0'/>
-        <required namespace='osgi.bundle' name='org.eclipse.ui' range='3.4.1'/>
-        <required namespace='osgi.bundle' name='salve.asm' range='1.1.0'/>
-        <required namespace='osgi.bundle' name='salve.inst' range='1.1.0'/>
-      </requires>
-      <artifacts size='1'>
-        <artifact classifier='osgi.bundle' id='salve.eclipse' version='1.1.0'/>
-      </artifacts>
-      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
-      <touchpointData size='1'>
-        <instructions size='1'>
-          <instruction key='manifest'>
-            Bundle-ManifestVersion: 2&#xA;Bundle-Version: 1.1.0&#xA;Require-Bundle: org.eclipse.jdt.core;bundle-version=&quot;3.4.2&quot;,org.eclipse.core.resources;bundle-version=&quot;3.4.1&quot;,org.eclipse.core.runtime;bundle-version=&quot;3.4.0&quot;,org.eclipse.ui;bundle-version=&quot;3.4.1&quot;,salve.asm;bundle-version=&quot;1.1.0&quot;,salve.inst;bundle-version=&quot;1.1.0&quot;&#xA;Bundle-Activator: salve.eclipse.Activator&#xA;Manifest-Version: 1.0&#xA;Bundle-SymbolicName: salve.eclipse; singleton:=true&#xA;Eclipse-LazyStart: true&#xA;Bundle-Name: Salve Eclipse Integration&#xA;
-          </instruction>
-        </instructions>
-      </touchpointData>
-    </unit>
+  <units size='16'>
     <unit id='salve.eclipse.integration.feature.group' version='1.1.0' singleton='false'>
       <update id='salve.eclipse.integration.feature.group' range='[0.0.0,1.1.0)' severity='0'/>
       <properties size='4'>
@@ -62,32 +32,6 @@
         </required>
       </requires>
       <touchpoint id='null' version='0.0.0'/>
-    </unit>
-    <unit id='tooling.source.default' version='1.0.0' singleton='false'>
-      <hostRequirements size='1'>
-        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='source' range='0.0.0' optional='true' multiple='true' greedy='false'/>
-      </hostRequirements>
-      <properties size='1'>
-        <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
-      </properties>
-      <provides size='2'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='tooling.source.default' version='1.0.0'/>
-        <provided namespace='org.eclipse.equinox.p2.flavor' name='tooling' version='1.0.0'/>
-      </provides>
-      <requires size='1'>
-        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='source' range='0.0.0' optional='true' multiple='true' greedy='false'/>
-      </requires>
-      <touchpoint id='null' version='0.0.0'/>
-      <touchpointData size='1'>
-        <instructions size='2'>
-          <instruction key='install'>
-            addSourceBundle(bundle:${artifact})
-          </instruction>
-          <instruction key='uninstall'>
-            removeSourceBundle(bundle:${artifact})
-          </instruction>
-        </instructions>
-      </touchpointData>
     </unit>
     <unit id='salve.eclipse.integration.feature.jar' version='1.1.0'>
       <update id='salve.eclipse.integration.feature.jar' range='[0.0.0,1.1.0)' severity='0'/>
@@ -116,139 +60,152 @@
         </instructions>
       </touchpointData>
     </unit>
-    <unit id='tooling.osgi.bundle.default' version='1.0.0' singleton='false'>
-      <hostRequirements size='1'>
-        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' range='0.0.0' multiple='true' greedy='false'/>
-      </hostRequirements>
-      <properties size='1'>
-        <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
-      </properties>
-      <provides size='2'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='tooling.osgi.bundle.default' version='1.0.0'/>
-        <provided namespace='org.eclipse.equinox.p2.flavor' name='tooling' version='1.0.0'/>
-      </provides>
-      <requires size='1'>
-        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' range='0.0.0' multiple='true' greedy='false'/>
-      </requires>
-      <touchpoint id='null' version='0.0.0'/>
-      <touchpointData size='1'>
-        <instructions size='4'>
-          <instruction key='install'>
-            installBundle(bundle:${artifact})
-          </instruction>
-          <instruction key='uninstall'>
-            uninstallBundle(bundle:${artifact})
-          </instruction>
-          <instruction key='unconfigure'>
-
-          </instruction>
-          <instruction key='configure'>
-            setStartLevel(startLevel:4);
-          </instruction>
-        </instructions>
-      </touchpointData>
-    </unit>
-    <unit id='salve.inst' version='1.1.0' singleton='false'>
-      <update id='salve.inst' range='[0.0.0,1.1.0)' severity='0'/>
+    <unit id='salve.inst' version='2.0.0' singleton='false'>
+      <update id='salve.inst' range='[0.0.0,2.0.0)' severity='0'/>
       <properties size='1'>
         <property name='org.eclipse.equinox.p2.name' value='salve'/>
       </properties>
-      <provides size='8'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.inst' version='1.1.0'/>
-        <provided namespace='osgi.bundle' name='salve.inst' version='1.1.0'/>
+      <provides size='9'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.inst' version='2.0.0'/>
+        <provided namespace='osgi.bundle' name='salve.inst' version='2.0.0'/>
         <provided namespace='java.package' name='salve' version='0.0.0'/>
-        <provided namespace='java.package' name='salve.config' version='0.0.0'/>
-        <provided namespace='java.package' name='salve.util' version='0.0.0'/>
+        <provided namespace='java.package' name='salve.config.xml' version='0.0.0'/>
         <provided namespace='java.package' name='salve.loader' version='0.0.0'/>
+        <provided namespace='java.package' name='salve.model' version='0.0.0'/>
         <provided namespace='java.package' name='salve.monitor' version='0.0.0'/>
+        <provided namespace='java.package' name='salve.util' version='0.0.0'/>
         <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
       </provides>
-      <requires size='1'>
-        <required namespace='osgi.bundle' name='salve.asm' range='1.1.0'/>
+      <requires size='2'>
+        <required namespace='osgi.bundle' name='salve.asm' range='2.0.0'/>
+        <required namespace='osgi.bundle' name='salve.config' range='2.0.0'/>
       </requires>
       <artifacts size='1'>
-        <artifact classifier='osgi.bundle' id='salve.inst' version='1.1.0'/>
+        <artifact classifier='osgi.bundle' id='salve.inst' version='2.0.0'/>
       </artifacts>
       <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
       <touchpointData size='1'>
         <instructions size='1'>
           <instruction key='manifest'>
-            Export-Package: salve,salve.config;uses:=&quot;salve&quot;,salve.util;uses:=&quot;salve&quot;,salve.loader;uses:=&quot;salve&quot;,salve.monitor;uses:=&quot;salve&quot;&#xA;Bundle-Name: salve&#xA;Bundle-Version: 1.1.0&#xA;Bundle-SymbolicName: salve.inst&#xA;Manifest-Version: 1.0&#xA;Bundle-ManifestVersion: 2&#xA;Require-Bundle: salve.asm;bundle-version=&quot;1.1.0&quot;&#xA;
+            Export-Package: salve,salve.config.xml;uses:=&quot;salve&quot;,salve.loader;uses:=&quot;salve&quot;,salve.model,salve.monitor;uses:=&quot;salve&quot;,salve.util;uses:=&quot;salve&quot;&#xA;Bundle-Name: salve&#xA;Bundle-Version: 2.0.0&#xA;Bundle-SymbolicName: salve.inst&#xA;Manifest-Version: 1.0&#xA;Bundle-ManifestVersion: 2&#xA;Require-Bundle: salve.asm;bundle-version=&quot;2.0.0&quot;,salve.config;bundle-version=&quot;2.0.0&quot;
           </instruction>
         </instructions>
       </touchpointData>
     </unit>
-    <unit id='tooling.org.eclipse.update.feature.default' version='1.0.0' singleton='false'>
-      <hostRequirements size='1'>
-        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' range='0.0.0' optional='true' multiple='true' greedy='false'/>
-      </hostRequirements>
+    <unit id='salve.eclipse' version='2.0.0'>
+      <update id='salve.eclipse' range='[0.0.0,2.0.0)' severity='0'/>
       <properties size='1'>
-        <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
+        <property name='org.eclipse.equinox.p2.name' value='Salve Eclipse Integration'/>
       </properties>
-      <provides size='2'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='tooling.org.eclipse.update.feature.default' version='1.0.0'/>
-        <provided namespace='org.eclipse.equinox.p2.flavor' name='tooling' version='1.0.0'/>
+      <provides size='3'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.eclipse' version='2.0.0'/>
+        <provided namespace='osgi.bundle' name='salve.eclipse' version='2.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
       </provides>
-      <requires size='1'>
-        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' range='0.0.0' optional='true' multiple='true' greedy='false'/>
+      <requires size='6'>
+        <required namespace='osgi.bundle' name='org.eclipse.jdt.core' range='3.4.2'/>
+        <required namespace='osgi.bundle' name='org.eclipse.core.resources' range='3.4.1'/>
+        <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='3.4.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.ui' range='3.4.1'/>
+        <required namespace='osgi.bundle' name='salve.asm' range='2.0.0'/>
+        <required namespace='osgi.bundle' name='salve.inst' range='2.0.0'/>
       </requires>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='salve.eclipse' version='2.0.0'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='manifest'>
+            Bundle-ManifestVersion: 2&#xA;Bundle-Version: 2.0.0&#xA;Require-Bundle: org.eclipse.jdt.core;bundle-version=&quot;3.4.2&quot;,org.eclipse.core.resources;bundle-version=&quot;3.4.1&quot;,org.eclipse.core.runtime;bundle-version=&quot;3.4.0&quot;,org.eclipse.ui;bundle-version=&quot;3.4.1&quot;,salve.asm;bundle-version=&quot;2.0.0&quot;,salve.inst;bundle-version=&quot;2.0.0&quot;&#xA;Bundle-Activator: salve.eclipse.Activator&#xA;Manifest-Version: 1.0&#xA;Bundle-SymbolicName: salve.eclipse; singleton:=true&#xA;Eclipse-LazyStart: true&#xA;Bundle-Name: Salve Eclipse Integration
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+    <unit id='salve.eclipse.integration.feature.jar' version='2.0.0'>
+      <properties size='3'>
+        <property name='org.eclipse.equinox.p2.name' value='Salve Eclipse Integration'/>
+        <property name='org.eclipse.equinox.p2.description' value='Salve Eclipse Integration'/>
+        <property name='org.eclipse.equinox.p2.description.url' value='http://code.google.com/p/salve'/>
+      </properties>
+      <provides size='3'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.eclipse.integration.feature.jar' version='2.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' version='1.0.0'/>
+        <provided namespace='org.eclipse.update.feature' name='salve.eclipse.integration' version='2.0.0'/>
+      </provides>
       <filter>
         (org.eclipse.update.install.features=true)
       </filter>
-      <touchpoint id='null' version='0.0.0'/>
+      <artifacts size='1'>
+        <artifact classifier='org.eclipse.update.feature' id='salve.eclipse.integration' version='2.0.0'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
       <touchpointData size='1'>
-        <instructions size='2'>
-          <instruction key='install'>
-            installFeature(feature:${artifact},featureId:default,featureVersion:default)
-          </instruction>
-          <instruction key='uninstall'>
-            uninstallFeature(feature:${artifact},featureId:default,featureVersion:default)
+        <instructions size='1'>
+          <instruction key='zipped'>
+            true
           </instruction>
         </instructions>
       </touchpointData>
+      <licenses size='1'>
+        <license uri='http://www.example.com/license' url='http://www.example.com/license'>
+          [Enter License Description here.]
+        </license>
+      </licenses>
+      <copyright uri='http://www.example.com/copyright' url='http://www.example.com/copyright'>
+        [Enter Copyright Description here.]
+      </copyright>
     </unit>
-    <unit id='salve.asm' version='1.1.0' singleton='false'>
-      <update id='salve.asm' range='[0.0.0,1.1.0)' severity='0'/>
+    <unit id='salve.asm' version='2.0.0' singleton='false'>
+      <update id='salve.asm' range='[0.0.0,2.0.0)' severity='0'/>
       <properties size='1'>
         <property name='org.eclipse.equinox.p2.name' value='salve asm'/>
       </properties>
       <provides size='5'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.asm' version='1.1.0'/>
-        <provided namespace='osgi.bundle' name='salve.asm' version='1.1.0'/>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.asm' version='2.0.0'/>
+        <provided namespace='osgi.bundle' name='salve.asm' version='2.0.0'/>
         <provided namespace='java.package' name='salve.asmlib' version='0.0.0'/>
         <provided namespace='java.package' name='salve.util.asm' version='0.0.0'/>
         <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
       </provides>
       <artifacts size='1'>
-        <artifact classifier='osgi.bundle' id='salve.asm' version='1.1.0'/>
+        <artifact classifier='osgi.bundle' id='salve.asm' version='2.0.0'/>
       </artifacts>
       <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
       <touchpointData size='1'>
         <instructions size='1'>
           <instruction key='manifest'>
-            Bundle-ManifestVersion: 2&#xA;Export-Package: salve.asmlib,salve.util.asm&#xA;Bundle-SymbolicName: salve.asm&#xA;Bundle-Name: salve asm&#xA;Manifest-Version: 1.0&#xA;Bundle-Version: 1.1.0&#xA;
+            Bundle-ManifestVersion: 2&#xA;Export-Package: salve.asmlib,salve.util.asm&#xA;Bundle-SymbolicName: salve.asm&#xA;Bundle-Name: salve asm&#xA;Manifest-Version: 1.0&#xA;Bundle-Version: 2.0.0
           </instruction>
         </instructions>
       </touchpointData>
     </unit>
-    <unit id='config.a.jre' version='1.6.0' singleton='false'>
-      <hostRequirements size='1'>
-        <required namespace='org.eclipse.equinox.p2.iu' name='a.jre' range='1.6.0'/>
-      </hostRequirements>
+    <unit id='salve.eclipse' version='1.1.0'>
+      <update id='salve.eclipse' range='[0.0.0,1.1.0)' severity='0'/>
       <properties size='1'>
-        <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
+        <property name='org.eclipse.equinox.p2.name' value='Salve Eclipse Integration'/>
       </properties>
-      <provides size='1'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='config.a.jre' version='1.6.0'/>
+      <provides size='3'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.eclipse' version='1.1.0'/>
+        <provided namespace='osgi.bundle' name='salve.eclipse' version='1.1.0'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
       </provides>
-      <requires size='1'>
-        <required namespace='org.eclipse.equinox.p2.iu' name='a.jre' range='1.6.0'/>
+      <requires size='6'>
+        <required namespace='osgi.bundle' name='org.eclipse.jdt.core' range='3.4.2'/>
+        <required namespace='osgi.bundle' name='org.eclipse.core.resources' range='3.4.1'/>
+        <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='3.4.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.ui' range='3.4.1'/>
+        <required namespace='osgi.bundle' name='salve.asm' range='1.1.0'/>
+        <required namespace='osgi.bundle' name='salve.inst' range='1.1.0'/>
       </requires>
-      <touchpoint id='org.eclipse.equinox.p2.native' version='1.0.0'/>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='salve.eclipse' version='1.1.0'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
       <touchpointData size='1'>
         <instructions size='1'>
-          <instruction key='install'>
-
+          <instruction key='manifest'>
+            Bundle-ManifestVersion: 2&#xA;Bundle-Version: 1.1.0&#xA;Require-Bundle: org.eclipse.jdt.core;bundle-version=&quot;3.4.2&quot;,org.eclipse.core.resources;bundle-version=&quot;3.4.1&quot;,org.eclipse.core.runtime;bundle-version=&quot;3.4.0&quot;,org.eclipse.ui;bundle-version=&quot;3.4.1&quot;,salve.asm;bundle-version=&quot;1.1.0&quot;,salve.inst;bundle-version=&quot;1.1.0&quot;&#xA;Bundle-Activator: salve.eclipse.Activator&#xA;Manifest-Version: 1.0&#xA;Bundle-SymbolicName: salve.eclipse; singleton:=true&#xA;Eclipse-LazyStart: true&#xA;Bundle-Name: Salve Eclipse Integration
           </instruction>
         </instructions>
       </touchpointData>
@@ -374,6 +331,217 @@
         <provided namespace='java.package' name='org.xml.sax.helpers' version='0.0.0'/>
       </provides>
       <touchpoint id='org.eclipse.equinox.p2.native' version='1.0.0'/>
+    </unit>
+    <unit id='tooling.org.eclipse.update.feature.default' version='1.0.0' singleton='false'>
+      <hostRequirements size='1'>
+        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' range='0.0.0' optional='true' multiple='true' greedy='false'/>
+      </hostRequirements>
+      <properties size='1'>
+        <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
+      </properties>
+      <provides size='2'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='tooling.org.eclipse.update.feature.default' version='1.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.flavor' name='tooling' version='1.0.0'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' range='0.0.0' optional='true' multiple='true' greedy='false'/>
+      </requires>
+      <filter>
+        (org.eclipse.update.install.features=true)
+      </filter>
+      <touchpoint id='null' version='0.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='2'>
+          <instruction key='install'>
+            installFeature(feature:${artifact},featureId:default,featureVersion:default)
+          </instruction>
+          <instruction key='uninstall'>
+            uninstallFeature(feature:${artifact},featureId:default,featureVersion:default)
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+    <unit id='salve' version='0.0.0.20090916231355'>
+      <properties size='2'>
+        <property name='org.eclipse.equinox.p2.name' value='salve'/>
+        <property name='org.eclipse.equinox.p2.type.category' value='true'/>
+      </properties>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve' version='0.0.0'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='salve.eclipse.integration.feature.group' range='[2.0.0,2.0.0]'/>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+    </unit>
+    <unit id='salve.asm' version='1.1.0' singleton='false'>
+      <update id='salve.asm' range='[0.0.0,1.1.0)' severity='0'/>
+      <properties size='1'>
+        <property name='org.eclipse.equinox.p2.name' value='salve asm'/>
+      </properties>
+      <provides size='5'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.asm' version='1.1.0'/>
+        <provided namespace='osgi.bundle' name='salve.asm' version='1.1.0'/>
+        <provided namespace='java.package' name='salve.asmlib' version='0.0.0'/>
+        <provided namespace='java.package' name='salve.util.asm' version='0.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+      </provides>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='salve.asm' version='1.1.0'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='manifest'>
+            Bundle-ManifestVersion: 2&#xA;Export-Package: salve.asmlib,salve.util.asm&#xA;Bundle-SymbolicName: salve.asm&#xA;Bundle-Name: salve asm&#xA;Manifest-Version: 1.0&#xA;Bundle-Version: 1.1.0
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+    <unit id='tooling.source.default' version='1.0.0' singleton='false'>
+      <hostRequirements size='1'>
+        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='source' range='0.0.0' optional='true' multiple='true' greedy='false'/>
+      </hostRequirements>
+      <properties size='1'>
+        <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
+      </properties>
+      <provides size='2'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='tooling.source.default' version='1.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.flavor' name='tooling' version='1.0.0'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='source' range='0.0.0' optional='true' multiple='true' greedy='false'/>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='2'>
+          <instruction key='install'>
+            addSourceBundle(bundle:${artifact})
+          </instruction>
+          <instruction key='uninstall'>
+            removeSourceBundle(bundle:${artifact})
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+    <unit id='salve.eclipse.integration.feature.group' version='2.0.0' singleton='false'>
+      <update id='salve.eclipse.integration.feature.group' range='[0.0.0,2.0.0)' severity='0'/>
+      <properties size='4'>
+        <property name='org.eclipse.equinox.p2.name' value='Salve Eclipse Integration'/>
+        <property name='org.eclipse.equinox.p2.description' value='Salve Eclipse Integration'/>
+        <property name='org.eclipse.equinox.p2.description.url' value='http://code.google.com/p/salve'/>
+        <property name='org.eclipse.equinox.p2.type.group' value='true'/>
+      </properties>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.eclipse.integration.feature.group' version='2.0.0'/>
+      </provides>
+      <requires size='8'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='org.eclipse.ui' range='0.0.0'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='org.eclipse.core.runtime' range='0.0.0'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='org.eclipse.core.resources' range='0.0.0'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='org.eclipse.jdt.core' range='0.0.0'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='salve.asm' range='[2.0.0,2.0.0]'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='salve.eclipse' range='[2.0.0,2.0.0]'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='salve.inst' range='[2.0.0,2.0.0]'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='salve.eclipse.integration.feature.jar' range='[2.0.0,2.0.0]'>
+          <filter>
+            (org.eclipse.update.install.features=true)
+          </filter>
+        </required>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+      <licenses size='1'>
+        <license uri='http://www.example.com/license' url='http://www.example.com/license'>
+          [Enter License Description here.]
+        </license>
+      </licenses>
+      <copyright uri='http://www.example.com/copyright' url='http://www.example.com/copyright'>
+        [Enter Copyright Description here.]
+      </copyright>
+    </unit>
+    <unit id='tooling.osgi.bundle.default' version='1.0.0' singleton='false'>
+      <hostRequirements size='1'>
+        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' range='0.0.0' multiple='true' greedy='false'/>
+      </hostRequirements>
+      <properties size='1'>
+        <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
+      </properties>
+      <provides size='2'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='tooling.osgi.bundle.default' version='1.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.flavor' name='tooling' version='1.0.0'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' range='0.0.0' multiple='true' greedy='false'/>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='4'>
+          <instruction key='install'>
+            installBundle(bundle:${artifact})
+          </instruction>
+          <instruction key='uninstall'>
+            uninstallBundle(bundle:${artifact})
+          </instruction>
+          <instruction key='unconfigure'>
+
+          </instruction>
+          <instruction key='configure'>
+            setStartLevel(startLevel:4);
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+    <unit id='salve.inst' version='1.1.0' singleton='false'>
+      <update id='salve.inst' range='[0.0.0,1.1.0)' severity='0'/>
+      <properties size='1'>
+        <property name='org.eclipse.equinox.p2.name' value='salve'/>
+      </properties>
+      <provides size='8'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve.inst' version='1.1.0'/>
+        <provided namespace='osgi.bundle' name='salve.inst' version='1.1.0'/>
+        <provided namespace='java.package' name='salve' version='0.0.0'/>
+        <provided namespace='java.package' name='salve.config' version='0.0.0'/>
+        <provided namespace='java.package' name='salve.util' version='0.0.0'/>
+        <provided namespace='java.package' name='salve.loader' version='0.0.0'/>
+        <provided namespace='java.package' name='salve.monitor' version='0.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='osgi.bundle' name='salve.asm' range='1.1.0'/>
+      </requires>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='salve.inst' version='1.1.0'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='manifest'>
+            Export-Package: salve,salve.config;uses:=&quot;salve&quot;,salve.util;uses:=&quot;salve&quot;,salve.loader;uses:=&quot;salve&quot;,salve.monitor;uses:=&quot;salve&quot;&#xA;Bundle-Name: salve&#xA;Bundle-Version: 1.1.0&#xA;Bundle-SymbolicName: salve.inst&#xA;Manifest-Version: 1.0&#xA;Bundle-ManifestVersion: 2&#xA;Require-Bundle: salve.asm;bundle-version=&quot;1.1.0&quot;
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+    <unit id='config.a.jre' version='1.6.0' singleton='false'>
+      <hostRequirements size='1'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='a.jre' range='1.6.0'/>
+      </hostRequirements>
+      <properties size='1'>
+        <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
+      </properties>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='config.a.jre' version='1.6.0'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='a.jre' range='1.6.0'/>
+      </requires>
+      <touchpoint id='org.eclipse.equinox.p2.native' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='install'>
+
+          </instruction>
+        </instructions>
+      </touchpointData>
     </unit>
   </units>
 </repository>
