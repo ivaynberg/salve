@@ -11,3 +11,6 @@ Salve creates a lot of private static variables on the class that it uses to cac
 
 === Pointcut Expressiveness ==
 When I started working on Salve I considered using AspectJ. At that time, however, it did not support pointcuts matching on method argument annotations. I always wanted to implement @NotNull as part of Salve because I hate writing the four to five if-else blocks in the beginning of each method, and even more so, I hate reading them. Two years later AspectJ still has very limited support for this, eg see this [http://andrewclement.blogspot.com/2009/02/aspectj-advising-methods-with-parameter.html blog] for how to implement @NotNull using latest AspectJ.
+
+=== The Future ===
+I keep an eye out on AspectJ because it is a very cool project and it comes with an awesome Eclipse plugin. I think as soon as it allows me to do some of the things mentioned above I will rewrite Salve on top of AspectJ.
