@@ -2,7 +2,7 @@
 <idea-plugin>
 	<id>salve2-idea</id>
 	<name>Salve-2 Integration</name>
-	<version>2.0.1</version>
+	<version>2.0.2</version>
 	<vendor email="peter@moreinput.de" url="http://salve.googlecode.com">Peter Ertl</vendor>
 	<idea-version since-build="10372"/>
 	<project-components>
@@ -12,10 +12,10 @@
 		</component>
 	</project-components>
 	<description>
-		Idea plugin for salve 2.x bytecode instrumentation
+		Idea plugin for Salve 2 bytecode instrumentation
 	</description>
 	<change-notes>
-		compile against current 2.0-SNAPSHOT of salve
+		compile against 2.0-SNAPSHOT (after alpha-1) of salve
 	</change-notes>
 
 </idea-plugin>

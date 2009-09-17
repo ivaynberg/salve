@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import salve.BytecodeLoader;
+import salve.Bytecode;
 
 import java.io.IOException;
 
@@ -14,38 +15,38 @@ import java.io.IOException;
  */
 public final class VirtualFileSystemBytecodeLoader implements BytecodeLoader
 {
-  private static final Logger log = Logger.getInstance(VirtualFileSystemBytecodeLoader.class.getName());
-  private static final String CLASS_FILE_EXTENSION = ".class";
+	private static final Logger log = Logger.getInstance(VirtualFileSystemBytecodeLoader.class.getName());
+	private static final String CLASS_FILE_EXTENSION = ".class";
 
-  // root virtual file system node for class file searching
-  private final VirtualFile root;
+	// root virtual file system node for class file searching
+	private final VirtualFile root;
 
-  public VirtualFileSystemBytecodeLoader(final VirtualFile root)
-  {
-    this.root = root;
-  }
+	public VirtualFileSystemBytecodeLoader(final VirtualFile root)
+	{
+		this.root = root;
+	}
 
-  /**
-   * locate bytecode for java class in virtual file system
-   *
-   * @param classPath class path to java class (slash-separated, no '.class' extension)
-   * @return bytecode for class or <code>null</code> if not found
-   */
-  public byte[] loadBytecode(final String classPath)
-  {
-    try
-    {
-      final VirtualFile virtualFile = VfsUtil.findRelativeFile(classPath + CLASS_FILE_EXTENSION, root);
+	/**
+	 * locate bytecode for java class in virtual file system
+	 *
+	 * @param classPath class path to java class (slash-separated, no '.class' extension)
+	 * @return bytecode for class or <code>null</code> if not found
+	 */
+	public Bytecode loadBytecode(final String classPath)
+	{
+		try
+		{
+			final VirtualFile virtualFile = VfsUtil.findRelativeFile(classPath + CLASS_FILE_EXTENSION, root);
 
-      if (virtualFile == null)
-        return null;
+			if (virtualFile == null)
+				return null;
 
-      return virtualFile.contentsToByteArray();
-    }
-    catch (IOException e)
-    {
-      log.error(e.getMessage(), e);
-    }
-    return null;
-  }
+			return new Bytecode(classPath, virtualFile.contentsToByteArray(), this);
+		}
+		catch (IOException e)
+		{
+			log.error(e.getMessage(), e);
+		}
+		return null;
+	}
 }
