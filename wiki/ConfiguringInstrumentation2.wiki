@@ -6,14 +6,14 @@ You need a small configuration file telling salve which instrumentors to run. Th
 
 {{{
 <config>
-	<packages>
-		<package>
-			<name>com.mycompany.myproject</name>
-			<instrumentors>
-				<salve.depend.DependencyInstrumentor/>
-			</instrumentors>
-		</package>
-	</packages>
+  <packages>
+    <package>
+      <name>com.mycompany.myproject</name>
+      <instrumentors>
+        <salve.depend.DependencyInstrumentor/>
+      </instrumentors>
+    </package>
+  </packages>
 </config>
 }}}
 
