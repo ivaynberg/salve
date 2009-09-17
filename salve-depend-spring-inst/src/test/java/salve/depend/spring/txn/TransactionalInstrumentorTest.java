@@ -32,6 +32,7 @@ import salve.depend.Key;
 import salve.depend.Locator;
 import salve.depend.cache.NoopCacheProvider;
 import salve.loader.BytecodePool;
+import salve.loader.TestBytecodePool;
 import salve.util.EasyMockTemplate;
 
 public class TransactionalInstrumentorTest extends Assert
@@ -285,7 +286,7 @@ public class TransactionalInstrumentorTest extends Assert
     private static void loadBeans() throws Exception
     {
         ClassLoader loader = TransactionalInstrumentorTest.class.getClassLoader();
-        BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(loader);
+        TestBytecodePool pool = new TestBytecodePool(loader);
         TransactionalInstrumentor inst = new TransactionalInstrumentor();
         mbClass = pool.instrumentIntoClass(METHODBEAN_NAME, inst);
         cbClass = pool.instrumentIntoClass(CLASSBEAN_NAME, inst);

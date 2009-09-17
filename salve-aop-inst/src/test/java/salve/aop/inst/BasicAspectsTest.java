@@ -15,7 +15,7 @@ import salve.Scope;
 import salve.aop.MethodAdvice;
 import salve.aop.MethodInvocation;
 import salve.aop.UndeclaredException;
-import salve.loader.BytecodePool;
+import salve.loader.TestBytecodePool;
 
 
 //FIXME inheritance - aspect inheritance for argument annots?
@@ -357,7 +357,7 @@ public class BasicAspectsTest extends AbstractAopInstrumentorTestSupport
     {
         final String beanName = "Bean3";
         final String cn = getClass().getName().replace(".", "/") + "$" + beanName;
-        BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(getClass().getClassLoader());
+        TestBytecodePool pool = new TestBytecodePool(getClass().getClassLoader());
 
         // double instrument the class
         pool.instrumentIntoBytecode(cn, new AopInstrumentor());
