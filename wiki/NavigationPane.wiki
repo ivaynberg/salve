@@ -1,6 +1,7 @@
   * Background
     * [WhySalve Why Salve]
     * [ComparisonWithSpringsConfigurable Comparison to Spring's @Configurable]
+    * [WhyNotAspectJ Why Not Use AspectJ]
   * Salve 1.x
     * Configuration
       * [ConfiguringDependencyLibrary Dependency lookups]
