@@ -14,11 +14,13 @@
   * Salve 2.x
     * Aspects
       * [CreatingAspects2 Creating Aspects]
-      * [AspectInstrumentation2 Instrumentation]
     * Dependency Lookups
       * [ConfiguringDependencyLibrary2 Setup]
       * [ConfiguringInstrumentation2 Instrumentation]
-    * [InstrumentationSetup2 Instrumentation Setup]
+    * Extensions
+      * [SpringTransactionManager2 Spring's @Transactional]
+      * [DesignByContract2 Contract Module]
+     * [InstrumentationSetup2 Instrumentation Setup]
   * Misc
     * [BuildingSalve Salve From Source]
     * [Using_Salve_with_Java_14 Salve with Java 1.4]
