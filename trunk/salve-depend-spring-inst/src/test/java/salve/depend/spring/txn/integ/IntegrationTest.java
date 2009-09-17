@@ -14,6 +14,7 @@ import salve.Scope;
 import salve.depend.DependencyLibrary;
 import salve.depend.spring.txn.TransactionalInstrumentor;
 import salve.loader.BytecodePool;
+import salve.loader.TestBytecodePool;
 
 public class IntegrationTest
 {
@@ -21,7 +22,7 @@ public class IntegrationTest
     public static void instrument() throws Exception
     {
         ClassLoader loader = IntegrationTest.class.getClassLoader();
-        BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(loader);
+        TestBytecodePool pool = new TestBytecodePool(loader);
         TransactionalInstrumentor inst = new TransactionalInstrumentor();
         pool.instrumentIntoClass("salve/depend/spring/txn/integ/Database", inst);
     }

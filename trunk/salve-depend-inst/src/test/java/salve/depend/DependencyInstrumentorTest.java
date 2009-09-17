@@ -28,10 +28,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.Scope;
 import salve.depend.cache.NoopCacheProvider;
-import salve.loader.BytecodePool;
 import salve.loader.ClassLoaderLoader;
+import salve.loader.TestBytecodePool;
 import salve.util.EasyMockTemplate;
 
 public class DependencyInstrumentorTest extends Assert implements Constants {
@@ -60,8 +59,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	private static void loadBeans() throws Exception {
 		final DependencyInstrumentor inst = new DependencyInstrumentor();
 		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool(Scope.ALL);
-		pool.addLoader(new ClassLoaderLoader(classLoader));
+		TestBytecodePool pool = new TestBytecodePool(new ClassLoaderLoader(classLoader));
 		beanClass = pool.instrumentIntoClass("salve/depend/Bean", inst);
 		// instrument inner and anonymous classes
 		pool.instrumentIntoClass("salve/depend/Bean$InnerBean", inst);
@@ -128,8 +126,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	public void testDoubleInstrumentation() throws Exception {
 		final DependencyInstrumentor inst = new DependencyInstrumentor();
 		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool(Scope.ALL);
-		pool.addLoader(new ClassLoaderLoader(classLoader));
+		TestBytecodePool pool = new TestBytecodePool(new ClassLoaderLoader(classLoader));
 		pool.instrumentIntoBytecode("salve/depend/Bean2", inst);
 		pool.instrumentIntoBytecode("salve/depend/Bean2", inst);
 		pool.loadClass("salve/depend/Bean2");
@@ -276,8 +273,7 @@ public class DependencyInstrumentorTest extends Assert implements Constants {
 	@Test
 	public void testInterfaceInstrumentation() throws Exception {
 		ClassLoader classLoader = DependencyInstrumentorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool(Scope.ALL);
-		pool.addLoader(new ClassLoaderLoader(classLoader));
+		TestBytecodePool pool = new TestBytecodePool(new ClassLoaderLoader(classLoader));
 
 		@SuppressWarnings("unused")
 		Class<?> interfaceClass = pool.instrumentIntoClass("salve/depend/Interface", new DependencyInstrumentor());

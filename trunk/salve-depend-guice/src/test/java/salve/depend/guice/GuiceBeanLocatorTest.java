@@ -21,14 +21,13 @@ import junit.framework.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.Scope;
 import salve.depend.DependencyInstrumentor;
 import salve.depend.DependencyLibrary;
 import salve.depend.Locator;
 import salve.depend.guice.model.Blue;
 import salve.depend.guice.model.Injected;
 import salve.depend.guice.model.MockService;
-import salve.loader.BytecodePool;
+import salve.loader.TestBytecodePool;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -37,57 +36,62 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 
-public class GuiceBeanLocatorTest {
-	private static final String BEAN_NAME = "salve/depend/guice/model/Injected";
-	private static Injector injector;
-	private static Object injected;
-	private static Locator locator;
+public class GuiceBeanLocatorTest
+{
+    private static final String BEAN_NAME = "salve/depend/guice/model/Injected";
+    private static Injector injector;
+    private static Object injected;
+    private static Locator locator;
 
-	@BeforeClass
-	public static void init() throws Exception {
-		Module module = new AbstractModule() {
+    @BeforeClass
+    public static void init() throws Exception
+    {
+        Module module = new AbstractModule()
+        {
 
-			@Override
-			protected void configure() {
-				bind(MockService.class).in(Scopes.SINGLETON);
+            @Override
+            protected void configure()
+            {
+                bind(MockService.class).in(Scopes.SINGLETON);
 
-				Key<MockService> blueKey = Key.get(MockService.class,
-						Blue.class);
-				bind(blueKey).toInstance(new MockService("BlueTestService"));
+                Key<MockService> blueKey = Key.get(MockService.class, Blue.class);
+                bind(blueKey).toInstance(new MockService("BlueTestService"));
 
-			}
+            }
 
-		};
+        };
 
-		injector = Guice.createInjector(module);
-		locator = new GuiceBeanLocator(injector);
-		DependencyLibrary.clear();
+        injector = Guice.createInjector(module);
+        locator = new GuiceBeanLocator(injector);
+        DependencyLibrary.clear();
 
-		DependencyLibrary.addLocator(locator);
+        DependencyLibrary.addLocator(locator);
 
-		ClassLoader loader = GuiceBeanLocatorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(loader);
-		Class<?> clazz = pool.instrumentIntoClass(BEAN_NAME,
-				new DependencyInstrumentor());
-		injected = clazz.newInstance();
-	}
+        ClassLoader loader = GuiceBeanLocatorTest.class.getClassLoader();
+        TestBytecodePool pool = new TestBytecodePool(loader);
+        Class< ? > clazz = pool.instrumentIntoClass(BEAN_NAME, new DependencyInstrumentor());
+        injected = clazz.newInstance();
+    }
 
-	@Test
-	public void testLookupByType() {
-		MockService ts = ((Injected) injected).getTestService();
-		Assert.assertNotNull(ts);
-		Assert.assertEquals(ts.getName(), ts.getClass().getName());
-	}
+    @Test
+    public void testLookupByType()
+    {
+        MockService ts = ((Injected)injected).getTestService();
+        Assert.assertNotNull(ts);
+        Assert.assertEquals(ts.getName(), ts.getClass().getName());
+    }
 
-	@Test
-	public void testLookupByTypeAndAnnot() {
-		MockService ts = ((Injected) injected).getBlueTestService();
-		Assert.assertNotNull(ts);
-		Assert.assertEquals(ts.getName(), "BlueTestService");
-	}
+    @Test
+    public void testLookupByTypeAndAnnot()
+    {
+        MockService ts = ((Injected)injected).getBlueTestService();
+        Assert.assertNotNull(ts);
+        Assert.assertEquals(ts.getName(), "BlueTestService");
+    }
 
-	@Test
-	public void testToString() {
-		Assert.assertNotNull(locator.toString());
-	}
+    @Test
+    public void testToString()
+    {
+        Assert.assertNotNull(locator.toString());
+    }
 }

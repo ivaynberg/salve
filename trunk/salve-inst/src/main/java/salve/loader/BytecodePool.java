@@ -18,11 +18,8 @@ package salve.loader;
 
 import salve.Bytecode;
 import salve.BytecodeLoader;
-import salve.InstrumentationContext;
-import salve.Instrumentor;
 import salve.Scope;
 import salve.model.ProjectModel;
-import salve.monitor.NoopMonitor;
 import salve.util.ClassesUtil;
 import salve.util.LruCache;
 
@@ -39,10 +36,10 @@ public class BytecodePool extends CompoundLoader {
 
 	private final LruCache<String, Bytecode> cache = new LruCache<String, Bytecode>(5000);
 
-	private final Scope scope;
+	protected final Scope scope;
 
 	// FIXME remove
-	private final ProjectModel model;
+	protected final ProjectModel model;
 
 	/**
 	 * Constructor
@@ -62,7 +59,7 @@ public class BytecodePool extends CompoundLoader {
 	 * @param loader
 	 * @return this for chaining
 	 */
-	public BytecodePool addLoaderFor(ClassLoader loader) {
+	public final BytecodePool addLoaderFor(ClassLoader loader) {
 		addLoader(new ClassLoaderLoader(loader));
 		return this;
 	}
@@ -76,7 +73,7 @@ public class BytecodePool extends CompoundLoader {
 	 *            bytecode
 	 * @return this for chaining
 	 */
-	public BytecodePool addLoaderFor(String name, byte[] bytecode) {
+	public final BytecodePool addLoaderFor(String name, byte[] bytecode) {
 		addLoader(new MemoryLoader(name, bytecode));
 		return this;
 	}
@@ -96,43 +93,10 @@ public class BytecodePool extends CompoundLoader {
 	}
 
 	/**
-	 * Instruments a class
-	 * 
-	 * @param className
-	 *            binary class name
-	 * @param inst
-	 *            bytecode instrumentor
-	 * @return instrumented bytecode
-	 * @throws Exception
-	 */
-	public byte[] instrumentIntoBytecode(String className, Instrumentor inst) throws Exception {
-		InstrumentationContext ctx = new InstrumentationContext(this, NoopMonitor.INSTANCE, scope, model);
-		byte[] bytecode = inst.instrument(className, ctx);
-		save(className, bytecode);
-		return bytecode;
-	}
-
-	/**
-	 * Instruments a class and loads the result into a {@link Class} object
-	 * 
-	 * @param className
-	 *            binary class name
-	 * @param inst
-	 *            instrumentor
-	 * @return created {@link Class} object
-	 * @throws Exception
-	 */
-	public Class<?> instrumentIntoClass(String className, Instrumentor inst) throws Exception {
-		instrumentIntoBytecode(className, inst);
-		return loadClass(className);
-	}
-
-	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public Bytecode loadBytecode(String className) {
-		// return super.loadBytecode(className);// FIXME debug
 		Bytecode bytecode = cache.get(className);
 
 		if (bytecode == null) {
@@ -187,19 +151,4 @@ public class BytecodePool extends CompoundLoader {
 		cache.resetStatistics();
 	}
 
-	/**
-	 * Caches bytecode in the pool
-	 * 
-	 * @param className
-	 *            binary class name
-	 * @param bytecode
-	 *            bytecode
-	 */
-	public void save(String className, byte[] bytecode) {
-		ClassesUtil.checkClassNameArg(className);
-		if (bytecode == null) {
-			throw new IllegalArgumentException("Argument `bytecode` cannot be null");
-		}
-		cache.put(className, new Bytecode(className, bytecode, null));
-	}
 }

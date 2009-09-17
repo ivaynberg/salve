@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import salve.Scope;
 import salve.depend.DependencyInstrumentor;
 import salve.depend.DependencyLibrary;
 import salve.depend.DependencyNotFoundException;
@@ -16,7 +15,7 @@ import salve.depend.Locator;
 import salve.depend.spring.model.A;
 import salve.depend.spring.model.C;
 import salve.depend.spring.model.Injected;
-import salve.loader.BytecodePool;
+import salve.loader.TestBytecodePool;
 
 public class SpringBeanLocatorTest {
 	private static Locator locator;
@@ -75,7 +74,7 @@ public class SpringBeanLocatorTest {
 		DependencyLibrary.addLocator(locator);
 
 		ClassLoader loader = SpringBeanLocatorTest.class.getClassLoader();
-		BytecodePool pool = new BytecodePool(Scope.ALL).addLoaderFor(loader);
+		TestBytecodePool pool = new TestBytecodePool(loader);
 
 		injected = pool.instrumentIntoClass(BEAN_NAME,
 				new DependencyInstrumentor()).newInstance();
