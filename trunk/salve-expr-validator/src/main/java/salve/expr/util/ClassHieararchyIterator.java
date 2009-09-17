@@ -2,6 +2,7 @@ package salve.expr.util;
 
 import java.util.Iterator;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 
 public class ClassHieararchyIterator implements Iterator<EnhancedClassReader> {
@@ -18,11 +19,11 @@ public class ClassHieararchyIterator implements Iterator<EnhancedClassReader> {
 	}
 
 	public EnhancedClassReader next() {
-		byte[] bytecode = loader.loadBytecode(className);
+		Bytecode bytecode= loader.loadBytecode(className);
 		if (bytecode == null) {
 			throw new IllegalStateException("Could not load bytecode for class: " + className);
 		}
-		EnhancedClassReader reader = new EnhancedClassReader(bytecode);
+		EnhancedClassReader reader = new EnhancedClassReader(bytecode.getBytes());
 		className = reader.getSuperName();
 		return reader;
 	}

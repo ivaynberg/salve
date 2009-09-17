@@ -3,6 +3,7 @@ package salve.expr.inst;
 import java.util.HashSet;
 import java.util.Set;
 
+import salve.Bytecode;
 import salve.InstrumentationContext;
 import salve.InstrumentationException;
 import salve.Instrumentor;
@@ -24,8 +25,13 @@ public class ExpressionValidatorInstrumentor implements Instrumentor
     public byte[] instrument(String className, InstrumentationContext context)
             throws InstrumentationException
     {
-        byte[] bytecode = context.getLoader().loadBytecode(className);
-        ClassReader reader = new ClassReader(bytecode);
+        byte[] bytes = null;
+        Bytecode bytecode = context.getLoader().loadBytecode(className);
+        if (bytecode != null)
+        {
+            bytes = bytecode.getBytes();
+        }
+        ClassReader reader = new ClassReader(bytes);
 
         Rule one = new Rule("salve/expr/Pe", Part.TYPE, Part.PATH, Part.MODE);
         Rule two = new Rule("salve/expr/Pe", Part.TYPE, Part.PATH);
@@ -35,10 +41,10 @@ public class ExpressionValidatorInstrumentor implements Instrumentor
         rules.add(two);
 
         ClassVisitor visitor = new PeValidatorClassVisitor(rules, context,
-            new ClassVisitorAdapter());
+                new ClassVisitorAdapter());
 
         reader.accept(visitor, ClassReader.SKIP_FRAMES);
 
-        return bytecode;
+        return bytes;
     }
 }

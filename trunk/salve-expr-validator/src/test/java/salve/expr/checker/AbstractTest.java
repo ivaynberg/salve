@@ -1,5 +1,6 @@
 package salve.expr.checker;
 
+import salve.Bytecode;
 import salve.BytecodeLoader;
 import salve.Scope;
 import salve.loader.BytecodePool;
@@ -17,7 +18,15 @@ public abstract class AbstractTest
 
     protected byte[] loadBytecode(Class< ? > clazz)
     {
-        return pool.loadBytecode(clazz.getName().replace(".", "/"));
+        Bytecode bytecode = pool.loadBytecode(clazz.getName().replace(".", "/"));
+        if (bytecode == null)
+        {
+            return null;
+        }
+        else
+        {
+            return bytecode.getBytes();
+        }
     }
 
     public BytecodeLoader getLoader()

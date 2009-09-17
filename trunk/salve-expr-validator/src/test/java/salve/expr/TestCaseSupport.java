@@ -21,9 +21,8 @@ import java.util.Map;
 
 import org.junit.Assert;
 
-import salve.Scope;
 import salve.expr.inst.ExpressionValidatorInstrumentor;
-import salve.loader.BytecodePool;
+import salve.loader.TestBytecodePool;
 
 public abstract class TestCaseSupport extends Assert
 {
@@ -44,7 +43,7 @@ public abstract class TestCaseSupport extends Assert
         Class< ? > clazz = loaded.get(cn);
         if (clazz == null)
         {
-            clazz = new BytecodePool(Scope.ALL).addLoaderFor(CL).instrumentIntoClass(cn, INST);
+            clazz = new TestBytecodePool(CL).instrumentIntoClass(cn, INST);
             loaded.put(cn, clazz);
         }
         return clazz;

@@ -20,14 +20,15 @@ import salve.expr.scanner.RuleMatcher;
 import salve.loader.ClassLoaderLoader;
 import salve.util.asm.ClassVisitorAdapter;
 
-@Ignore
+
 public class UsagesTest
 {
     @Test
     public void test()
     {
         ClassLoaderLoader loader = new ClassLoaderLoader(getClass().getClassLoader());
-        ClassReader reader = new ClassReader(loader.loadBytecode("salve/expr/validator/Usages"));
+        ClassReader reader = new ClassReader(loader.loadBytecode("salve/expr/validator/Usages")
+                .getBytes());
 
         Rule one = new Rule("salve/expr/validator/PeModel", Part.TYPE, Part.PATH, Part.MODE);
         Rule two = new Rule("salve/expr/validator/PeModel", Part.THIS, Part.PATH, Part.MODE);
