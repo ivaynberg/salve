@@ -4,6 +4,7 @@
 `salve-aop` and `salve-aop-inst` jars and their dependencies on the classpath.
 
 === Maven ===
+{{{
 <properties>
   <salve.version>2.0-alpha1</salve.version>
 </properties>
@@ -19,6 +20,7 @@
     <version>${salve.version}</version>
   </dependency>
 </dependencies>
+}}}
 
 == Building the Advice ==
 
