@@ -2,6 +2,7 @@
 Make sure you have salve jars.
 See [BuildingSalve] page for instructions on how to build Salve from source.
 
+== Config file ==
 You need a small configuration file telling salve which instrumentors to run. This file is kept in META-INF/salve.xml, and usually looks like this:
 
 {{{
