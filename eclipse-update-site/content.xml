@@ -3,9 +3,9 @@
 <repository name='${p2.metadata.repo.name}' type='org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository' version='1.0.0'>
   <properties size='2'>
     <property name='p2.compressed' value='false'/>
-    <property name='p2.timestamp' value='1253168036843'/>
+    <property name='p2.timestamp' value='1253215852745'/>
   </properties>
-  <units size='16'>
+  <units size='17'>
     <unit id='salve.eclipse.integration.feature.group' version='1.1.0' singleton='false'>
       <update id='salve.eclipse.integration.feature.group' range='[0.0.0,1.1.0)' severity='0'/>
       <properties size='4'>
@@ -374,6 +374,19 @@
       </requires>
       <touchpoint id='null' version='0.0.0'/>
     </unit>
+    <unit id='salve' version='0.0.0.20090917123051'>
+      <properties size='2'>
+        <property name='org.eclipse.equinox.p2.name' value='salve'/>
+        <property name='org.eclipse.equinox.p2.type.category' value='true'/>
+      </properties>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='salve' version='0.0.0'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='salve.eclipse.integration.feature.group' range='[1.1.0,1.1.0]'/>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+    </unit>
     <unit id='salve.asm' version='1.1.0' singleton='false'>
       <update id='salve.asm' range='[0.0.0,1.1.0)' severity='0'/>
       <properties size='1'>
@@ -459,34 +472,24 @@
         [Enter Copyright Description here.]
       </copyright>
     </unit>
-    <unit id='tooling.osgi.bundle.default' version='1.0.0' singleton='false'>
+    <unit id='config.a.jre' version='1.6.0' singleton='false'>
       <hostRequirements size='1'>
-        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' range='0.0.0' multiple='true' greedy='false'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='a.jre' range='1.6.0'/>
       </hostRequirements>
       <properties size='1'>
         <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
       </properties>
-      <provides size='2'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='tooling.osgi.bundle.default' version='1.0.0'/>
-        <provided namespace='org.eclipse.equinox.p2.flavor' name='tooling' version='1.0.0'/>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='config.a.jre' version='1.6.0'/>
       </provides>
       <requires size='1'>
-        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' range='0.0.0' multiple='true' greedy='false'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='a.jre' range='1.6.0'/>
       </requires>
-      <touchpoint id='null' version='0.0.0'/>
+      <touchpoint id='org.eclipse.equinox.p2.native' version='1.0.0'/>
       <touchpointData size='1'>
-        <instructions size='4'>
+        <instructions size='1'>
           <instruction key='install'>
-            installBundle(bundle:${artifact})
-          </instruction>
-          <instruction key='uninstall'>
-            uninstallBundle(bundle:${artifact})
-          </instruction>
-          <instruction key='unconfigure'>
 
-          </instruction>
-          <instruction key='configure'>
-            setStartLevel(startLevel:4);
           </instruction>
         </instructions>
       </touchpointData>
@@ -521,24 +524,34 @@
         </instructions>
       </touchpointData>
     </unit>
-    <unit id='config.a.jre' version='1.6.0' singleton='false'>
+    <unit id='tooling.osgi.bundle.default' version='1.0.0' singleton='false'>
       <hostRequirements size='1'>
-        <required namespace='org.eclipse.equinox.p2.iu' name='a.jre' range='1.6.0'/>
+        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' range='0.0.0' multiple='true' greedy='false'/>
       </hostRequirements>
       <properties size='1'>
         <property name='org.eclipse.equinox.p2.type.fragment' value='true'/>
       </properties>
-      <provides size='1'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='config.a.jre' version='1.6.0'/>
+      <provides size='2'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='tooling.osgi.bundle.default' version='1.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.flavor' name='tooling' version='1.0.0'/>
       </provides>
       <requires size='1'>
-        <required namespace='org.eclipse.equinox.p2.iu' name='a.jre' range='1.6.0'/>
+        <required namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' range='0.0.0' multiple='true' greedy='false'/>
       </requires>
-      <touchpoint id='org.eclipse.equinox.p2.native' version='1.0.0'/>
+      <touchpoint id='null' version='0.0.0'/>
       <touchpointData size='1'>
-        <instructions size='1'>
+        <instructions size='4'>
           <instruction key='install'>
+            installBundle(bundle:${artifact})
+          </instruction>
+          <instruction key='uninstall'>
+            uninstallBundle(bundle:${artifact})
+          </instruction>
+          <instruction key='unconfigure'>
 
+          </instruction>
+          <instruction key='configure'>
+            setStartLevel(startLevel:4);
           </instruction>
         </instructions>
       </touchpointData>
