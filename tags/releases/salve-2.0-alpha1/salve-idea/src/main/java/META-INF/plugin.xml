@@ -1,0 +1,21 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin>
+	<id>salve2-idea</id>
+	<name>Salve-2 Integration</name>
+	<version>2.0.1</version>
+	<vendor email="peter@moreinput.de" url="http://salve.googlecode.com">Peter Ertl</vendor>
+	<idea-version since-build="10372"/>
+	<project-components>
+		<component>
+			<interface-class>salve.idea.SalveComponent</interface-class>
+			<implementation-class>salve.idea.SalveComponentImpl</implementation-class>
+		</component>
+	</project-components>
+	<description>
+		Idea plugin for salve 2.x bytecode instrumentation
+	</description>
+	<change-notes>
+		compile against current 2.0-SNAPSHOT of salve
+	</change-notes>
+
+</idea-plugin>
