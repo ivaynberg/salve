@@ -21,8 +21,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 
-import salve.Scope;
-import salve.loader.BytecodePool;
+import salve.loader.TestBytecodePool;
 
 public class AbstractContractInstrumentorTestSupport extends Assert {
 	private static final ClassLoader CL = AbstractContractInstrumentorTestSupport.class.getClassLoader();
@@ -38,7 +37,8 @@ public class AbstractContractInstrumentorTestSupport extends Assert {
 		final String cn = getClass().getName().replace(".", "/") + "$" + beanName;
 		Class<?> clazz = loaded.get(cn);
 		if (clazz == null) {
-			clazz = new BytecodePool(Scope.ALL).addLoaderFor(CL).instrumentIntoClass(cn, INST);
+			TestBytecodePool pool = new TestBytecodePool(CL);
+			clazz = pool.instrumentIntoClass(cn, INST);
 			loaded.put(cn, clazz);
 		}
 		return clazz;
