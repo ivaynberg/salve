@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?><metadata>
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
   <groupId>salve</groupId>
   <artifactId>salve-asm</artifactId>
-  <version>1.0</version>
+  <version>2.0-alpha1</version>
   <versioning>
-    <release>1.0</release>
+    <release>2.0-alpha1</release>
     <versions>
-      <version>1.0</version>
-      <version>1.1</version>
+      <version>2.0-alpha1</version>
     </versions>
-    <lastUpdated>20090614171407</lastUpdated>
+    <lastUpdated>20090917054750</lastUpdated>
   </versioning>
 </metadata>
