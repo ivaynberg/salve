@@ -1,12 +1,12 @@
 package salve.model;
 
-public class FieldModel {
+public class CtField {
 	private final int acces;
 	private final String name;
 	private final String desc;
 	private final String signature;
 
-	public FieldModel(int acces, String name, String desc, String signature) {
+	public CtField(int acces, String name, String desc, String signature) {
 		this.acces = acces;
 		this.name = name;
 		this.desc = desc;

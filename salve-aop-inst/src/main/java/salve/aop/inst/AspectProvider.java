@@ -2,9 +2,9 @@ package salve.aop.inst;
 
 import java.util.Collection;
 
-import salve.model.MethodModel;
+import salve.model.CtMethod;
 
 public interface AspectProvider
 {
-    Collection<Aspect> getAspects(MethodModel method);
+    Collection<Aspect> getAspects(CtMethod method);
 }

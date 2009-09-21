@@ -54,7 +54,7 @@ import salve.eclipse.Activator;
 import salve.eclipse.JavaProjectBytecodeLoader;
 import salve.loader.BytecodePool;
 import salve.loader.CompoundLoader;
-import salve.model.ProjectModel;
+import salve.model.CtProject;
 import salve.monitor.NoopMonitor;
 import salve.util.FallbackBytecodeClassLoader;
 import salve.util.StreamsUtil;
@@ -67,12 +67,12 @@ public class SalveBuilder extends AbstractBuilder
 
     private final Set<String> clearedMarkers = new HashSet<String>();
 
-    private final ProjectModel model;
+    private final CtProject model;
 
     public SalveBuilder()
     {
         super(MARKER_ID);
-        model = new ProjectModel();
+        model = new CtProject();
     }
 
     /*

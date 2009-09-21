@@ -7,7 +7,7 @@ import java.util.Map;
 
 import salve.asmlib.Type;
 
-public class AnnotationModel {
+public class CtAnnotation {
 	public static class ArrayField extends Field {
 		private final List<Field> values = new ArrayList<Field>(1);
 
@@ -93,12 +93,12 @@ public class AnnotationModel {
 
 	private final Map<String, Field> fields = new LinkedHashMap<String, Field>();
 
-	public AnnotationModel(String desc, boolean visible) {
+	public CtAnnotation(String desc, boolean visible) {
 		this.desc = desc;
 		this.visible = visible;
 	}
 
-	AnnotationModel add(Field field) {
+	CtAnnotation add(Field field) {
 		fields.put(field.getName(), field);
 		return this;
 	}

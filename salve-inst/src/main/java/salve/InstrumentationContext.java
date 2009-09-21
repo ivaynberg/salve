@@ -1,6 +1,6 @@
 package salve;
 
-import salve.model.ProjectModel;
+import salve.model.CtProject;
 
 /**
  * Represents context in which the instrumentor runs
@@ -13,7 +13,7 @@ public class InstrumentationContext {
 	private final BytecodeLoader loader;
 	private final InstrumentorMonitor monitor;
 	private final Scope scope;
-	private final ProjectModel model;
+	private final CtProject model;
 
 	/**
 	 * Constructor
@@ -27,7 +27,7 @@ public class InstrumentationContext {
 	 *            scope used to identify classes that are within instrumentation
 	 *            scope
 	 */
-	public InstrumentationContext(BytecodeLoader loader, InstrumentorMonitor monitor, Scope scope, ProjectModel model) {
+	public InstrumentationContext(BytecodeLoader loader, InstrumentorMonitor monitor, Scope scope, CtProject model) {
 		if (loader == null) {
 			throw new IllegalArgumentException("Argument `loader` cannot be null");
 		}
@@ -54,7 +54,7 @@ public class InstrumentationContext {
 		return loader;
 	}
 
-	public ProjectModel getModel() {
+	public CtProject getModel() {
 		return model;
 	}
 

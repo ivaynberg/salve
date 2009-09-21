@@ -19,7 +19,7 @@ package salve.loader;
 import salve.Bytecode;
 import salve.BytecodeLoader;
 import salve.Scope;
-import salve.model.ProjectModel;
+import salve.model.CtProject;
 import salve.util.ClassesUtil;
 import salve.util.LruCache;
 
@@ -39,7 +39,7 @@ public class BytecodePool extends CompoundLoader {
 	protected final Scope scope;
 
 	// FIXME remove
-	protected final ProjectModel model;
+	protected final CtProject model;
 
 	/**
 	 * Constructor
@@ -49,7 +49,7 @@ public class BytecodePool extends CompoundLoader {
 	 */
 	public BytecodePool(Scope scope) {
 		this.scope = scope;
-		this.model = new ProjectModel().setLoader(this);
+		this.model = new CtProject().setLoader(this);
 	}
 
 	/**

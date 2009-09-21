@@ -4,37 +4,37 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import salve.model.AnnotationModel;
-import salve.model.ClassModel;
-import salve.model.MethodModel;
-import salve.model.ProjectModel;
-import salve.model.AnnotationModel.ValueField;
+import salve.model.CtAnnotation;
+import salve.model.CtClass;
+import salve.model.CtMethod;
+import salve.model.CtProject;
+import salve.model.CtAnnotation.ValueField;
 
 
 public class AnnotationAspectProvider implements AspectProvider
 {
 
-    public Collection<Aspect> getAspects(MethodModel mm)
+    public Collection<Aspect> getAspects(CtMethod mm)
     {
         List<Aspect> aspects = new ArrayList<Aspect>(1);
         boolean inheritedOnly = false;
         while (mm != null)
         {
-            List<AnnotationModel> annots = new ArrayList<AnnotationModel>();
+            List<CtAnnotation> annots = new ArrayList<CtAnnotation>();
             annots.addAll(mm.getAnnotations());
             for (int i = 0; i < mm.getArgCount(); i++)
             {
                 annots.addAll(mm.getArgAnnots(i));
             }
 
-            for (AnnotationModel annot : annots)
+            for (CtAnnotation annot : annots)
             {
-                ProjectModel pm = mm.getClassModel().getProject();
-                ClassModel acm = pm.getClass(annot.getName());
+                CtProject pm = mm.getClassModel().getProject();
+                CtClass acm = pm.getClass(annot.getName());
 
                 if (acm != null)
                 {
-                    AnnotationModel aspectAnnot = acm.getAnnotation("Lsalve/aop/MethodAdvice;");
+                    CtAnnotation aspectAnnot = acm.getAnnotation("Lsalve/aop/MethodAdvice;");
                     boolean inherited = acm.getAnnotation("Ljava/lang/annotation/Inherited;") != null;
                     if (aspectAnnot != null && (!inheritedOnly || (inheritedOnly && inherited)))
                     {
