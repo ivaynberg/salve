@@ -50,6 +50,17 @@ public class FieldKey extends AbstractKey implements Key {
 	}
 
 	/**
+	 * Constructor
+	 * 
+	 * @param field
+	 *            field
+	 */
+	public FieldKey(Field field) {
+
+		this.field = field;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	public Annotation[] getAnnotations() {
@@ -70,4 +81,10 @@ public class FieldKey extends AbstractKey implements Key {
 		return field.getType();
 	}
 
+	@Override
+	public String toString() {
+
+		return "[" + getClass().getSimpleName() + " field=" + field.getDeclaringClass().getName() + "#"
+				+ field.getName() + "]";
+	}
 }
