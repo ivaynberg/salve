@@ -16,7 +16,7 @@ When I started working on Salve I considered using AspectJ. At that time, howeve
 === Efficiency ===
 I do not think this would play a huge factor, but ... Salve creates a lot of private static variables on the class that it uses to cache frequently used data, such as dependency keys. Because I know what fields I generate during bytecode instrumentation phase I do not need reflection to access them and I can create as many fields as I want.
 
-=== Transparency ===
+=== Handling Synthetic Accessor Methods ===
 Suppose 
 {{{
 Class A {
