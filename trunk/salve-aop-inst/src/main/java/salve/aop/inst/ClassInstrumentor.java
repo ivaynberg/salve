@@ -16,16 +16,16 @@ import salve.asmlib.MethodAdapter;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
-import salve.model.AnnotationModel;
-import salve.model.MethodModel;
-import salve.model.ProjectModel;
+import salve.model.CtAnnotation;
+import salve.model.CtMethod;
+import salve.model.CtProject;
 import salve.util.asm.AsmUtil;
 import salve.util.asm.GeneratorAdapter;
 
 class ClassInstrumentor extends ClassAdapter implements Opcodes
 {
     private String owner;
-    private final ProjectModel model;
+    private final CtProject model;
     private final Set< ? extends AspectProvider> discoveryStrategies;
     private final InstrumentorMonitor monitor;
     private int delegateCounter = 0;
@@ -39,7 +39,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         this.model = ctx.getModel();
     }
 
-    private Set<Aspect> gatherAspects(MethodModel mm)
+    private Set<Aspect> gatherAspects(CtMethod mm)
     {
         Set<Aspect> aspects = new HashSet<Aspect>();
         for (AspectProvider strategy : discoveryStrategies)
@@ -54,7 +54,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     }
 
 
-    protected ProjectModel getModel()
+    protected CtProject getModel()
     {
         return model;
     }
@@ -67,7 +67,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         this.owner = name;
     }
 
-    private String newDelegateMethodName(MethodModel method, Aspect aspect)
+    private String newDelegateMethodName(CtMethod method, Aspect aspect)
     {
         final String base = method.getName() + "$salveaop";
 
@@ -77,7 +77,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
             final String delegate = base + delegateCounter;
             boolean valid = true;
-            for (MethodModel m : method.getClassModel().getMethods())
+            for (CtMethod m : method.getClassModel().getMethods())
             {
                 if (m.getName().equals(delegate))
                 {
@@ -99,11 +99,11 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     public MethodVisitor visitMethod(int access, final String name, final String desc,
             final String signature, final String[] exceptions)
     {
-        MethodModel method = model.getClass(owner).getMethod(name, desc);
+        CtMethod method = model.getClass(owner).getMethod(name, desc);
 
         final Set<Aspect> aspects = gatherAspects(method);
 
-        AnnotationModel marker = method.getAnnot(getInstrumentationMarkerAnnotationDesc());
+        CtAnnotation marker = method.getAnnot(getInstrumentationMarkerAnnotationDesc());
 
         if (aspects.isEmpty() || marker != null)
         {
@@ -205,7 +205,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 //        return null;
 //    }
 
-    private String generateWrapperMethod(MethodModel method, MethodVisitor originmv, Aspect aspect)
+    private String generateWrapperMethod(CtMethod method, MethodVisitor originmv, Aspect aspect)
     {
         final String delegateName = newDelegateMethodName(method, aspect);
         GeneratorAdapter origin = new GeneratorAdapter(originmv, method.getAccess(), method

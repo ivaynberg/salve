@@ -8,31 +8,31 @@ import java.util.Map;
 import salve.asmlib.ClassReader;
 import salve.asmlib.Type;
 
-public class MethodModel {
+public class CtMethod {
 	public static class ParameterAnnotations {
-		private final Map<String, AnnotationModel> annots;
+		private final Map<String, CtAnnotation> annots;
 
 		public ParameterAnnotations() {
-			annots = new LinkedHashMap<String, AnnotationModel>();
+			annots = new LinkedHashMap<String, CtAnnotation>();
 		}
 	}
 
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-	private final ClassModel clazz;
+	private final CtClass clazz;
 	private final int access;
 	private final String signature;
 	private final String[] exceptions;
-	private final Map<String, AnnotationModel> annots = new LinkedHashMap<String, AnnotationModel>();
+	private final Map<String, CtAnnotation> annots = new LinkedHashMap<String, CtAnnotation>();
 	private final String[] argNames;
-	private MethodModel superMethod;
+	private CtMethod superMethod;
 	private final boolean superMethodCached = false;
 	private final salve.asmlib.Method method;
 	private ParameterAnnotations[] parameterAnnots;
 
 	private static final int META_VISITOR = ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG;
 
-	public MethodModel(ClassModel clazz, int access, String name, String desc, String signature, String[] exceptions) {
+	public CtMethod(CtClass clazz, int access, String name, String desc, String signature, String[] exceptions) {
 		this.clazz = clazz;
 		this.access = access;
 		this.signature = signature;
@@ -41,11 +41,11 @@ public class MethodModel {
 		argNames = new String[method.getArgumentTypes().length];
 	}
 
-	void add(AnnotationModel am) {
+	void add(CtAnnotation am) {
 		annots.put(am.getDesc(), am);
 	}
 
-	void addParameterAnnot(int parameter, AnnotationModel am) {
+	void addParameterAnnot(int parameter, CtAnnotation am) {
 		if (parameterAnnots == null) {
 			parameterAnnots = new ParameterAnnotations[method.getArgumentTypes().length];
 		}
@@ -55,10 +55,10 @@ public class MethodModel {
 		parameterAnnots[parameter].annots.put(am.getDesc(), am);
 	}
 
-	private MethodModel findSuper(String cn, MethodModel target) {
+	private CtMethod findSuper(String cn, CtMethod target) {
 		Method t = new Method(target.getAccess(), target.getName(), target.getDesc());
 
-		ClassModel cursor = clazz;
+		CtClass cursor = clazz;
 
 		while (cursor.getSuperClassName() != null) {
 			final String sn = cursor.getSuperClassName();
@@ -67,7 +67,7 @@ public class MethodModel {
 			// System.out.println(sn);
 			// System.out.println(sn.length());
 			// }
-			for (MethodModel mm : cursor.getMethods()) {
+			for (CtMethod mm : cursor.getMethods()) {
 				Method m = new Method(mm.getAccess(), mm.getName(), mm.getDesc());
 				if (m.canOverride(t)) {
 					return mm;
@@ -81,15 +81,15 @@ public class MethodModel {
 		return access;
 	}
 
-	public AnnotationModel getAnnot(String desc) {
+	public CtAnnotation getAnnot(String desc) {
 		return annots.get(desc);
 	}
 
-	public Collection<AnnotationModel> getAnnotations() {
+	public Collection<CtAnnotation> getAnnotations() {
 		return annots.values();
 	}
 
-	public AnnotationModel getArgAnnot(int idx, String desc) {
+	public CtAnnotation getArgAnnot(int idx, String desc) {
 		if (parameterAnnots != null) {
 			if (parameterAnnots[idx] != null) {
 				return parameterAnnots[idx].annots.get(desc);
@@ -99,7 +99,7 @@ public class MethodModel {
 		return annots.get(desc);
 	}
 
-	public Collection<AnnotationModel> getArgAnnots(int idx) {
+	public Collection<CtAnnotation> getArgAnnots(int idx) {
 		if (parameterAnnots != null) {
 			if (parameterAnnots[idx] != null) {
 				return parameterAnnots[idx].annots.values();
@@ -112,7 +112,7 @@ public class MethodModel {
 		return method.getArgumentTypes().length;
 	}
 
-	public ClassModel getClassModel() {
+	public CtClass getClassModel() {
 		return clazz;
 	}
 

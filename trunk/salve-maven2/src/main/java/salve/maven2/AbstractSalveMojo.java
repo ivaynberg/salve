@@ -35,7 +35,7 @@ import salve.config.xml.XmlConfigReader;
 import salve.maven2.util.ClassFileVisitor;
 import salve.maven2.util.Directory;
 import salve.maven2.util.ProjectBytecodeLoader;
-import salve.model.ProjectModel;
+import salve.model.CtProject;
 import salve.monitor.ModificationMonitor;
 import salve.util.FallbackBytecodeClassLoader;
 
@@ -49,7 +49,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	private int instrumented = 0;
 	private XmlConfig config;
 	private ProjectBytecodeLoader loader;
-	private ProjectModel model;
+	private CtProject model;
 	/**
 	 * Maven project we are building
 	 * 
@@ -110,7 +110,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 			throw new MojoExecutionException("Could not configure bytecode loader", e);
 		}
 
-		model = new ProjectModel().setLoader(loader);
+		model = new CtProject().setLoader(loader);
 
 		loadConfig(classesDir);
 

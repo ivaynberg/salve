@@ -15,7 +15,7 @@ import salve.Instrumentor;
 import salve.loader.ClassLoaderLoader;
 import salve.loader.CompoundLoader;
 import salve.loader.MemoryLoader;
-import salve.model.ProjectModel;
+import salve.model.CtProject;
 import salve.monitor.NoopMonitor;
 
 /**
@@ -62,7 +62,7 @@ public abstract class AbstractTransformer implements ClassFileTransformer
                 bl.addLoader(new MemoryLoader(className, bytecode));
                 bl.addLoader(new ClassLoaderLoader(loader));
                 // FIXME optimize, at least move model outside the loop
-                ProjectModel model = new ProjectModel().setLoader(bl);
+                CtProject model = new CtProject().setLoader(bl);
                 InstrumentationContext ctx = new InstrumentationContext(bl, NoopMonitor.INSTANCE,
                         config.getScope(inst), model);
 

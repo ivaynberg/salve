@@ -5,5 +5,5 @@ public interface UpdateListener {
 		REMOVE, LEAVE
 	}
 
-	public Action updated();;
+	public Action updated();
 }

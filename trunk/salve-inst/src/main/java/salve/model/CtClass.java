@@ -6,24 +6,24 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClassModel {
+public class CtClass {
 	private static String getMethodIdentity(String name, String desc) {
 		return name + "|" + desc;
 	}
 
-	private final ProjectModel project;
+	private final CtProject project;
 	private final int access;
 	private final String name;
 	private final String signature;
 	private final String superClass;
 	private final String[] interfaces;
-	private final Map<String, FieldModel> fields = new LinkedHashMap<String, FieldModel>();
-	private final Map<String, MethodModel> methods = new LinkedHashMap<String, MethodModel>();
-	private final Map<String, AnnotationModel> annots = new LinkedHashMap<String, AnnotationModel>();
-	private final List<InnerClassModel> inner = new ArrayList<InnerClassModel>(0);
-	private OuterClassModel outer = null;
+	private final Map<String, CtField> fields = new LinkedHashMap<String, CtField>();
+	private final Map<String, CtMethod> methods = new LinkedHashMap<String, CtMethod>();
+	private final Map<String, CtAnnotation> annots = new LinkedHashMap<String, CtAnnotation>();
+	private final List<CtInnerClass> inner = new ArrayList<CtInnerClass>(0);
+	private CtOuterClass outer = null;
 
-	public ClassModel(ProjectModel project, int access, String name, String signature, String superClass,
+	public CtClass(CtProject project, int access, String name, String signature, String superClass,
 			String[] interfaces) {
 		this.project = project;
 		this.access = access;
@@ -33,19 +33,19 @@ public class ClassModel {
 		this.interfaces = interfaces;
 	}
 
-	void add(AnnotationModel am) {
+	void add(CtAnnotation am) {
 		annots.put(am.getDesc(), am);
 	}
 
-	void add(FieldModel fm) {
+	void add(CtField fm) {
 		fields.put(fm.getName(), fm);
 	}
 
-	void add(InnerClassModel icm) {
+	void add(CtInnerClass icm) {
 		inner.add(icm);
 	}
 
-	void add(MethodModel mm) {
+	void add(CtMethod mm) {
 		methods.put(getMethodIdentity(mm.getName(), mm.getDesc()), mm);
 	}
 
@@ -53,11 +53,11 @@ public class ClassModel {
 		return access;
 	}
 
-	public AnnotationModel getAnnotation(String desc) {
+	public CtAnnotation getAnnotation(String desc) {
 		return annots.get(desc);
 	}
 
-	public FieldModel getField(String name) {
+	public CtField getField(String name) {
 		return fields.get(name);
 	}
 
@@ -65,11 +65,11 @@ public class ClassModel {
 		return interfaces;
 	}
 
-	public MethodModel getMethod(String name, String desc) {
+	public CtMethod getMethod(String name, String desc) {
 		return methods.get(getMethodIdentity(name, desc));
 	}
 
-	public Collection<MethodModel> getMethods() {
+	public Collection<CtMethod> getMethods() {
 		return methods.values();
 	}
 
@@ -77,7 +77,7 @@ public class ClassModel {
 		return name;
 	}
 
-	public ProjectModel getProject() {
+	public CtProject getProject() {
 		return project;
 	}
 
@@ -85,7 +85,7 @@ public class ClassModel {
 		return signature;
 	}
 
-	public ClassModel getSuperClass() {
+	public CtClass getSuperClass() {
 		if (superClass == null) {
 			return null;
 		}
@@ -96,7 +96,7 @@ public class ClassModel {
 		return superClass;
 	}
 
-	ClassModel setOuter(OuterClassModel model) {
+	CtClass setOuter(CtOuterClass model) {
 		this.outer = model;
 		return this;
 	}
