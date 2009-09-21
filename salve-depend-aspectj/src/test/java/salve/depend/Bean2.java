@@ -16,24 +16,15 @@
  */
 package salve.depend;
 
-import java.lang.reflect.Field;
+import salve.depend.Dependency;
 
-/**
- * Thrown when a user tries to write into the dependency field that has been
- * instrumented.
- * 
- * @author ivaynberg
- * 
- */
-public class IllegalFieldWriteException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+public class Bean2 extends AbstractBean {
 
-	public IllegalFieldWriteException(Field field) {
-		this(field.getDeclaringClass().getName(), field.getName());
+	@Dependency
+	private BlueDependency blue;
+
+	public Bean2() {
+
 	}
 
-	public IllegalFieldWriteException(String clazz, String field) {
-		super("Attempted to write to field `" + field + "` that has been removed from class `" + clazz
-				+ "` by salve's dependency instrumentor");
-	}
 }

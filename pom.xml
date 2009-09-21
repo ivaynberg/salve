@@ -219,14 +219,6 @@
 			<id>local</id>
 			<url>file:target/site/</url>
 		</site>
-		<repository>
-			<id>salve-releases</id>
-			<url>https://salve.googlecode.com/svn/maven2</url>
-		</repository>
-		<snapshotRepository>
-			<id>salve-snapshots</id>
-			<url>https://salve.googlecode.com/svn/maven2-snapshots</url>
-		</snapshotRepository>
 	</distributionManagement>
 
 </project>
