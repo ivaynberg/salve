@@ -16,6 +16,7 @@
  */
 package salve.util.asm;
 
+import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
 import salve.asmlib.signature.SignatureReader;
 import salve.asmlib.signature.SignatureVisitor;
@@ -236,6 +237,14 @@ public class AsmUtil {
 			throw new InvalidSignatureException(signature);
 		}
 		return types;
+	}
+
+	public static int setPermission(int access, int permission) {
+		if (permission != Opcodes.ACC_PRIVATE && permission != Opcodes.ACC_PROTECTED
+				&& permission != Opcodes.ACC_PUBLIC && permission != 0) {
+			throw new IllegalArgumentException("Invalid permission: " + permission);
+		}
+		return access >> 3 << 3 | permission;
 	}
 
 	/**

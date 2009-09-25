@@ -26,12 +26,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import salve.Scope;
 import salve.depend.DependencyLibrary;
 import salve.depend.Key;
 import salve.depend.Locator;
 import salve.depend.cache.NoopCacheProvider;
-import salve.loader.BytecodePool;
 import salve.loader.TestBytecodePool;
 import salve.util.EasyMockTemplate;
 
@@ -127,6 +125,24 @@ public class TransactionalInstrumentorTest extends Assert
             }
 
         }.test();
+    }
+    
+    @SuppressWarnings("static-access")
+    @Test
+    public void testStatic() throws Exception
+    {
+//        new CommitTemplate()
+//        {
+//
+//            @Override
+//            protected void testExpectations() throws Exception
+//            {
+//                ((MethodBean)mbClass.newInstance()).staticMethod();
+//            }
+//
+//        }.test();
+        
+        ((MethodBean)mbClass.newInstance()).staticMethod();
     }
 
     @Test

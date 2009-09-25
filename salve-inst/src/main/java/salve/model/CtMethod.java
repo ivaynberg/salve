@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import salve.asmlib.ClassReader;
+import salve.asmlib.Opcodes;
 import salve.asmlib.Type;
 
 public class CtMethod {
@@ -175,6 +176,10 @@ public class CtMethod {
 
 	public boolean hasArgAnnot(int idx, Type type) {
 		return hasArgAnnot(idx, type.getDescriptor());
+	}
+
+	public boolean isStatic() {
+		return (access & Opcodes.ACC_STATIC) > 0;
 	}
 
 	void setArgName(int idx, String name) {

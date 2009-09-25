@@ -45,6 +45,12 @@ public class MethodBean
     }
 
     @Transactional
+    public static void staticMethod()
+    {
+
+    }
+
+    @Transactional
     public Object exception(int mode, Object p)
     {
         switch (mode)
