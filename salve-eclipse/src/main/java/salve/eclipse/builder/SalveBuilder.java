@@ -95,7 +95,7 @@ public class SalveBuilder extends AbstractBuilder
         final IResource configResource = findConfig();
         if (configResource == null)
         {
-            markError(getProject(), "Could not find META-INF/salve.xml in any source folder");
+            markError(getProject(), "Could not find META-INF/salve2.xml in any source folder");
             return null;
         }
         checkCancel(monitor);
@@ -206,7 +206,7 @@ public class SalveBuilder extends AbstractBuilder
             if (cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE)
             {
                 IPath path = cpe.getPath();
-                path = path.addTrailingSeparator().append("META-INF/salve.xml");
+                path = path.addTrailingSeparator().append("META-INF/salve2.xml");
                 IResource res = getProject().getWorkspace().getRoot().findMember(path);
                 if (res != null && res.exists())
                 {

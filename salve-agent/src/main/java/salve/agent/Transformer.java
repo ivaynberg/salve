@@ -49,7 +49,7 @@ class Transformer extends AbstractTransformer
      * @param loader
      *            class loader
      * @param url
-     *            url to salve.xml
+     *            url to salve2.xml
      */
     private void mergeConfig(ClassLoader loader, URL url)
     {
@@ -72,7 +72,7 @@ class Transformer extends AbstractTransformer
     }
 
     /**
-     * Searches class loader for any META-INF/salve.xml resources and merges them into
+     * Searches class loader for any META-INF/salve2.xml resources and merges them into
      * {@link #config}
      * 
      * @param loader
@@ -84,7 +84,7 @@ class Transformer extends AbstractTransformer
 
         try
         {
-            urls = loader.getResources("META-INF/salve.xml");
+            urls = loader.getResources("META-INF/salve2.xml");
         }
         catch (IOException e)
         {
