@@ -9,6 +9,7 @@
 					</aspectProviders>
 				</salve.aop.inst.AopInstrumentor>
 				<salve.depend.DependencyInstrumentor/>
+				<salve.contract.ContractInstrumentor/>
 			</instrumentors>
 		</package>
 	</packages>

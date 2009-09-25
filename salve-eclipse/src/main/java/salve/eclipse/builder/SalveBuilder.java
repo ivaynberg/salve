@@ -47,6 +47,7 @@ import salve.CodeMarkerAware;
 import salve.Config;
 import salve.InstrumentationContext;
 import salve.Instrumentor;
+import salve.Logger;
 import salve.Scope;
 import salve.asmlib.ClassReader;
 import salve.config.xml.XmlConfigReader;
@@ -308,8 +309,11 @@ public class SalveBuilder extends AbstractBuilder
                 cl.addLoader(bloader);
 
                 model.setLoader(cl);
+                
+                final Logger logger = newLogger((source != null) ? source : file);
+                
                 InstrumentationContext ctx = new InstrumentationContext(cl, NoopMonitor.INSTANCE,
-                        config.getScope(inst), model);
+                        config.getScope(inst), model, logger);
 
                 byte[] bytecode = inst.instrument(cn, ctx);
 

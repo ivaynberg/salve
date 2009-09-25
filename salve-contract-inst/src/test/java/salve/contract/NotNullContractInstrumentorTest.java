@@ -21,15 +21,43 @@ import org.junit.Test;
 import salve.InstrumentationException;
 
 public class NotNullContractInstrumentorTest extends AbstractContractInstrumentorTestSupport {
+	public static class NotNullBean {
+		public static final Object NULL = new Object();
+
+		public Object testNotAnnotated(Object arg1) {
+			return arg1;
+		}
+
+		@NotNull
+		public Object testNotNull(Object arg1, @NotNull Object arg2, Object arg3) {
+			return arg2 == NULL ? null : arg2;
+		}
+	}
+
+	public static class NotNullPrimitiveArgumentBean {
+		public void testNotNull(@NotNull int a) {
+		}
+	}
+
+	public static class NotNullPrimitiveReturnBean {
+		@NotNull
+		public int testNotNull() {
+			return 0;
+		}
+	}
+
+	public static class NotNullVoidReturnBean {
+		@NotNull
+		public void testNotNull() {
+		}
+	}
+
 	@Test
 	public void testArgumentTypeErrorChecking() throws Exception {
 		try {
 			create("NotNullPrimitiveArgumentBean");
 			fail("Expected error instrumenting primitive notnull argument");
 		} catch (InstrumentationException e) {
-			if (!(e.getCause() instanceof IllegalAnnotationUseException)) {
-				throw e;
-			}
 
 		}
 	}
@@ -66,9 +94,6 @@ public class NotNullContractInstrumentorTest extends AbstractContractInstrumento
 			create("NotNullPrimitiveReturnBean");
 			fail("Expected error instrumenting notnull method with primitive return type");
 		} catch (InstrumentationException e) {
-			if (!(e.getCause() instanceof IllegalAnnotationUseException)) {
-				throw e;
-			}
 
 		}
 
@@ -76,43 +101,9 @@ public class NotNullContractInstrumentorTest extends AbstractContractInstrumento
 			create("NotNullVoidReturnBean");
 			fail("Expected error instrumenting notnull method with void return type");
 		} catch (InstrumentationException e) {
-			if (!(e.getCause() instanceof IllegalAnnotationUseException)) {
-				throw e;
-			}
 
 		}
 
-	}
-
-	public static class NotNullBean {
-		public static final Object NULL = new Object();
-
-		public Object testNotAnnotated(Object arg1) {
-			return arg1;
-		}
-
-		@NotNull
-		public Object testNotNull(Object arg1, @NotNull Object arg2, Object arg3) {
-			return arg2 == NULL ? null : arg2;
-		}
-	}
-
-	public static class NotNullPrimitiveArgumentBean {
-		public void testNotNull(@NotNull int a) {
-		}
-	}
-
-	public static class NotNullPrimitiveReturnBean {
-		@NotNull
-		public int testNotNull() {
-			return 0;
-		}
-	}
-
-	public static class NotNullVoidReturnBean {
-		@NotNull
-		public void testNotNull() {
-		}
 	}
 
 }

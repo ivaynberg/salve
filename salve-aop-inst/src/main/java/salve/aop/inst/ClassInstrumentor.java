@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import salve.CodeMarker;
 import salve.InstrumentationContext;
 import salve.InstrumentorMonitor;
 import salve.asmlib.AnnotationVisitor;
@@ -26,6 +27,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 {
     private String owner;
     private final CtProject model;
+    private final InstrumentationContext ctx;
     private final Set< ? extends AspectProvider> discoveryStrategies;
     private final InstrumentorMonitor monitor;
     private int delegateCounter = 0;
@@ -37,6 +39,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         this.discoveryStrategies = discoveryStrategies;
         this.monitor = ctx.getMonitor();
         this.model = ctx.getModel();
+        this.ctx = ctx;
     }
 
     private Set<Aspect> gatherAspects(CtMethod mm)
@@ -158,13 +161,15 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
         // we also forward any annotations from the root method to the origin method
 
-//        final OverrideInfo info = getOverrideInfo(method);
+// final OverrideInfo info = getOverrideInfo(method);
 
         MethodVisitor root = cv.visitMethod(ACC_PROTECTED, rootName, desc, signature, exceptions);
 
         final MethodVisitor _origin = origin;
         return new MethodAdapter(root)
         {
+            private boolean aspectsLogged = false;
+
             @Override
             public AnnotationVisitor visitAnnotation(String desc, boolean visible)
             {
@@ -187,23 +192,42 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
                 return _origin.visitAnnotation(desc, visible);
             }
+
+            @Override
+            public void visitLineNumber(int line, Label start)
+            {
+                if (!aspectsLogged)
+                {
+                    if (!aspects.isEmpty())
+                    {
+                        final CodeMarker marker = new CodeMarker(owner, line);
+                        for (Aspect aspect : aspects)
+                        {
+                            ctx.getLogger().info(marker, "Applied aspect: %s#%s",
+                                    aspect.getClazz(), aspect.getMethod());
+                        }
+                    }
+                    aspectsLogged = true;
+                }
+                super.visitLineNumber(line, start);
+            }
         };
     }
 
-//    private OverrideInfo getOverrideInfo(MethodModel method)
-//    {
-//        if (method.getSuper() != null)
-//        {
-//            MethodModel sup = method.getSuper();
-//            AnnotationModel annot = sup.getAnnot("Lsalve/aop/Instrumented;");
-//            if (annot != null)
-//            {
-//                return new OverrideInfo(sup.getClassModel().getName(), sup.getName(),
-//                        sup.getDesc(), annot.getField("root").getValue().toString());
-//            }
-//        }
-//        return null;
-//    }
+// private OverrideInfo getOverrideInfo(MethodModel method)
+// {
+// if (method.getSuper() != null)
+// {
+// MethodModel sup = method.getSuper();
+// AnnotationModel annot = sup.getAnnot("Lsalve/aop/Instrumented;");
+// if (annot != null)
+// {
+// return new OverrideInfo(sup.getClassModel().getName(), sup.getName(),
+// sup.getDesc(), annot.getField("root").getValue().toString());
+// }
+// }
+// return null;
+// }
 
     private String generateWrapperMethod(CtMethod method, MethodVisitor originmv, Aspect aspect)
     {
