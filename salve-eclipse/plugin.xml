@@ -71,7 +71,7 @@
 
    </extension>
    <extension
-         id="salve.eclipse.marker.error.instrument"
+         id="salve.eclipse.marker.instrument"
          name="Salve Instrumentation Error"
          point="org.eclipse.core.resources.markers">
       <super

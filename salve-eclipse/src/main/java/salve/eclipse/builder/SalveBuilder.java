@@ -19,9 +19,7 @@ package salve.eclipse.builder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -64,9 +62,7 @@ public class SalveBuilder extends AbstractBuilder
 {
 
     public static final String BUILDER_ID = "salve.eclipse.Builder";
-    public static final String MARKER_ID = "salve.eclipse.marker.error.instrument";
-
-    private final Set<String> clearedMarkers = new HashSet<String>();
+    public static final String MARKER_ID = "salve.eclipse.marker.instrument";
 
     private final CtProject model;
 
@@ -88,8 +84,7 @@ public class SalveBuilder extends AbstractBuilder
 
         long buildStart = System.currentTimeMillis();
 
-        removeMarks(getProject());
-        clearedMarkers.clear();
+        removeSalveMarks(getProject());
 
         // find config resource
         final IResource configResource = findConfig();
@@ -99,7 +94,7 @@ public class SalveBuilder extends AbstractBuilder
             return null;
         }
         checkCancel(monitor);
-        removeMarks(configResource);
+        removeSalveMarks(configResource);
 
         // load config
         BytecodeLoader bloader = new JavaProjectBytecodeLoader(getProject());
@@ -189,8 +184,6 @@ public class SalveBuilder extends AbstractBuilder
 
         mark(getProject(), info, IMarker.SEVERITY_INFO);
 
-        clearedMarkers.clear();
-
         return null;
     }
 
@@ -244,13 +237,7 @@ public class SalveBuilder extends AbstractBuilder
                 case IResourceDelta.ADDED :
                 case IResourceDelta.CHANGED :
                     IResource resource = delta.getResource();
-                    IMarker[] markers = resource.findMarkers(
-                            "org.eclipse.core.resources.problemmarker", true, IResource.DEPTH_ONE);
-                    boolean error = (markers != null && markers.length > 0);
-                    if (!error)
-                    {
-                        build(resource, config, bloader, monitor);
-                    }
+                    build(resource, config, bloader, monitor);
                     break;
                 case IResourceDelta.REMOVED :
                     break;
@@ -267,35 +254,24 @@ public class SalveBuilder extends AbstractBuilder
 
         if (!(resource instanceof IFile) || !resource.getName().endsWith(".class"))
         {
-
             return;
         }
 
-        final IFile file = (IFile)resource;
+        final IFile classFile = (IFile)resource;
+        final IResource source = findSourceResourceForClassResource(classFile);
 
-        final IResource source = findSourceResourceForClassResource(file);
-
-        final String path = resource.getLocation().toOSString();
-        if (!clearedMarkers.contains(path))
+        if (hasErrors(resource, source))
         {
-            removeMarks(resource);
-            clearedMarkers.add(path);
+            System.out.println("RESOURCE: " + resource.getName() + " / " + source.getName() +
+                    " HAS ERRORS");
+            return;
         }
 
-        if (source != null)
-        {
-            final String srcPath = source.getLocation().toOSString();
-            if (!clearedMarkers.contains(srcPath))
-            {
-                removeMarks(source);
-                clearedMarkers.add(srcPath);
-            }
-        }
+        removeSalveMarks(resource, source);
+
         try
         {
-
-
-            final String cn = readClassName(file);
+            final String cn = readClassName(classFile);
 
             for (Instrumentor inst : config.getInstrumentors(cn))
             {
@@ -305,26 +281,26 @@ public class SalveBuilder extends AbstractBuilder
                 // System.out.println("instrumenting: " + cn + " with: "
                 // + inst.getClass().getName());
                 CompoundLoader cl = new CompoundLoader();
-                cl.addLoader(new FileBytecodeLoader(file));
+                cl.addLoader(new FileBytecodeLoader(classFile));
                 cl.addLoader(bloader);
 
                 model.setLoader(cl);
-                
-                final Logger logger = newLogger((source != null) ? source : file);
-                
+
+                final Logger logger = newLogger((source != null) ? source : classFile);
+
                 InstrumentationContext ctx = new InstrumentationContext(cl, NoopMonitor.INSTANCE,
                         config.getScope(inst), model, logger);
 
                 byte[] bytecode = inst.instrument(cn, ctx);
 
                 model.setLoader(null);
-                file.setContents(new ByteArrayInputStream(bytecode), true, false, null);
+                classFile.setContents(new ByteArrayInputStream(bytecode), true, false, null);
             }
         }
         catch (Throwable e)
         {
             e.printStackTrace();
-            log(IStatus.ERROR, "Error instrumenting: " + file.getName(), e);
+            log(IStatus.ERROR, "Error instrumenting: " + classFile.getName(), e);
             int lineNumber = -1;
             if (e instanceof CodeMarkerAware)
             {
@@ -336,10 +312,35 @@ public class SalveBuilder extends AbstractBuilder
                 }
             }
             // e.printStackTrace();
-            final IResource res = (source != null) ? source : file;
+            final IResource res = (source != null) ? source : classFile;
             markError(res, "Salve: " + e.getClass().getSimpleName() + "/" + e.getMessage(),
                     lineNumber);
         }
+    }
+
+    private boolean hasErrors(IResource... resources) throws CoreException
+    {
+        for (IResource resource : resources)
+        {
+            if (resource != null)
+            {
+                IMarker[] markers = resource.findMarkers(
+                        "org.eclipse.core.resources.problemmarker", true, IResource.DEPTH_ONE);
+                if (markers != null && markers.length > 0)
+                {
+                    for (IMarker marker : markers)
+                    {
+                        Integer severity = (Integer)marker.getAttribute(IMarker.SEVERITY);
+                        if (severity != null && severity == IMarker.SEVERITY_ERROR)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+        }
+        return false;
     }
 
     private static IResource findSourceResourceForClassResource(IResource classResource)

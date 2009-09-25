@@ -59,6 +59,7 @@ public abstract class AbstractBuilder extends IncrementalProjectBuilder
 
     protected void mark(IResource resource, String message, int severity)
     {
+
         mark(resource, message, -1, severity);
     }
 
@@ -77,14 +78,20 @@ public abstract class AbstractBuilder extends IncrementalProjectBuilder
         }
     }
 
-    protected void removeMarks(IResource resource)
+    protected void removeSalveMarks(IResource... resources)
     {
-        try
+        for (IResource resource : resources)
         {
-            resource.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
-        }
-        catch (CoreException ce)
-        {
+            if (resource != null)
+            {
+                try
+                {
+                    resource.deleteMarkers(markerType, true, IResource.DEPTH_ONE);
+                }
+                catch (CoreException ce)
+                {
+                }
+            }
         }
     }
 
