@@ -213,7 +213,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	 */
 	private void loadConfig(final File classes) throws MojoExecutionException {
 
-		final File salvexml = new File(classes, "META-INF" + File.separator + "salve.xml");
+		final File salvexml = new File(classes, "META-INF" + File.separator + "salve2.xml");
 		if (!salvexml.exists()) {
 			throw new MojoExecutionException("Could not locate salve config file: " + salvexml);
 		}
