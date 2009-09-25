@@ -21,7 +21,6 @@ import salve.Bytecode;
 import salve.CannotLoadBytecodeException;
 import salve.InstrumentationContext;
 import salve.InstrumentationException;
-import salve.InstrumentorMonitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassReader;
 import salve.asmlib.ClassVisitor;
@@ -38,11 +37,11 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 
 	public static class ConditionalChecksInstrumentor extends ClassAdapter {
 		private String owner;
-		private final InstrumentorMonitor monitor;
+		private final InstrumentationContext ctx;
 
-		public ConditionalChecksInstrumentor(ClassVisitor cv, InstrumentorMonitor monitor) {
+		public ConditionalChecksInstrumentor(ClassVisitor cv, InstrumentationContext ctx) {
 			super(cv);
-			this.monitor = monitor;
+			this.ctx = ctx;
 		}
 
 		@Override
@@ -54,9 +53,9 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 		@Override
 		public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 			MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
-			mv = new NotNullInstrumentor(mv, monitor, owner, access, name, desc);
-			mv = new NotEmptyInstrumentor(mv, monitor, owner, access, name, desc);
-			mv = new NumericalInstrumentor(mv, monitor, owner, access, name, desc);
+			mv = new NotNullInstrumentor(mv, owner, access, name, desc, ctx);
+			mv = new NotEmptyInstrumentor(mv, owner, access, name, desc, ctx);
+			mv = new NumericalInstrumentor(mv, owner, access, name, desc, ctx);
 			return mv;
 		}
 	}
@@ -81,8 +80,8 @@ public class ContractInstrumentor extends AbstractInstrumentor {
 
 		if (analyzer.shouldInstrument()) {
 			ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx.getLoader());
-			reader.accept(new ClassInstrumentor(new ConditionalChecksInstrumentor(writer, ctx.getMonitor()),
-					initOnceAnalyzer), ClassReader.EXPAND_FRAMES);
+			reader.accept(new ClassInstrumentor(new ConditionalChecksInstrumentor(writer, ctx), initOnceAnalyzer),
+					ClassReader.EXPAND_FRAMES);
 			bytes = writer.toByteArray();
 		}
 		return bytes;

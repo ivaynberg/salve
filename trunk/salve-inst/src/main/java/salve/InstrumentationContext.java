@@ -14,6 +14,7 @@ public class InstrumentationContext {
 	private final InstrumentorMonitor monitor;
 	private final Scope scope;
 	private final CtProject model;
+	private final Logger logger;
 
 	/**
 	 * Constructor
@@ -27,7 +28,8 @@ public class InstrumentationContext {
 	 *            scope used to identify classes that are within instrumentation
 	 *            scope
 	 */
-	public InstrumentationContext(BytecodeLoader loader, InstrumentorMonitor monitor, Scope scope, CtProject model) {
+	public InstrumentationContext(BytecodeLoader loader, InstrumentorMonitor monitor, Scope scope, CtProject model,
+			Logger logger) {
 		if (loader == null) {
 			throw new IllegalArgumentException("Argument `loader` cannot be null");
 		}
@@ -40,11 +42,15 @@ public class InstrumentationContext {
 		if (model == null) {
 			throw new IllegalArgumentException("Argument `model` cannot be null");
 		}
+		if (logger == null) {
+			throw new IllegalArgumentException("Argument `logger` cannot be null");
+		}
 
 		this.loader = loader;
 		this.monitor = monitor;
 		this.scope = scope;
 		this.model = model;
+		this.logger = logger;
 	}
 
 	/**
@@ -52,6 +58,14 @@ public class InstrumentationContext {
 	 */
 	public BytecodeLoader getLoader() {
 		return loader;
+	}
+
+	/**
+	 * 
+	 * @return logger
+	 */
+	public Logger getLogger() {
+		return logger;
 	}
 
 	public CtProject getModel() {

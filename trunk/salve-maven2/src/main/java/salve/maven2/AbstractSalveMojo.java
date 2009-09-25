@@ -34,6 +34,7 @@ import salve.config.xml.XmlConfig;
 import salve.config.xml.XmlConfigReader;
 import salve.maven2.util.ClassFileVisitor;
 import salve.maven2.util.Directory;
+import salve.maven2.util.MavenLogger;
 import salve.maven2.util.ProjectBytecodeLoader;
 import salve.model.CtProject;
 import salve.monitor.ModificationMonitor;
@@ -50,6 +51,8 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	private XmlConfig config;
 	private ProjectBytecodeLoader loader;
 	private CtProject model;
+	private MavenLogger logger;
+
 	/**
 	 * Maven project we are building
 	 * 
@@ -111,7 +114,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 		}
 
 		model = new CtProject().setLoader(loader);
-
+		logger = new MavenLogger(getLog());
 		loadConfig(classesDir);
 
 		if (instrumentTestClasses) {
@@ -127,7 +130,13 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 			instrumentClassFileDirectory(classesDir);
 		}
 
+		if (logger.hasErrors()) {
+			throw new MojoExecutionException(
+					"Build process aborted due to previous instrumentation errors, please see the log for details");
+		}
+
 		info("Salve: classes scanned: %d, instrumented: %d", scanned, instrumented);
+
 	}
 
 	/**
@@ -150,7 +159,8 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 			for (Instrumentor inst : config.getInstrumentors(binClassName)) {
 				debug("Checking %s to apply %s", className, inst.getClass().getName());
 
-				InstrumentationContext ctx = new InstrumentationContext(loader, monitor, config.getScope(inst), model);
+				InstrumentationContext ctx = new InstrumentationContext(loader, monitor, config.getScope(inst), model,
+						logger);
 
 				byte[] bytecode = inst.instrument(binClassName, ctx);
 				final FileOutputStream fos = new FileOutputStream(file);

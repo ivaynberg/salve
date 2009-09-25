@@ -19,7 +19,7 @@ package salve.contract.impl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import salve.InstrumentorMonitor;
+import salve.InstrumentationContext;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Label;
 import salve.asmlib.Method;
@@ -36,9 +36,124 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 	private int[] argannots = null;
 	private int annot;
 
-	public NumericalInstrumentor(MethodVisitor mv, InstrumentorMonitor monitor, String owner, int access, String name,
-			String desc) {
-		super(mv, monitor, owner, access, name, desc);
+	public NumericalInstrumentor(MethodVisitor mv, String owner, int access, String name, String desc,
+			InstrumentationContext ctx) {
+		super(mv, owner, access, name, desc, ctx);
+	}
+
+	private boolean acceptType(Type type) {
+		return AsmUtil.isDouble(type) || AsmUtil.isFloat(type) || AsmUtil.isLong(type) || AsmUtil.isInteger(type)
+				|| AsmUtil.isShort(type) || AsmUtil.isByte(type) || AsmUtil.isBigInteger(type)
+				|| AsmUtil.isBigDecimal(type);
+	}
+
+	// The BigDecimal should be loaded already.
+	private void bigDecCompareToZero() {
+		// Generate the BigDecimal.compareTo(BigDecimal.ZERO).
+		Type bigDec = Type.getType(BigDecimal.class);
+		getStatic(bigDec, "ZERO", bigDec);
+		invokeVirtual(bigDec, Method.getMethod("int compareTo (java.math.BigDecimal)"));
+	}
+
+	// The BigInteger should be loaded already.
+	private void bigIntCompareToZero() {
+		// Generate the BigInteger.compareTo(BigInteger.ZERO).
+		Type bigInt = Type.getType(BigInteger.class);
+		getStatic(bigInt, "ZERO", bigInt);
+		invokeVirtual(bigInt, Method.getMethod("int compareTo (java.math.BigInteger)"));
+	}
+
+	private void checkValue(int mode, final Type type, Label end) {
+		Type primitive = AsmUtil.toPrimitive(type);
+		if (!AsmUtil.isPrimitive(type)) {
+			unbox(primitive);
+		}
+
+		switch (primitive.getSort()) {
+			case Type.DOUBLE:
+				visitInsn(DCONST_0);
+				switch (mode) {
+					case GT:
+					case GE:
+						visitInsn(DCMPG);
+						break;
+					case LT:
+					case LE:
+						visitInsn(DCMPL);
+						break;
+				}
+				break;
+			case Type.FLOAT:
+				visitInsn(FCONST_0);
+				switch (mode) {
+					case GT:
+					case GE:
+						visitInsn(FCMPG);
+						break;
+					case LT:
+					case LE:
+						visitInsn(FCMPL);
+						break;
+				}
+				break;
+			case Type.LONG:
+				visitInsn(LCONST_0);
+				visitInsn(LCMP);
+				break;
+		}
+		visitJumpInsn(mode, end);
+
+	}
+
+	private int descToMode(String desc) {
+		if (GT0.getDescriptor().equals(desc)) {
+			return GT;
+		} else if (GE0.getDescriptor().equals(desc)) {
+			return GE;
+		} else if (LT0.getDescriptor().equals(desc)) {
+			return LT;
+		} else if (LE0.getDescriptor().equals(desc)) {
+			return LE;
+		}
+		return 0;
+	}
+
+	private void dup(Type type) {
+		if (type.getSize() == 2) {
+			dup2();
+		} else {
+			dup();
+		}
+	}
+
+	private String modeToErrorString(int mode) {
+		switch (mode) {
+			case GT:
+				return "cannot be less then or equal to zero";
+			case GE:
+				return "cannot be less then zero";
+			case LT:
+				return "cannot be greater then or equal to zero";
+			case LE:
+				return "cannot be greater then zero";
+			default:
+				throw new IllegalStateException("Unknown mode");
+		}
+	}
+
+	@Override
+	protected void onMethodEnter() {
+		if (argannots != null) {
+			goTo(paramsCheck);
+			mark(methodStart);
+		}
+	}
+
+	@Override
+	protected void onMethodExit(int opcode) {
+		if (annot > 0 && opcode != ATHROW) {
+			goTo(returnValueCheck);
+		}
 	}
 
 	@Override
@@ -47,8 +162,9 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 		if (mode > 0) {
 
 			if (!acceptType(getReturnType())) {
-				throw new IllegalAnnotationUseException("Cannot use annotation " + Type.getType(desc).getClassName()
-						+ " on method " + getMethodDefinitionString());
+				error("Cannot use annotation @%s on method %s", Type.getType(desc).getClassName(),
+						getMethodDefinitionString());
+				return null;
 			}
 
 			if (annot > 0 && annot != mode) {
@@ -65,7 +181,7 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 	@Override
 	public void visitMaxs(int maxStack, int maxLocals) {
 		if (argannots != null || annot > 0) {
-			getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
+			getContext().getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
 		}
 		if (argannots != null) {
 			mark(paramsCheck);
@@ -153,9 +269,8 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 		if (mode > 0) {
 			Type paramType = getParamType(parameter);
 			if (!acceptType(paramType)) {
-				throw new IllegalAnnotationUseException("Cannot use annotation " + Type.getType(desc).getClassName()
-						+ " on argument of type " + paramType.getClassName() + " in method "
-						+ getMethodDefinitionString());
+				error("Cannot use annotation @%s on argument of type %s in method %s", Type.getType(desc)
+						.getClassName(), paramType.getClassName(), getMethodDefinitionString());
 			}
 
 			if (argannots == null) {
@@ -171,121 +286,6 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 			return mv.visitParameterAnnotation(parameter, desc, visible);
 		}
 
-	}
-
-	@Override
-	protected void onMethodEnter() {
-		if (argannots != null) {
-			goTo(paramsCheck);
-			mark(methodStart);
-		}
-	}
-
-	@Override
-	protected void onMethodExit(int opcode) {
-		if (annot > 0 && opcode != ATHROW) {
-			goTo(returnValueCheck);
-		}
-	}
-
-	private boolean acceptType(Type type) {
-		return AsmUtil.isDouble(type) || AsmUtil.isFloat(type) || AsmUtil.isLong(type) || AsmUtil.isInteger(type)
-				|| AsmUtil.isShort(type) || AsmUtil.isByte(type) || AsmUtil.isBigInteger(type)
-				|| AsmUtil.isBigDecimal(type);
-	}
-
-	private void checkValue(int mode, final Type type, Label end) {
-		Type primitive = AsmUtil.toPrimitive(type);
-		if (!AsmUtil.isPrimitive(type)) {
-			unbox(primitive);
-		}
-
-		switch (primitive.getSort()) {
-			case Type.DOUBLE:
-				visitInsn(DCONST_0);
-				switch (mode) {
-					case GT:
-					case GE:
-						visitInsn(DCMPG);
-						break;
-					case LT:
-					case LE:
-						visitInsn(DCMPL);
-						break;
-				}
-				break;
-			case Type.FLOAT:
-				visitInsn(FCONST_0);
-				switch (mode) {
-					case GT:
-					case GE:
-						visitInsn(FCMPG);
-						break;
-					case LT:
-					case LE:
-						visitInsn(FCMPL);
-						break;
-				}
-				break;
-			case Type.LONG:
-				visitInsn(LCONST_0);
-				visitInsn(LCMP);
-				break;
-		}
-		visitJumpInsn(mode, end);
-
-	}
-
-	// The BigInteger should be loaded already.
-	private void bigIntCompareToZero() {
-		// Generate the BigInteger.compareTo(BigInteger.ZERO).
-		Type bigInt = Type.getType(BigInteger.class);
-		getStatic(bigInt, "ZERO", bigInt);
-		invokeVirtual(bigInt, Method.getMethod("int compareTo (java.math.BigInteger)"));
-	}
-
-	// The BigDecimal should be loaded already.
-	private void bigDecCompareToZero() {
-		// Generate the BigDecimal.compareTo(BigDecimal.ZERO).
-		Type bigDec = Type.getType(BigDecimal.class);
-		getStatic(bigDec, "ZERO", bigDec);
-		invokeVirtual(bigDec, Method.getMethod("int compareTo (java.math.BigDecimal)"));
-	}
-
-	private int descToMode(String desc) {
-		if (GT0.getDescriptor().equals(desc)) {
-			return GT;
-		} else if (GE0.getDescriptor().equals(desc)) {
-			return GE;
-		} else if (LT0.getDescriptor().equals(desc)) {
-			return LT;
-		} else if (LE0.getDescriptor().equals(desc)) {
-			return LE;
-		}
-		return 0;
-	}
-
-	private void dup(Type type) {
-		if (type.getSize() == 2) {
-			dup2();
-		} else {
-			dup();
-		}
-	}
-
-	private String modeToErrorString(int mode) {
-		switch (mode) {
-			case GT:
-				return "cannot be less then or equal to zero";
-			case GE:
-				return "cannot be less then zero";
-			case LT:
-				return "cannot be greater then or equal to zero";
-			case LE:
-				return "cannot be greater then zero";
-			default:
-				throw new IllegalStateException("Unknown mode");
-		}
 	}
 
 }

@@ -12,11 +12,13 @@ import salve.Config;
 import salve.InstrumentationContext;
 import salve.InstrumentationException;
 import salve.Instrumentor;
+import salve.Logger;
 import salve.loader.ClassLoaderLoader;
 import salve.loader.CompoundLoader;
 import salve.loader.MemoryLoader;
 import salve.model.CtProject;
 import salve.monitor.NoopMonitor;
+import salve.util.StdioLogger;
 
 /**
  * Base class for class transformers. This class takes care of everything except loading salve
@@ -27,6 +29,19 @@ import salve.monitor.NoopMonitor;
  */
 public abstract class AbstractTransformer implements ClassFileTransformer
 {
+    private static class AgentLogger extends StdioLogger
+    {
+        private static Logger INSTANCE = new AgentLogger();
+
+
+        @Override
+        public void error(CodeMarker marker, String message, Object... params)
+        {
+            super.error(marker, message, params);
+            throw new RuntimeException("Error instrumenting class, check stderr for details");
+        }
+    }
+
     /**
      * Gets configuration for the given class name and class loader
      * 
@@ -50,6 +65,7 @@ public abstract class AbstractTransformer implements ClassFileTransformer
     private byte[] instrument(ClassLoader loader, String className, byte[] bytecode)
     {
         final Config config = getConfig(loader, className);
+        final CtProject model = new CtProject();
         try
         {
             Collection<Instrumentor> instrumentors = config.getInstrumentors(className);
@@ -61,10 +77,10 @@ public abstract class AbstractTransformer implements ClassFileTransformer
                 CompoundLoader bl = new CompoundLoader();
                 bl.addLoader(new MemoryLoader(className, bytecode));
                 bl.addLoader(new ClassLoaderLoader(loader));
-                // FIXME optimize, at least move model outside the loop
-                CtProject model = new CtProject().setLoader(bl);
+
+                model.setLoader(bl);
                 InstrumentationContext ctx = new InstrumentationContext(bl, NoopMonitor.INSTANCE,
-                        config.getScope(inst), model);
+                        config.getScope(inst), model, AgentLogger.INSTANCE);
 
                 bytecode = inst.instrument(className, ctx);
             }

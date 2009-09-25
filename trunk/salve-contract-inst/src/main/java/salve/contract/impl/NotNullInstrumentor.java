@@ -16,12 +16,11 @@
  */
 package salve.contract.impl;
 
-import salve.InstrumentorMonitor;
+import salve.InstrumentationContext;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
-import salve.contract.IllegalAnnotationUseException;
 import salve.util.asm.AsmUtil;
 
 public class NotNullInstrumentor extends AbstractMethodInstrumentor implements Constants {
@@ -33,9 +32,34 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 	private final Label returnValueCheck = new Label();
 	private boolean[] annotatedParams;
 
-	public NotNullInstrumentor(MethodVisitor mv, InstrumentorMonitor monitor, String owner, int access, String name,
-			String desc) {
-		super(mv, monitor, owner, access, name, desc);
+	public NotNullInstrumentor(MethodVisitor mv, String owner, int access, String name, String desc,
+			InstrumentationContext ctx) {
+		super(mv, owner, access, name, desc, ctx);
+	}
+
+	private boolean checkType(final Type ret) {
+		if (AsmUtil.isPrimitive(ret)) {
+			return false;
+		} else if (ret.getSort() == Type.VOID) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	@Override
+	protected void onMethodEnter() {
+		if (annotatedParams != null) {
+			goTo(paramsCheck);
+			mark(methodStart);
+		}
+	}
+
+	@Override
+	protected void onMethodExit(int opcode) {
+		if (notNull && opcode == ARETURN) {
+			goTo(returnValueCheck);
+		}
 	}
 
 	@Override
@@ -43,8 +67,9 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 		if (NOTNULL.getDescriptor().equals(desc)) {
 			final Type ret = getReturnType();
 			if (!checkType(ret)) {
-				throw new IllegalAnnotationUseException("Annotation " + NOTNULL.getClassName()
-						+ " cannot be applied to a method with a primitive or void return types");
+				error("Annotation @%s cannot be applied to a method with a primitive or void return type", NOTNULL
+						.getClassName());
+				return null;
 			}
 			notNull = true;
 			return null;
@@ -55,7 +80,7 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 	@Override
 	public void visitMaxs(int maxStack, int maxLocals) {
 		if (annotatedParams != null || notNull) {
-			getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
+			getContext().getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
 		}
 		if (annotatedParams != null) {
 			mark(paramsCheck);
@@ -92,8 +117,7 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 	public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
 		if (NOTNULL.getDescriptor().equals(desc)) {
 			if (!checkType(getParamType(parameter))) {
-				throw new IllegalAnnotationUseException("Annotation " + NOTNULL.getClassName()
-						+ " cannot be applied to a primitive argument");
+				error("Annotation @%s cannot be applied to a primitive argument", NOTNULL.getClassName());
 			}
 			if (annotatedParams == null) {
 				annotatedParams = new boolean[getParamCount()];
@@ -102,31 +126,6 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 			return null;
 		}
 		return super.visitParameterAnnotation(parameter, desc, visible);
-	}
-
-	@Override
-	protected void onMethodEnter() {
-		if (annotatedParams != null) {
-			goTo(paramsCheck);
-			mark(methodStart);
-		}
-	}
-
-	@Override
-	protected void onMethodExit(int opcode) {
-		if (notNull && opcode == ARETURN) {
-			goTo(returnValueCheck);
-		}
-	}
-
-	private boolean checkType(final Type ret) {
-		if (AsmUtil.isPrimitive(ret)) {
-			return false;
-		} else if (ret.getSort() == Type.VOID) {
-			return false;
-		} else {
-			return true;
-		}
 	}
 
 }

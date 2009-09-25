@@ -60,9 +60,7 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 			create("NonStringParameterBean");
 			fail("Expected error instrumenting non-string notempty argument");
 		} catch (InstrumentationException e) {
-			if (!(e.getCause() instanceof IllegalAnnotationUseException)) {
-				throw e;
-			}
+
 		}
 	}
 
@@ -115,9 +113,7 @@ public class NotEmptyContractInstrumentorTest extends AbstractContractInstrument
 			create("VoidReturnBean");
 			fail("Expected error instrumenting notempty method with non-string return type");
 		} catch (InstrumentationException e) {
-			if (!(e.getCause() instanceof IllegalAnnotationUseException)) {
-				throw e;
-			}
+
 		}
 
 	}

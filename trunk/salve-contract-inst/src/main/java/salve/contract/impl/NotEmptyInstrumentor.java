@@ -16,12 +16,11 @@
  */
 package salve.contract.impl;
 
-import salve.InstrumentorMonitor;
+import salve.InstrumentationContext;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
-import salve.contract.IllegalAnnotationUseException;
 
 public class NotEmptyInstrumentor extends AbstractMethodInstrumentor implements Constants {
 
@@ -32,9 +31,24 @@ public class NotEmptyInstrumentor extends AbstractMethodInstrumentor implements 
 	private final Label returnValueCheck = new Label();
 	private boolean[] annotatedParams;
 
-	public NotEmptyInstrumentor(MethodVisitor mv, InstrumentorMonitor monitor, String owner, int access, String name,
-			String desc) {
-		super(mv, monitor, owner, access, name, desc);
+	public NotEmptyInstrumentor(MethodVisitor mv, String owner, int access, String name, String desc,
+			InstrumentationContext ctx) {
+		super(mv, owner, access, name, desc, ctx);
+	}
+
+	@Override
+	protected void onMethodEnter() {
+		if (annotatedParams != null) {
+			goTo(paramsCheck);
+			mark(methodStart);
+		}
+	}
+
+	@Override
+	protected void onMethodExit(int opcode) {
+		if (notEmpty && opcode == ARETURN) {
+			goTo(returnValueCheck);
+		}
 	}
 
 	@Override
@@ -42,9 +56,9 @@ public class NotEmptyInstrumentor extends AbstractMethodInstrumentor implements 
 		if (NOTEMPTY.getDescriptor().equals(desc)) {
 			final Type type = getReturnType();
 			if (!STRING_TYPE.equals(type)) {
-				throw new IllegalAnnotationUseException("Annotation " + desc
-						+ " can only be applied on methods with return type " + STRING_TYPE.getClassName());
-
+				error("Annotation @%s can only be applied on methods with return type %s", Type.getType(desc)
+						.getClassName(), STRING_TYPE.getClassName());
+				return null;
 			}
 			notEmpty = true;
 			return null;
@@ -55,7 +69,7 @@ public class NotEmptyInstrumentor extends AbstractMethodInstrumentor implements 
 	@Override
 	public void visitMaxs(int maxStack, int maxLocals) {
 		if (annotatedParams != null || notEmpty) {
-			getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
+			getContext().getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
 		}
 
 		if (annotatedParams != null) {
@@ -107,9 +121,9 @@ public class NotEmptyInstrumentor extends AbstractMethodInstrumentor implements 
 		if (NOTEMPTY.getDescriptor().equals(desc)) {
 			final Type type = getParamType(parameter);
 			if (!STRING_TYPE.equals(type)) {
-				throw new IllegalAnnotationUseException("Annotation " + desc
-						+ " can only be applied to arguments of type " + STRING_TYPE.getClassName());
-
+				error("Parameter annotation @%s can only be applied on parameters of type %s", Type.getType(desc)
+						.getClassName(), STRING_TYPE.getClassName());
+				return null;
 			}
 			if (annotatedParams == null) {
 				annotatedParams = new boolean[getParamCount()];
@@ -119,21 +133,6 @@ public class NotEmptyInstrumentor extends AbstractMethodInstrumentor implements 
 		}
 
 		return super.visitParameterAnnotation(parameter, desc, visible);
-	}
-
-	@Override
-	protected void onMethodEnter() {
-		if (annotatedParams != null) {
-			goTo(paramsCheck);
-			mark(methodStart);
-		}
-	}
-
-	@Override
-	protected void onMethodExit(int opcode) {
-		if (notEmpty && opcode == ARETURN) {
-			goTo(returnValueCheck);
-		}
 	}
 
 }

@@ -16,7 +16,11 @@
  */
 package salve.contract.impl;
 
-import salve.InstrumentorMonitor;
+import java.util.ArrayList;
+import java.util.List;
+
+import salve.CodeMarker;
+import salve.InstrumentationContext;
 import salve.asmlib.AdviceAdapter;
 import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
@@ -29,10 +33,14 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 	private final Type[] paramTypes;
 	private final String[] paramNames;
 	private final String owner;
-	private final InstrumentorMonitor monitor;
+	private final InstrumentationContext ctx;
 
-	public AbstractMethodInstrumentor(MethodVisitor mv, InstrumentorMonitor monitor, String owner, int access,
-			String name, String desc) {
+	private CodeMarker marker;
+	private CodeMarker first;
+	private List<String> errors;
+
+	public AbstractMethodInstrumentor(MethodVisitor mv, String owner, int access, String name, String desc,
+			InstrumentationContext ctx) {
 		super(mv, access, name, desc);
 		this.access = access;
 		this.name = name;
@@ -40,7 +48,23 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 		paramTypes = Type.getArgumentTypes(desc);
 		paramNames = new String[paramTypes.length];
 		this.owner = owner;
-		this.monitor = monitor;
+
+		this.ctx = ctx;
+	}
+
+	protected void error(String error, Object... params) {
+		if (errors == null) {
+			errors = new ArrayList<String>(1);
+		}
+		errors.add(String.format(error, params));
+	}
+
+	public InstrumentationContext getContext() {
+		return ctx;
+	}
+
+	public CodeMarker getCurrentMarker() {
+		return marker;
 	}
 
 	protected int getMethodAccess() {
@@ -66,10 +90,6 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 
 	protected String getMethodName() {
 		return name;
-	}
-
-	public InstrumentorMonitor getMonitor() {
-		return monitor;
 	}
 
 	public String getOwner() {
@@ -127,6 +147,25 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 		push(msg);
 		invokeConstructor(ILLEGALSTATEEX, ILLEGALSTATEEX_INIT);
 		throwException();
+	}
+
+	@Override
+	public void visitEnd() {
+		if (errors != null) {
+			for (String error : errors) {
+				ctx.getLogger().error(first, error);
+			}
+		}
+		super.visitEnd();
+	}
+
+	@Override
+	public void visitLineNumber(int line, Label start) {
+		marker = new CodeMarker(owner, line);
+		if (first == null) {
+			first = marker;
+		}
+		super.visitLineNumber(line, start);
 	}
 
 	@Override

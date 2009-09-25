@@ -23,7 +23,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import salve.InstrumentorMonitor;
+import salve.CodeMarker;
+import salve.InstrumentationContext;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
@@ -55,6 +56,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		private LocalVariablesSorter lvs;
 		private Map<DependencyField, Integer> fieldToLocal;
 		private final Collection<DependencyField> referencedFields;
+		private CodeMarker currentMarker;
 
 		/**
 		 * Constructor
@@ -157,13 +159,21 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 				mv.visitFieldInsn(opcode, owner, name, desc);
 			}
 
+			ctx.getLogger().info(currentMarker, "Acess to field '%s' intercepted by @Dependency instrumentor", name);
+
+		}
+
+		@Override
+		public void visitLineNumber(int line, Label start) {
+			currentMarker = new CodeMarker(owner, line);
+			super.visitLineNumber(line, start);
 		}
 	}
 
 	private final ClassAnalyzer analyzer;
 	private String owner = null;
 
-	private final InstrumentorMonitor monitor;
+	private final InstrumentationContext ctx;
 
 	/**
 	 * Constructor
@@ -175,10 +185,10 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 	 * @param monitor
 	 *            instrumentor monitor
 	 */
-	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer, InstrumentorMonitor monitor) {
+	public ClassInstrumentor(ClassVisitor cv, ClassAnalyzer analyzer, InstrumentationContext ctx) {
 		super(new StaticInitMerger(DEPNS + "_clinit", cv));
 		this.analyzer = analyzer;
-		this.monitor = monitor;
+		this.ctx = ctx;
 	}
 
 	/**
@@ -194,7 +204,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		final String name = "<clinit>";
 		final String desc = "()V";
 		MethodVisitor clinit = cv.visitMethod(acc, name, desc, null, null);
-		monitor.methodModified(owner, acc, name, desc);
+		ctx.getMonitor().methodModified(owner, acc, name, desc);
 		clinit.visitCode();
 
 		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
@@ -339,7 +349,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 				final String n = KEY_FIELD_PREFIX + name;
 				final String d = KEY_DESC;
 				cv.visitField(a, n, d, null, null);
-				monitor.fieldAdded(owner, a, n, d);
+				ctx.getMonitor().fieldAdded(owner, a, n, d);
 			}
 
 			FieldVisitor fv = null;
@@ -353,8 +363,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 				final int a = ACC_PUBLIC + ACC_STATIC + ACC_FINAL;
 				final String n = getDependencyFieldName(field);
 
-				monitor.fieldRemoved(owner, access, name, desc);
-				monitor.fieldAdded(owner, a, n, desc);
+				ctx.getMonitor().fieldRemoved(owner, access, name, desc);
+				ctx.getMonitor().fieldAdded(owner, a, n, desc);
 
 				fv = cv.visitField(a, n, desc, signature, null);
 
@@ -389,7 +399,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		boolean instrument = analyzer.getDependenciesInMethod(owner, name, desc) != null;
 
 		if (instrument) {
-			monitor.methodModified(owner, access, name, desc);
+			ctx.getMonitor().methodModified(owner, access, name, desc);
 			MethodInstrumentor inst = new MethodInstrumentor(access, name, desc, mv);
 			inst.lvs = new LocalVariablesSorter(access, desc, inst);
 			return inst.lvs;

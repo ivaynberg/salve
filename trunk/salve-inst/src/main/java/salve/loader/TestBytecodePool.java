@@ -10,6 +10,7 @@ import salve.Instrumentor;
 import salve.Scope;
 import salve.monitor.NoopMonitor;
 import salve.util.ClassesUtil;
+import salve.util.TestLogger;
 
 /**
  * Bytecode pool that can save bytecode into memory and load it on subsequent
@@ -82,7 +83,8 @@ public class TestBytecodePool extends BytecodePool {
 	 * @throws Exception
 	 */
 	public byte[] instrumentIntoBytecode(String className, Instrumentor inst) throws Exception {
-		InstrumentationContext ctx = new InstrumentationContext(this, NoopMonitor.INSTANCE, scope, model);
+		InstrumentationContext ctx = new InstrumentationContext(this, NoopMonitor.INSTANCE, scope, model,
+				TestLogger.INSTANCE);
 		byte[] bytecode = inst.instrument(className, ctx);
 		save(className, bytecode);
 		return bytecode;
