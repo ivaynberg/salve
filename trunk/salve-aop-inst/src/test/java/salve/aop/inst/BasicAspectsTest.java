@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import salve.Scope;
 import salve.aop.MethodAdvice;
 import salve.aop.MethodInvocation;
 import salve.aop.UndeclaredException;
@@ -135,6 +134,12 @@ public class BasicAspectsTest extends AbstractAopInstrumentorTestSupport
     {
         private List<String> methodsCalled = new ArrayList<String>();
         private List<String> aspectsCalled = new ArrayList<String>();
+
+        @Uppercase
+        public static String testStatic1(String val)
+        {
+            return val;
+        }
 
         public void test0()
         {
@@ -325,6 +330,14 @@ public class BasicAspectsTest extends AbstractAopInstrumentorTestSupport
             }
         }
         assertEquals(1, count);
+    }
+
+    @SuppressWarnings("static-access")
+    @Test
+    public void shouldInstrumentStaticMethods() throws Exception
+    {
+        Bean bean = create("Bean");
+        assertEquals("HELLO", bean.testStatic1("hello"));
     }
 
 

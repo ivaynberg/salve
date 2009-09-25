@@ -99,7 +99,7 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
 
     @Override
-    public MethodVisitor visitMethod(int access, final String name, final String desc,
+    public MethodVisitor visitMethod(final int access, final String name, final String desc,
             final String signature, final String[] exceptions)
     {
         CtMethod method = model.getClass(owner).getMethod(name, desc);
@@ -123,10 +123,14 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         MethodVisitor origin = null;
         for (Aspect aspect : aspects)
         {
-            int wrapperAccess = ACC_PRIVATE;
+            final int wrapperAccess;
             if (origin == null)
             {
                 wrapperAccess = access;
+            }
+            else
+            {
+                wrapperAccess = AsmUtil.setPermission(access, ACC_PRIVATE);
             }
 
             // create aspect wrapper method which will call the delegate
@@ -140,7 +144,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
             }
 
             wrapperName = generateWrapperMethod(method, wrapper, aspect);
-
         }
         final String rootName = wrapperName;
 
@@ -163,7 +166,8 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
 
 // final OverrideInfo info = getOverrideInfo(method);
 
-        MethodVisitor root = cv.visitMethod(ACC_PROTECTED, rootName, desc, signature, exceptions);
+        MethodVisitor root = cv.visitMethod(AsmUtil.setPermission(access, ACC_PRIVATE), rootName,
+                desc, signature, exceptions);
 
         final MethodVisitor _origin = origin;
         return new MethodAdapter(root)
@@ -295,7 +299,15 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         final int invocation = origin.newLocal(Type.getType("L/salve/aop/ReflectiveInvocation;"));
         origin.visitTypeInsn(NEW, "salve/aop/ReflectiveInvocation");
         origin.visitInsn(DUP);
-        origin.visitVarInsn(ALOAD, 0);
+
+        if (!method.isStatic())
+        {
+            origin.visitVarInsn(ALOAD, 0);
+        }
+        else
+        {
+            origin.visitInsn(Opcodes.ACONST_NULL);
+        }
         origin.visitVarInsn(ALOAD, executor);
         origin.visitVarInsn(ALOAD, methodVar);
         origin.loadLocal(args);

@@ -2,6 +2,7 @@ package salve.aop;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class ReflectiveInvocation implements MethodInvocation
 {
@@ -25,6 +26,7 @@ public class ReflectiveInvocation implements MethodInvocation
     {
         try
         {
+            boolean s=Modifier.isStatic(executor.getModifiers());
             executor.setAccessible(true);
             return executor.invoke(instance, arguments);
         }
