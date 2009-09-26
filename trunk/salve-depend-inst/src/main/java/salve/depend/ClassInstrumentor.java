@@ -204,7 +204,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		final String name = "<clinit>";
 		final String desc = "()V";
 		MethodVisitor clinit = cv.visitMethod(acc, name, desc, null, null);
-		ctx.getMonitor().methodModified(owner, acc, name, desc);
 		clinit.visitCode();
 
 		for (DependencyField field : analyzer.getDependenciesInClass(owner)) {
@@ -349,7 +348,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 				final String n = KEY_FIELD_PREFIX + name;
 				final String d = KEY_DESC;
 				cv.visitField(a, n, d, null, null);
-				ctx.getMonitor().fieldAdded(owner, a, n, d);
 			}
 
 			FieldVisitor fv = null;
@@ -362,9 +360,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 				 */
 				final int a = ACC_PUBLIC + ACC_STATIC + ACC_FINAL;
 				final String n = getDependencyFieldName(field);
-
-				ctx.getMonitor().fieldRemoved(owner, access, name, desc);
-				ctx.getMonitor().fieldAdded(owner, a, n, desc);
 
 				fv = cv.visitField(a, n, desc, signature, null);
 
@@ -399,7 +394,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes, Constants {
 		boolean instrument = analyzer.getDependenciesInMethod(owner, name, desc) != null;
 
 		if (instrument) {
-			ctx.getMonitor().methodModified(owner, access, name, desc);
 			MethodInstrumentor inst = new MethodInstrumentor(access, name, desc, mv);
 			inst.lvs = new LocalVariablesSorter(access, desc, inst);
 			return inst.lvs;

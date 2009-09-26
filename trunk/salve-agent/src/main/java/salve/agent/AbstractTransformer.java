@@ -17,7 +17,6 @@ import salve.loader.ClassLoaderLoader;
 import salve.loader.CompoundLoader;
 import salve.loader.MemoryLoader;
 import salve.model.CtProject;
-import salve.monitor.NoopMonitor;
 import salve.util.StdioLogger;
 
 /**
@@ -79,8 +78,8 @@ public abstract class AbstractTransformer implements ClassFileTransformer
                 bl.addLoader(new ClassLoaderLoader(loader));
 
                 model.setLoader(bl);
-                InstrumentationContext ctx = new InstrumentationContext(bl, NoopMonitor.INSTANCE,
-                        config.getScope(inst), model, AgentLogger.INSTANCE);
+                InstrumentationContext ctx = new InstrumentationContext(bl, config.getScope(inst),
+                        model, AgentLogger.INSTANCE);
 
                 bytecode = inst.instrument(className, ctx);
             }

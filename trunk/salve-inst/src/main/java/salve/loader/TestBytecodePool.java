@@ -8,7 +8,6 @@ import salve.BytecodeLoader;
 import salve.InstrumentationContext;
 import salve.Instrumentor;
 import salve.Scope;
-import salve.monitor.NoopMonitor;
 import salve.util.ClassesUtil;
 import salve.util.TestLogger;
 
@@ -83,8 +82,7 @@ public class TestBytecodePool extends BytecodePool {
 	 * @throws Exception
 	 */
 	public byte[] instrumentIntoBytecode(String className, Instrumentor inst) throws Exception {
-		InstrumentationContext ctx = new InstrumentationContext(this, NoopMonitor.INSTANCE, scope, model,
-				TestLogger.INSTANCE);
+		InstrumentationContext ctx = new InstrumentationContext(this, scope, model, TestLogger.INSTANCE);
 		byte[] bytecode = inst.instrument(className, ctx);
 		save(className, bytecode);
 		return bytecode;

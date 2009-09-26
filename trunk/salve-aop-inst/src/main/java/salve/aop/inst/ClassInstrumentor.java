@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import salve.CodeMarker;
 import salve.InstrumentationContext;
-import salve.InstrumentorMonitor;
 import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.ClassAdapter;
 import salve.asmlib.ClassVisitor;
@@ -29,7 +28,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     private final CtProject model;
     private final InstrumentationContext ctx;
     private final Set< ? extends AspectProvider> discoveryStrategies;
-    private final InstrumentorMonitor monitor;
     private int delegateCounter = 0;
 
     public ClassInstrumentor(ClassVisitor cv, Set< ? extends AspectProvider> discoveryStrategies,
@@ -37,7 +35,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
     {
         super(cv);
         this.discoveryStrategies = discoveryStrategies;
-        this.monitor = ctx.getMonitor();
         this.model = ctx.getModel();
         this.ctx = ctx;
     }
@@ -238,9 +235,6 @@ class ClassInstrumentor extends ClassAdapter implements Opcodes
         final String delegateName = newDelegateMethodName(method, aspect);
         GeneratorAdapter origin = new GeneratorAdapter(originmv, method.getAccess(), method
                 .getName(), method.getDesc());
-
-        monitor.methodModified(owner, method.getAccess(), method.getName(), method.getDesc());
-
 
         origin.visitCode();
 

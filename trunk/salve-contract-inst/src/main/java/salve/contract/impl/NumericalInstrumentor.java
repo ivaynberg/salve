@@ -180,9 +180,6 @@ public class NumericalInstrumentor extends AbstractMethodInstrumentor {
 
 	@Override
 	public void visitMaxs(int maxStack, int maxLocals) {
-		if (argannots != null || annot > 0) {
-			getContext().getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
-		}
 		if (argannots != null) {
 			mark(paramsCheck);
 			for (int i = 0; i < argannots.length; i++) {

@@ -11,7 +11,6 @@ import salve.model.CtProject;
 public class InstrumentationContext {
 
 	private final BytecodeLoader loader;
-	private final InstrumentorMonitor monitor;
 	private final Scope scope;
 	private final CtProject model;
 	private final Logger logger;
@@ -21,20 +20,13 @@ public class InstrumentationContext {
 	 * 
 	 * @param loader
 	 *            bytecode loader the instrumentor can use to access bytecode
-	 * @param monitor
-	 *            monitor that should be notified of any changes the
-	 *            instrumentor makes
 	 * @param scope
 	 *            scope used to identify classes that are within instrumentation
 	 *            scope
 	 */
-	public InstrumentationContext(BytecodeLoader loader, InstrumentorMonitor monitor, Scope scope, CtProject model,
-			Logger logger) {
+	public InstrumentationContext(BytecodeLoader loader, Scope scope, CtProject model, Logger logger) {
 		if (loader == null) {
 			throw new IllegalArgumentException("Argument `loader` cannot be null");
-		}
-		if (monitor == null) {
-			throw new IllegalArgumentException("Argument `monitor` cannot be null");
 		}
 		if (scope == null) {
 			throw new IllegalArgumentException("Argument `scope` cannot be null");
@@ -47,7 +39,6 @@ public class InstrumentationContext {
 		}
 
 		this.loader = loader;
-		this.monitor = monitor;
 		this.scope = scope;
 		this.model = model;
 		this.logger = logger;
@@ -70,14 +61,6 @@ public class InstrumentationContext {
 
 	public CtProject getModel() {
 		return model;
-	}
-
-	/**
-	 * @return monitor that should be notified of any changes the instrumentor
-	 *         makes
-	 */
-	public InstrumentorMonitor getMonitor() {
-		return monitor;
 	}
 
 	/**
