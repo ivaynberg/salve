@@ -54,7 +54,6 @@ import salve.eclipse.JavaProjectBytecodeLoader;
 import salve.loader.BytecodePool;
 import salve.loader.CompoundLoader;
 import salve.model.CtProject;
-import salve.monitor.NoopMonitor;
 import salve.util.FallbackBytecodeClassLoader;
 import salve.util.StreamsUtil;
 
@@ -288,8 +287,8 @@ public class SalveBuilder extends AbstractBuilder
 
                 final Logger logger = newLogger((source != null) ? source : classFile);
 
-                InstrumentationContext ctx = new InstrumentationContext(cl, NoopMonitor.INSTANCE,
-                        config.getScope(inst), model, logger);
+                InstrumentationContext ctx = new InstrumentationContext(cl, config.getScope(inst),
+                        model, logger);
 
                 byte[] bytecode = inst.instrument(cn, ctx);
 

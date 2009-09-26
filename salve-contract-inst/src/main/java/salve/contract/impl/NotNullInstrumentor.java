@@ -79,9 +79,6 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 
 	@Override
 	public void visitMaxs(int maxStack, int maxLocals) {
-		if (annotatedParams != null || notNull) {
-			getContext().getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
-		}
 		if (annotatedParams != null) {
 			mark(paramsCheck);
 			for (int i = 0; i < annotatedParams.length; i++) {

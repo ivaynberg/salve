@@ -68,10 +68,6 @@ public class NotEmptyInstrumentor extends AbstractMethodInstrumentor implements 
 
 	@Override
 	public void visitMaxs(int maxStack, int maxLocals) {
-		if (annotatedParams != null || notEmpty) {
-			getContext().getMonitor().methodModified(getOwner(), getMethodAccess(), getMethodName(), getMethodDesc());
-		}
-
 		if (annotatedParams != null) {
 			mark(paramsCheck);
 			for (int i = 0; i < annotatedParams.length; i++) {

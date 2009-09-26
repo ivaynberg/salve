@@ -37,7 +37,6 @@ import salve.maven2.util.Directory;
 import salve.maven2.util.MavenLogger;
 import salve.maven2.util.ProjectBytecodeLoader;
 import salve.model.CtProject;
-import salve.monitor.ModificationMonitor;
 import salve.util.FallbackBytecodeClassLoader;
 
 /**
@@ -46,8 +45,7 @@ import salve.util.FallbackBytecodeClassLoader;
  */
 public abstract class AbstractSalveMojo extends AbstractMojo {
 
-	private int scanned = 0;
-	private int instrumented = 0;
+	private int processed = 0;
 	private XmlConfig config;
 	private ProjectBytecodeLoader loader;
 	private CtProject model;
@@ -135,7 +133,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 					"Build process aborted due to previous instrumentation errors, please see the log for details");
 		}
 
-		info("Salve: classes scanned: %d, instrumented: %d", scanned, instrumented);
+		info("Salve: %d classes processed", processed);
 
 	}
 
@@ -150,17 +148,15 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 	private void instrumentClassFile(String className, File file) {
 
 		verbose("Scanning %s", className);
-		scanned++;
+		processed++;
 
 		final String binClassName = className.replace('.', '/');
 
 		try {
-			ModificationMonitor monitor = new ModificationMonitor();
 			for (Instrumentor inst : config.getInstrumentors(binClassName)) {
 				debug("Checking %s to apply %s", className, inst.getClass().getName());
 
-				InstrumentationContext ctx = new InstrumentationContext(loader, monitor, config.getScope(inst), model,
-						logger);
+				InstrumentationContext ctx = new InstrumentationContext(loader, config.getScope(inst), model, logger);
 
 				byte[] bytecode = inst.instrument(binClassName, ctx);
 				final FileOutputStream fos = new FileOutputStream(file);
@@ -170,12 +166,7 @@ public abstract class AbstractSalveMojo extends AbstractMojo {
 					fos.close();
 				}
 			}
-			if (monitor.isModified()) {
-				verbose("Instrumented %s", className);
-				instrumented++;
-			} else {
-				debug("Class not instrumented");
-			}
+			verbose("Instrumented %s", className);
 		} catch (Exception e) {
 			int line = 0;
 			if (e instanceof CodeMarkerAware) {

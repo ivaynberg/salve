@@ -7,7 +7,6 @@ Export-Package: salve,
  salve.config.xml;uses:="salve",
  salve.loader;uses:="salve",
  salve.model,
- salve.monitor;uses:="salve",
  salve.util;uses:="salve"
 Require-Bundle: salve.asm;bundle-version="2.0.0",
  salve.config;bundle-version="2.0.0"
