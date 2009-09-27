@@ -1,0 +1,6 @@
+The easiest way to install is via IDEA's plugin manager:
+Just search for plugin 'Salve Integration' on the 'Available' tab
+
+The plugin repository location of the plugin is:
+  http://plugins.intellij.net/plugin/?id=3704
+ 
