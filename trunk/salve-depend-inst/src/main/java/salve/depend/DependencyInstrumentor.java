@@ -37,35 +37,19 @@ import salve.util.asm.AsmUtil;
  */
 public class DependencyInstrumentor extends AbstractInstrumentor {
 
-	// private static class TracingBytecodeLoader implements BytecodeLoader {
-	// private final BytecodeLoader delegate;
-	//
-	// public TracingBytecodeLoader(BytecodeLoader delegate) {
-	// this.delegate = delegate;
-	// }
-	//
-	// public byte[] loadBytecode(String className) {
-	// if (!className.startsWith("biggie")) {
-	// trace("loading bytecode: " + className);
-	// Exception e = new Exception();
-	// for (StackTraceElement ste : e.getStackTrace()) {
-	// trace("  " + ste.toString());
-	// }
-	// }
-	// return delegate.loadBytecode(className);
-	// }
-	//
-	// }
+	private String aspectjCompatibilityMode;
 
-	private static void trace(String str) {
-		// try {
-		// FileOutputStream fos = new FileOutputStream("c:/salve.txt", true);
-		// PrintWriter out = new PrintWriter(fos);
-		// out.println(str);
-		// out.flush();
-		// out.close();
-		// } catch (FileNotFoundException e) {
-		// }
+	private AspectjCompatibilityMode getAspectjCompatibilityMode() {
+		final String mode = aspectjCompatibilityMode;
+		if (mode == null || mode.trim().length() == 0) {
+			return AspectjCompatibilityMode.IGNORE;
+		} else if ("WARN".equals(mode.trim().toUpperCase())) {
+			return AspectjCompatibilityMode.WARN;
+		} else if ("ERROR".equals(mode.trim().toUpperCase())) {
+			return AspectjCompatibilityMode.ERROR;
+		} else {
+			throw new RuntimeException("Invalid aspectj compatibility mode: " + mode + ". Must be either WARN or ERROR");
+		}
 	}
 
 	/**
@@ -95,13 +79,17 @@ public class DependencyInstrumentor extends AbstractInstrumentor {
 			ClassAnalyzer analyzer = new ClassAnalyzer(className, ctx);
 			if (analyzer.shouldInstrument() && !analyzer.isInstrumented(className)) {
 				ClassWriter writer = new BytecodeLoadingClassWriter(ClassWriter.COMPUTE_FRAMES, ctx.getLoader());
-				ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, ctx);
+				ClassInstrumentor inst = new ClassInstrumentor(writer, analyzer, ctx, getAspectjCompatibilityMode());
 				reader.accept(inst, ClassReader.EXPAND_FRAMES);
 				instrumented = writer.toByteArray();
 			}
 
 		}
 		return instrumented;
+	}
+
+	public void setAspectjCompatibilityMode(String aspectjCompatibilityMode) {
+		this.aspectjCompatibilityMode = aspectjCompatibilityMode;
 	}
 
 }
