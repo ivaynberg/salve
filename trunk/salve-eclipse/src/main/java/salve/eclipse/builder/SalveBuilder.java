@@ -261,8 +261,8 @@ public class SalveBuilder extends AbstractBuilder
 
         if (hasErrors(resource, source))
         {
-            System.out.println("RESOURCE: " + resource.getName() + " / " + source.getName() +
-                    " HAS ERRORS");
+//            System.out.println("RESOURCE: " + resource.getName() + " / " + source.getName() +
+//                    " HAS ERRORS");
             return;
         }
 
