@@ -134,7 +134,7 @@ public abstract class AbstractBuilder extends IncrementalProjectBuilder
 
         public void warn(CodeMarker marker, String message, Object... params)
         {
-            mark(resource, message(message, params), lineNumber(marker), IMarker.SEVERITY_ERROR);
+            mark(resource, message(message, params), lineNumber(marker), IMarker.SEVERITY_WARNING);
         }
 
         public void info(CodeMarker marker, String message, Object... params)
