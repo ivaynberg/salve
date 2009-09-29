@@ -62,23 +62,25 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 
 	@Override
 	protected void onMethodExit(int opcode) {
-		if (opcode == ARETURN && method.getAnnot(NOTNULL.getDescriptor()) != null) {
-
+		if (method.getAnnot(NOTNULL.getDescriptor()) != null) {
 			if (!checkType(method.getReturnType())) {
 				error("Annotation @%s cannot be applied to a method with a primitive or void return type", NOTNULL
 						.getClassName());
 			}
 
-			String msg = "Method `";
-			msg += getMethodDefinitionString();
-			msg += "` cannot return a null value";
+			if (opcode == ARETURN) {
+				String msg = "Method `";
+				msg += getMethodDefinitionString();
+				msg += "` cannot return a null value";
 
-			Label end = new Label();
-			dup();
-			ifNonNull(end);
-			throwIllegalStateException(msg);
-			mark(end);
-			returnValue();
+				Label end = new Label();
+				dup();
+				ifNonNull(end);
+				throwIllegalStateException(msg);
+				mark(end);
+				returnValue();
+			}
+
 		}
 	}
 
