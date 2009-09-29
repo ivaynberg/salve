@@ -17,118 +17,80 @@
 package salve.contract.impl;
 
 import salve.InstrumentationContext;
-import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
+import salve.model.CtMethod;
 
 public class NotEmptyInstrumentor extends AbstractMethodInstrumentor implements Constants {
 
-	private boolean notEmpty = false;
-
-	private final Label methodStart = new Label();
-	private final Label paramsCheck = new Label();
-	private final Label returnValueCheck = new Label();
-	private boolean[] annotatedParams;
+	private final CtMethod method;
 
 	public NotEmptyInstrumentor(MethodVisitor mv, String owner, int access, String name, String desc,
 			InstrumentationContext ctx) {
 		super(mv, owner, access, name, desc, ctx);
+		method = ctx.getModel().getClass(owner).getMethod(name, desc);
 	}
 
 	@Override
 	protected void onMethodEnter() {
-		if (annotatedParams != null) {
-			goTo(paramsCheck);
-			mark(methodStart);
+		for (int i = 0; i < method.getArgCount(); i++) {
+			if (method.getArgAnnot(i, NOTEMPTY.getDescriptor()) != null) {
+
+				final Type type = method.getArgType(i);
+
+				if (!STRING_TYPE.equals(type)) {
+					error("Parameter annotation @%s can only be applied on parameters of type %s", NOTEMPTY
+							.getClassName(), STRING_TYPE.getClassName());
+					return;
+				}
+
+				final Label end = new Label();
+				final Label checkEmpty = new Label();
+				loadArg(i);
+				ifNonNull(checkEmpty);
+				throwIllegalArgumentException(method, i, "cannot be null");
+				mark(checkEmpty);
+				loadArg(i);
+				invokeVirtual(STRING_TYPE, STRING_TRIM_METHOD);
+				invokeVirtual(STRING_TYPE, STRING_LENGTH_METHOD);
+				ifZCmp(NE, end);
+				throwIllegalArgumentException(method, i, "cannot be empty");
+				mark(end);
+			}
 		}
 	}
 
 	@Override
 	protected void onMethodExit(int opcode) {
-		if (notEmpty && opcode == ARETURN) {
-			goTo(returnValueCheck);
-		}
-	}
+		if (method.getAnnot(NOTEMPTY.getDescriptor()) != null) {
 
-	@Override
-	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-		if (NOTEMPTY.getDescriptor().equals(desc)) {
-			final Type type = getReturnType();
-			if (!STRING_TYPE.equals(type)) {
-				error("Annotation @%s can only be applied on methods with return type %s", Type.getType(desc)
-						.getClassName(), STRING_TYPE.getClassName());
-				return null;
+			if (!STRING_TYPE.equals(method.getReturnType())) {
+				error("Annotation @%s can only be applied on methods with return type %s", NOTEMPTY.getClassName(),
+						STRING_TYPE.getClassName());
+				return;
 			}
-			notEmpty = true;
-			return null;
-		}
-		return super.visitAnnotation(desc, visible);
-	}
 
-	@Override
-	public void visitMaxs(int maxStack, int maxLocals) {
-		if (annotatedParams != null) {
-			mark(paramsCheck);
-			for (int i = 0; i < annotatedParams.length; i++) {
-				if (annotatedParams[i]) {
-					final Label end = new Label();
-					final Label checkEmpty = new Label();
-					loadArg(i);
-					ifNonNull(checkEmpty);
-					throwIllegalArgumentException(i, "cannot be null");
-					mark(checkEmpty);
-					loadArg(i);
-					invokeVirtual(STRING_TYPE, STRING_TRIM_METHOD);
-					invokeVirtual(STRING_TYPE, STRING_LENGTH_METHOD);
-					ifZCmp(NE, end);
-					throwIllegalArgumentException(i, "cannot be empty");
-					mark(end);
-				}
+			if (opcode == ARETURN) {
+				final String nullMsg = "Method `" + getMethodDefinitionString() + "` cannot return a null value";
+				final String emptyMsg = "Method `" + getMethodDefinitionString() + " cannot return an empty string";
+
+				final Label end = new Label();
+				final Label checkEmpty = new Label();
+
+				dup();
+				ifNonNull(checkEmpty);
+				throwIllegalStateException(nullMsg);
+				mark(checkEmpty);
+				dup();
+				invokeVirtual(STRING_TYPE, STRING_TRIM_METHOD);
+				invokeVirtual(STRING_TYPE, STRING_LENGTH_METHOD);
+				ifZCmp(NE, end);
+				throwIllegalStateException(emptyMsg);
+				mark(end);
+				returnValue();
 			}
-			goTo(methodStart);
 		}
-
-		if (notEmpty) {
-			String nullMsg = "Method `" + getMethodDefinitionString() + "` cannot return a null value";
-			String emptyMsg = "Method `" + getMethodDefinitionString() + " cannot return an empty string";
-
-			final Label end = new Label();
-			final Label checkEmpty = new Label();
-			mark(returnValueCheck);
-			dup();
-			ifNonNull(checkEmpty);
-			throwIllegalStateException(nullMsg);
-			mark(checkEmpty);
-			dup();
-			invokeVirtual(STRING_TYPE, STRING_TRIM_METHOD);
-			invokeVirtual(STRING_TYPE, STRING_LENGTH_METHOD);
-			ifZCmp(NE, end);
-			throwIllegalStateException(emptyMsg);
-			mark(end);
-			returnValue();
-		}
-
-		super.visitMaxs(maxStack, maxLocals);
-	}
-
-	@Override
-	public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-		if (NOTEMPTY.getDescriptor().equals(desc)) {
-			final Type type = getParamType(parameter);
-			if (!STRING_TYPE.equals(type)) {
-				error("Parameter annotation @%s can only be applied on parameters of type %s", Type.getType(desc)
-						.getClassName(), STRING_TYPE.getClassName());
-				return null;
-			}
-			if (annotatedParams == null) {
-				annotatedParams = new boolean[getParamCount()];
-			}
-			annotatedParams[parameter] = true;
-			return null;
-		}
-
-		return super.visitParameterAnnotation(parameter, desc, visible);
 	}
 
 }
