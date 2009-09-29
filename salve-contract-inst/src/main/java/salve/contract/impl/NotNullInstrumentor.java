@@ -17,24 +17,20 @@
 package salve.contract.impl;
 
 import salve.InstrumentationContext;
-import salve.asmlib.AnnotationVisitor;
 import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
+import salve.model.CtMethod;
 import salve.util.asm.AsmUtil;
 
 public class NotNullInstrumentor extends AbstractMethodInstrumentor implements Constants {
 
-	private boolean notNull = false;
-
-	private final Label methodStart = new Label();
-	private final Label paramsCheck = new Label();
-	private final Label returnValueCheck = new Label();
-	private boolean[] annotatedParams;
+	private final CtMethod method;
 
 	public NotNullInstrumentor(MethodVisitor mv, String owner, int access, String name, String desc,
 			InstrumentationContext ctx) {
 		super(mv, owner, access, name, desc, ctx);
+		method = ctx.getModel().getClass(owner).getMethod(name, desc);
 	}
 
 	private boolean checkType(final Type ret) {
@@ -49,80 +45,41 @@ public class NotNullInstrumentor extends AbstractMethodInstrumentor implements C
 
 	@Override
 	protected void onMethodEnter() {
-		if (annotatedParams != null) {
-			goTo(paramsCheck);
-			mark(methodStart);
+		for (int i = 0; i < method.getArgCount(); i++) {
+			if (method.getArgAnnot(i, NOTNULL.getDescriptor()) != null) {
+				if (!checkType(method.getArgType(i))) {
+					error("Annotation @%s cannot be applied to a primitive argument", NOTNULL.getClassName());
+				}
+
+				final Label end = new Label();
+				loadArg(i);
+				ifNonNull(end);
+				throwIllegalArgumentException(method, i, "cannot be null");
+				mark(end);
+			}
 		}
 	}
 
 	@Override
 	protected void onMethodExit(int opcode) {
-		if (notNull && opcode == ARETURN) {
-			goTo(returnValueCheck);
-		}
-	}
+		if (opcode == ARETURN && method.getAnnot(NOTNULL.getDescriptor()) != null) {
 
-	@Override
-	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-		if (NOTNULL.getDescriptor().equals(desc)) {
-			final Type ret = getReturnType();
-			if (!checkType(ret)) {
+			if (!checkType(method.getReturnType())) {
 				error("Annotation @%s cannot be applied to a method with a primitive or void return type", NOTNULL
 						.getClassName());
-				return null;
 			}
-			notNull = true;
-			return null;
-		}
-		return super.visitAnnotation(desc, visible);
-	}
 
-	@Override
-	public void visitMaxs(int maxStack, int maxLocals) {
-		if (annotatedParams != null) {
-			mark(paramsCheck);
-			for (int i = 0; i < annotatedParams.length; i++) {
-				if (annotatedParams[i]) {
-					final Label end = new Label();
-					loadArg(i);
-					ifNonNull(end);
-					throwIllegalArgumentException(i, "cannot be null");
-					mark(end);
-				}
-			}
-			goTo(methodStart);
-		}
-
-		if (notNull) {
 			String msg = "Method `";
 			msg += getMethodDefinitionString();
 			msg += "` cannot return a null value";
 
 			Label end = new Label();
-			mark(returnValueCheck);
 			dup();
 			ifNonNull(end);
 			throwIllegalStateException(msg);
 			mark(end);
 			returnValue();
 		}
-
-		super.visitMaxs(maxStack, maxLocals);
-	}
-
-	@Override
-	public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-		if (NOTNULL.getDescriptor().equals(desc)) {
-			if (!checkType(getParamType(parameter))) {
-				error("Annotation @%s cannot be applied to a primitive argument", NOTNULL.getClassName());
-			}
-			if (annotatedParams == null) {
-				annotatedParams = new boolean[getParamCount()];
-			}
-			annotatedParams[parameter] = true;
-			return null;
-		}
-		return super.visitParameterAnnotation(parameter, desc, visible);
 	}
 
 }
