@@ -25,6 +25,7 @@ import salve.asmlib.AdviceAdapter;
 import salve.asmlib.Label;
 import salve.asmlib.MethodVisitor;
 import salve.asmlib.Type;
+import salve.model.CtMethod;
 
 public abstract class AbstractMethodInstrumentor extends AdviceAdapter implements Constants {
 	private final int access;
@@ -115,6 +116,24 @@ public abstract class AbstractMethodInstrumentor extends AdviceAdapter implement
 	/**
 	 * @param param
 	 */
+	protected void throwIllegalArgumentException(CtMethod method, int param, String message) {
+		String msg = "Argument ";
+		String name = method.getArgName(param);
+		if (name != null) {
+			msg += "`" + name + "`";
+		} else {
+			msg += "at index " + param;
+			msg += " and type " + method.getArgType(param).getClassName();
+		}
+		msg += " " + message;
+		throwIllegalArgumentException(msg);
+	}
+
+	/**
+	 * @param param
+	 * @deprecated
+	 */
+	@Deprecated
 	protected void throwIllegalArgumentException(int param, String message) {
 		String msg = "Argument ";
 		if (getParamName(param) != null) {

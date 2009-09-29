@@ -97,7 +97,7 @@ public class CtMethod {
 			}
 		}
 
-		return annots.get(desc);
+		return null;
 	}
 
 	public Collection<CtAnnotation> getArgAnnots(int idx) {
@@ -111,6 +111,17 @@ public class CtMethod {
 
 	public int getArgCount() {
 		return method.getArgumentTypes().length;
+	}
+
+	public String getArgName(int idx) {
+		if (argNames == null || idx >= argNames.length) {
+			return null;
+		}
+		return argNames[idx];
+	}
+
+	public Type getArgType(int index) {
+		return method.getArgumentTypes()[index];
 	}
 
 	public CtClass getClassModel() {
@@ -135,10 +146,6 @@ public class CtMethod {
 
 	public Type getReturnType() {
 		return method.getReturnType();
-	}
-
-	public String getSignature() {
-		return signature;
 	}
 
 	// public MethodModel getSuper() {
@@ -169,6 +176,10 @@ public class CtMethod {
 	// public ParameterAnnotations[] getParameterAnnots() {
 	// return parameterAnnots;
 	// }
+
+	public String getSignature() {
+		return signature;
+	}
 
 	public boolean hasArgAnnot(int idx, String desc) {
 		return getArgAnnot(idx, desc) != null;
