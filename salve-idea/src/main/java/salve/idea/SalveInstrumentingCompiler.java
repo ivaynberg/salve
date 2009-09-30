@@ -16,12 +16,12 @@ import org.jetbrains.annotations.NotNull;
 import salve.*;
 import salve.config.xml.XmlConfig;
 import salve.config.xml.XmlConfigReader;
-import salve.model.ProjectModel;
 import salve.idea.config.SalveConfiguration;
+import salve.idea.util.IdeaLogger;
 import salve.idea.util.SalveClassLoader;
 import salve.idea.util.VirtualFileSystemBytecodeLoader;
 import salve.loader.CompoundLoader;
-import salve.monitor.ModificationMonitor;
+import salve.model.CtProject;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -36,12 +36,8 @@ import java.util.*;
  */
 final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 {
-// ------------------------------ FIELDS ------------------------------
-
 	private static final Logger log = Logger.getInstance(SalveInstrumentingCompiler.class.getName());
-
 	private static final ResourceBundle MESSAGES = ResourceBundle.getBundle("salve.idea.Messages");
-
 	private static final ProcessingItem[] NO_PROCESSING_ITEMS = new ProcessingItem[0];
 
 	@NonNls
@@ -54,15 +50,13 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 	private static final String CLASS_FILE_EXTENSION = ".class";
 
 	@NonNls
-	private static final String SALVE_XML_PATH = "META-INF/salve.xml";
+	private static final String SALVE2_XML_PATH = "META-INF/salve2.xml";
 
 	// timestamp of last instrumentation
 	private long lastTimestamp = Long.MIN_VALUE;
 
 	// configuration for component
 	private final SalveConfiguration configuration;
-
-// -------------------------- STATIC METHODS --------------------------
 
 	private static ProcessingItem createProcessingItem(final VirtualFile file)
 	{
@@ -149,8 +143,6 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 		return MessageFormat.format(MESSAGES.getString(key), args);
 	}
 
-// --------------------------- CONSTRUCTORS ---------------------------
-
 	/**
 	 * create instance of salve instrumenting compiler
 	 *
@@ -160,10 +152,6 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 	{
 		this.configuration = configuration;
 	}
-
-// ------------------------ INTERFACE METHODS ------------------------
-
-// --------------------- Interface Compiler ---------------------
 
 	@NotNull
 	public String getDescription()
@@ -175,8 +163,6 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 	{
 		return true;
 	}
-
-// --------------------- Interface FileProcessingCompiler ---------------------
 
 	@NotNull
 	public FileProcessingCompiler.ProcessingItem[] getProcessingItems(final CompileContext context)
@@ -209,7 +195,6 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 			// setup salve
 			final BytecodeLoader loader = createBytecodeLoader(context);
 			final Map<Module, XmlConfig> salveConfigs = getSalveXMLs(context, loader);
-			final ModificationMonitor monitor = new ModificationMonitor();
 
 			// access to project files
 			final ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(context.getProject()).getFileIndex();
@@ -260,11 +245,12 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 							// setup context
 							final Scope scope = salveConfig.getScope(instrumentor);
 
-							if (!scope.includes(classPath))
+							if (scope.includes(classPath) == false)
 								continue;
 
-							final ProjectModel model = new ProjectModel().setLoader(loader);
-							final InstrumentationContext ctx = new InstrumentationContext(loader, monitor, scope, model);
+							final CtProject model = new CtProject().setLoader(loader);
+							final IdeaLogger logger = new IdeaLogger(context, sourceFile);
+							final InstrumentationContext ctx = new InstrumentationContext(loader, scope, model, logger);
 
 							try
 							{
@@ -332,14 +318,10 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 		return processedItems.toArray(new ProcessingItem[processedItems.size()]);
 	}
 
-// --------------------- Interface ValidityStateFactory ---------------------
-
 	public ValidityState createValidityState(final DataInput in) throws IOException
 	{
 		return new TimestampValidityState(System.currentTimeMillis());
 	}
-
-// -------------------------- OTHER METHODS --------------------------
 
 	private Map<Module, XmlConfig> getSalveXMLs(final CompileContext context, final BytecodeLoader loader) throws ConfigException
 	{
@@ -357,14 +339,14 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 		{
 			for (final VirtualFile sourceRoot : context.getSourceRoots(module))
 			{
-				final VirtualFile salveXml = VfsUtil.findRelativeFile(SALVE_XML_PATH, sourceRoot);
+				final VirtualFile salveXml = VfsUtil.findRelativeFile(SALVE2_XML_PATH, sourceRoot);
 
 				if (salveXml == null)
 					continue;
 
 				if (map.containsKey(module))
 				{
-					final String message = format("module.multiple.configs", module.getName(), SALVE_XML_PATH);
+					final String message = format("module.multiple.configs", module.getName(), SALVE2_XML_PATH);
 					context.addMessage(CompilerMessageCategory.ERROR, message, null, -1, -1, null);
 					throw new ConfigException(message);
 				}
