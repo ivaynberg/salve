@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: salve config
-Bundle-SymbolicName: salve.config
-Bundle-Version: 2.0.0
-Export-Package: salve.config.xml
