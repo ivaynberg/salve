@@ -213,12 +213,18 @@
 			<!--<url>http://fest.googlecode.com/svn/trunk/fest/m2/repository/</url>-->
 		<!--</repository>-->
 	<!--</repositories>-->
-
 	<distributionManagement>
 		<site>
 			<id>local</id>
 			<url>file:target/site/</url>
 		</site>
+		<repository>
+			<id>repo</id>
+			<name>Local Repo</name>
+			<url>file:target/repo</url>
+		</repository>
 	</distributionManagement>
+
+
 
 </project>
