@@ -1,4 +1,4 @@
-package salve.idea.util;
+package salve.ideaV2.util;
 
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
