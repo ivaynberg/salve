@@ -1,25 +1,20 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>salve-depend-aspectj</name>
-	<comment></comment>
-	<projects>
-		<project>salve-depend</project>
-		<project>salve-test</project>
-	</projects>
-	<buildSpec>
-		<buildCommand>
-			<name>org.eclipse.ajdt.core.ajbuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.ajdt.core.ajbuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-	</buildSpec>
-	<natures>
-		<nature>org.eclipse.ajdt.ui.ajnature</nature>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-	</natures>
+  <name>salve-depend-aspects</name>
+  <comment/>
+  <projects>
+    <project>salve-depend</project>
+    <project>salve-test</project>
+  </projects>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.ajdt.core.ajbuilder</name>
+    </buildCommand>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.ajdt.ui.ajnature</nature>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
 </projectDescription>
