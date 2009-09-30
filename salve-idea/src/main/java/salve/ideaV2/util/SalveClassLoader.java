@@ -1,4 +1,4 @@
-package salve.idea.util;
+package salve.ideaV2.util;
 
 import salve.BytecodeLoader;
 import salve.Bytecode;

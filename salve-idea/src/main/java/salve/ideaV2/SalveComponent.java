@@ -1,4 +1,4 @@
-package salve.idea;
+package salve.ideaV2;
 
 import com.intellij.openapi.options.Configurable;
 

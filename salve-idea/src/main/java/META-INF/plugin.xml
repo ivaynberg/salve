@@ -7,8 +7,8 @@
 	<idea-version since-build="10372"/>
 	<project-components>
 		<component>
-			<interface-class>salve.idea.SalveComponent</interface-class>
-			<implementation-class>salve.idea.SalveComponentImpl</implementation-class>
+			<interface-class>salve.ideaV2.Salve2Component</interface-class>
+			<implementation-class>salve.ideaV2.Salve2ComponentImpl</implementation-class>
 		</component>
 	</project-components>
 	<description>

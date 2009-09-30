@@ -1,4 +1,4 @@
-package salve.idea.util;
+package salve.ideaV2.util;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VfsUtil;

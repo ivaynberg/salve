@@ -1,4 +1,4 @@
-package salve.idea;
+package salve.ideaV2;
 
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.components.PersistentStateComponent;
@@ -11,8 +11,8 @@ import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import salve.idea.config.SalveConfigurationForm;
-import salve.idea.config.SalveMutableConfiguration;
+import salve.ideaV2.config.SalveConfigurationForm;
+import salve.ideaV2.config.SalveMutableConfiguration;
 
 import javax.swing.*;
 
