@@ -1,4 +1,4 @@
-package salve.ideaV2.config;
+package salve.idea.config;
 
 import javax.swing.*;
 

@@ -1,4 +1,4 @@
-package salve.ideaV2;
+package salve.idea;
 
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.components.PersistentStateComponent;
@@ -11,8 +11,8 @@ import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import salve.ideaV2.config.SalveConfigurationForm;
-import salve.ideaV2.config.SalveMutableConfiguration;
+import salve.idea.config.SalveConfigurationForm;
+import salve.idea.config.SalveMutableConfiguration;
 
 import javax.swing.*;
 
@@ -28,137 +28,119 @@ public final class SalveComponentImpl implements SalveComponent,
                                                  ProjectComponent,
                                                  PersistentStateComponent<SalveMutableConfiguration>
 {
-// ------------------------------ FIELDS ------------------------------
+	@NonNls
+	private static final String COMPONENT_NAME = "salve.integration.idea";
 
-  @NonNls
-  private static final String COMPONENT_NAME = "salve.integration.idea";
+	@NonNls
+	private static final String DISPLAY_NAME = "Salve Integration";
 
-  @NonNls
-  private static final String DISPLAY_NAME = "Salve Integration";
+	// configuration form
+	private SalveConfigurationForm configurationForm;
 
-  // configuration form
-  private SalveConfigurationForm configurationForm;
+	// related project
+	private final Project project;
 
-  // related project
-  private final Project project;
+	// configuration state
+	private SalveMutableConfiguration configuration;
 
-  // configuration state
-  private SalveMutableConfiguration configuration;
+	// salve bytecode transformer
+	private final SalveInstrumentingCompiler instrumentor;
 
-  // salve bytecode transformer
-  private final SalveInstrumentingCompiler instrumentor;
+	public SalveComponentImpl(final Project project)
+	{
+		this.project = project;
+		configuration = new SalveMutableConfiguration();
+		instrumentor = new SalveInstrumentingCompiler(configuration);
+	}
 
-// --------------------------- CONSTRUCTORS ---------------------------
+	@NotNull
+	public String getComponentName()
+	{
+		return COMPONENT_NAME;
+	}
 
-  public SalveComponentImpl(final Project project)
-  {
-    this.project = project;
-    configuration = new SalveMutableConfiguration();
-    instrumentor = new SalveInstrumentingCompiler(configuration);
-  }
+	public void initComponent()
+	{
+		CompilerManager.getInstance(project).addCompiler(instrumentor);
+	}
 
-// ------------------------ INTERFACE METHODS ------------------------
+	public void disposeComponent()
+	{
+		CompilerManager.getInstance(project).removeCompiler(instrumentor);
+	}
 
-// --------------------- Interface BaseComponent ---------------------
+	@Nls
+	public String getDisplayName()
+	{
+		return DISPLAY_NAME;
+	}
 
-  @NotNull
-  public String getComponentName()
-  {
-    return COMPONENT_NAME;
-  }
+	public Icon getIcon()
+	{
+		// TODO get another icon
+		return Messages.getInformationIcon();
+	}
 
-  public void initComponent()
-  {
-    CompilerManager.getInstance(project).addCompiler(instrumentor);
-  }
+	public String getHelpTopic()
+	{
+		// no help so far... who needs help anyway?! *g*
+		return null;
+	}
 
-  public void disposeComponent()
-  {
-    CompilerManager.getInstance(project).removeCompiler(instrumentor);
-  }
+	public SalveMutableConfiguration getState()
+	{
+		return configuration;
+	}
 
-// --------------------- Interface Configurable ---------------------
+	public void loadState(final SalveMutableConfiguration state)
+	{
+		this.configuration = state;
+	}
 
-  @Nls
-  public String getDisplayName()
-  {
-    return DISPLAY_NAME;
-  }
+	public void projectOpened()
+	{
+		// log.debug("project opened");
+	}
 
-  public Icon getIcon()
-  {
-    // TODO get another icon
-    return Messages.getInformationIcon();
-  }
+	public void projectClosed()
+	{
+		// log.debug("project closed");
+	}
 
-  public String getHelpTopic()
-  {
-    // no help so far... who needs help anyway?! *g*
-    return null;
-  }
+	public boolean isEnabled()
+	{
+		return configuration.isEnabled();
+	}
 
-// --------------------- Interface PersistentStateComponent ---------------------
+	public void setEnabled(final boolean enabled)
+	{
+		configuration.setEnabled(enabled);
+	}
 
-  public SalveMutableConfiguration getState()
-  {
-    return configuration;
-  }
+	public JComponent createComponent()
+	{
+		return (configurationForm = new SalveConfigurationForm(configuration)).getRootComponent();
+	}
 
-  public void loadState(final SalveMutableConfiguration state)
-  {
-    this.configuration = state;
-  }
+	public boolean isModified()
+	{
+		return configurationForm != null && configurationForm.isModified();
+	}
 
-// --------------------- Interface ProjectComponent ---------------------
+	public void apply() throws ConfigurationException
+	{
+		// move stuff: form -> state
+		// log.debug("apply settings");
+	}
 
-  public void projectOpened()
-  {
-    // log.debug("project opened");
-  }
+	public void reset()
+	{
+		// move stuff: state -> form
+		// log.debug("reset settings");
+	}
 
-  public void projectClosed()
-  {
-    // log.debug("project closed");
-  }
-
-// --------------------- Interface SalveComponent ---------------------
-
-  public boolean isEnabled()
-  {
-    return configuration.isEnabled();
-  }
-
-  public void setEnabled(final boolean enabled)
-  {
-    configuration.setEnabled(enabled);
-  }
-
-// --------------------- Interface UnnamedConfigurable ---------------------
-
-  public JComponent createComponent()
-  {
-    return (configurationForm = new SalveConfigurationForm(configuration)).getRootComponent();
-  }
-
-  public boolean isModified()
-  {
-    return configurationForm != null && configurationForm.isModified();
-  }
-
-  public void apply() throws ConfigurationException
-  {
-    // move stuff: form -> state
-    // log.debug("apply settings");
-  }
-
-  public void reset()
-  {
-    // move stuff: state -> form
-    // log.debug("reset settings");
-  }
-
-  public void disposeUIResources()
-  {
-    configurationForm = null;
-  }
+	public void disposeUIResources()
+	{
+		configurationForm = null;
+	}
 }
