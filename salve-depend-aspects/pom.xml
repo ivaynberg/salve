@@ -11,9 +11,14 @@
 	<groupId>salve</groupId>
 	<artifactId>salve-depend-aspects</artifactId>
 	<version>3.0-SNAPSHOT</version>
-	<name>Salve Dependencies Aspects</name>
-	
+	<name>Salve @Dependency Aspects</name>
+
 	<dependencies>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>salve</groupId>
@@ -37,4 +42,23 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<configuration>
+					<ajdtVersion>1.5</ajdtVersion>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>

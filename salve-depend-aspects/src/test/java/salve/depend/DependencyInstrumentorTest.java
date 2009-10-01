@@ -16,10 +16,7 @@
  */
 package salve.depend;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
 
 import junit.framework.Assert;
 
@@ -67,34 +64,6 @@ public class DependencyInstrumentorTest extends Assert
         EasyMock.reset(blue, red, locator);
     }
 
-    @Ignore
-    @Test
-    public void testAnnotations() throws Exception
-    {
-        Annotation[] annots = beanClass.getDeclaredField(REMOVED_FIELD_PREFIX + "red")
-                .getAnnotations();
-        assertNotNull(annots);
-
-        List<Class< ? >> types = new ArrayList<Class< ? >>(annots.length);
-        for (final Annotation annot : annots)
-        {
-            types.add(annot.annotationType());
-        }
-
-        assertEquals(3, types.size());
-        assertTrue(types.contains(Square.class));
-        assertTrue(types.contains(Circle.class));
-        assertTrue(types.contains(DependencyFieldInfo.class));
-
-        annots = beanClass.getDeclaredField("blue").getAnnotations();
-        assertNotNull(annots);
-        assertEquals(0, annots.length);
-
-        annots = beanClass.getDeclaredField("black").getAnnotations();
-        assertNotNull(annots);
-        assertEquals(1, annots.length);
-        assertEquals(annots[0].annotationType(), Circle.class);
-    }
 
     @Test
     public void testAnonClassFieldRead() throws Exception
@@ -222,14 +191,15 @@ public class DependencyInstrumentorTest extends Assert
             }
         }.test();
     }
-   
+
+    @Ignore
     @Test
     public void testInnerClassFieldRead() throws Exception
     {
         // aspectj cannot handle this because it does not instrument synthetic methods. may require
         // a migration tool for salve to detect these problems.
-        
-        
+
+
         new EasyMockTemplate(locator, red, blue)
         {
 
@@ -281,5 +251,5 @@ public class DependencyInstrumentorTest extends Assert
         }.test();
     }
 
- 
+
 }

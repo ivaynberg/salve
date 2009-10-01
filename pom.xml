@@ -12,10 +12,6 @@
 	<inceptionYear>2007</inceptionYear>
 	<url>http://code.google.com/p/salve/</url>
 
-	<properties>
-		<spring.version>2.5.6</spring.version>
-	</properties>
-
 	<scm>
 		<connection>scm:svn:http://salve.googlecode.com/svn/trunk</connection>
 		<developerConnection>scm:svn:https://salve.googlecode.com/svn/trunk</developerConnection>
@@ -161,6 +157,13 @@
 						<target>1.5</target>
 					</configuration>
 				</plugin>
+
+		<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+
 		</plugins>
 
 		<pluginManagement>

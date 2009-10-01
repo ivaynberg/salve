@@ -15,7 +15,8 @@ import salve.depend.Dependency;
 public class Article
 {
     @Dependency
-    private Session session;
+    private static transient Session session;
+    
     @Id
     @GeneratedValue
     private Long id;
@@ -63,9 +64,10 @@ public class Article
         session.saveOrUpdate(this);
     }
 
+    @SuppressWarnings("unchecked")
     public static Collection<Article> findAll()
     {
-        return new Article().session.createCriteria(Article.class).list();
+        return session.createCriteria(Article.class).list();
     }
 
 }

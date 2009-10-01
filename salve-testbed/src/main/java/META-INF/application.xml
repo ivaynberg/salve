@@ -42,12 +42,15 @@
 
 	<bean class="salve.depend.spring.SalveConfigurator" />
 
-	<bean class="salve.depend.spring.txn.SpringTransactionManager">
+	<!-- hook in aspectj @transactionalweaver into the context -->
+	<bean
+		class="org.springframework.transaction.aspectj.AnnotationTransactionAspect"
+		factory-method="aspectOf" dependency-check="none" lazy-init="false">
 		<property name="transactionManager" ref="data.transactionManager" />
 	</bean>
 
 	<bean class="salve.testbed.session.CurrentSessionProviderBean">
-		<constructor-arg ref="data.sessionFactory"/>
+		<constructor-arg ref="data.sessionFactory" />
 	</bean>
 
 </beans>
