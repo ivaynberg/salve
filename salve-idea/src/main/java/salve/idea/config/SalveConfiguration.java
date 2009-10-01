@@ -1,4 +1,4 @@
-package salve.ideaV2.config;
+package salve.idea.config;
 
 /**
  * read-only part of Salve IDEA plugin configuration
