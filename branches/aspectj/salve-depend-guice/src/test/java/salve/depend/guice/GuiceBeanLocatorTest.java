@@ -21,13 +21,12 @@ import junit.framework.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import salve.depend.DependencyInstrumentor;
 import salve.depend.DependencyLibrary;
+import salve.depend.FieldKey;
 import salve.depend.Locator;
 import salve.depend.guice.model.Blue;
 import salve.depend.guice.model.Injected;
 import salve.depend.guice.model.MockService;
-import salve.loader.TestBytecodePool;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -38,9 +37,6 @@ import com.google.inject.Scopes;
 
 public class GuiceBeanLocatorTest
 {
-    private static final String BEAN_NAME = "salve/depend/guice/model/Injected";
-    private static Injector injector;
-    private static Object injected;
     private static Locator locator;
 
     @BeforeClass
@@ -61,22 +57,18 @@ public class GuiceBeanLocatorTest
 
         };
 
-        injector = Guice.createInjector(module);
+        Injector injector = Guice.createInjector(module);
         locator = new GuiceBeanLocator(injector);
         DependencyLibrary.clear();
 
         DependencyLibrary.addLocator(locator);
-
-        ClassLoader loader = GuiceBeanLocatorTest.class.getClassLoader();
-        TestBytecodePool pool = new TestBytecodePool(loader);
-        Class< ? > clazz = pool.instrumentIntoClass(BEAN_NAME, new DependencyInstrumentor());
-        injected = clazz.newInstance();
     }
 
     @Test
     public void testLookupByType()
     {
-        MockService ts = ((Injected)injected).getTestService();
+        MockService ts = (MockService)DependencyLibrary.locate(new FieldKey(Injected.class,
+                "testService"));
         Assert.assertNotNull(ts);
         Assert.assertEquals(ts.getName(), ts.getClass().getName());
     }
@@ -84,7 +76,8 @@ public class GuiceBeanLocatorTest
     @Test
     public void testLookupByTypeAndAnnot()
     {
-        MockService ts = ((Injected)injected).getBlueTestService();
+        MockService ts = (MockService)DependencyLibrary.locate(new FieldKey(Injected.class,
+                "blueTestService"));
         Assert.assertNotNull(ts);
         Assert.assertEquals(ts.getName(), "BlueTestService");
     }

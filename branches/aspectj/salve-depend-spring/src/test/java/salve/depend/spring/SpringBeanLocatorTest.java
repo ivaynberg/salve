@@ -7,15 +7,14 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import salve.depend.DependencyInstrumentor;
 import salve.depend.DependencyLibrary;
 import salve.depend.DependencyNotFoundException;
 import salve.depend.DependencyResolutionConflictException;
+import salve.depend.FieldKey;
 import salve.depend.Locator;
 import salve.depend.spring.model.A;
 import salve.depend.spring.model.C;
 import salve.depend.spring.model.Injected;
-import salve.loader.TestBytecodePool;
 
 public class SpringBeanLocatorTest {
 	private static Locator locator;
@@ -25,16 +24,18 @@ public class SpringBeanLocatorTest {
 
 	@Test
 	public void testByType() {
-		Injected i = (Injected) injected;
-		Assert.assertNotNull(i.getC());
-		Assert.assertEquals(i.getC().getClass(), C.class);
+		Assert.assertNotNull(getFieldValue("c"));
+		Assert.assertEquals(getFieldValue("c").getClass(), C.class);
+	}
+
+	private static Object getFieldValue(String field) {
+		return DependencyLibrary.locate(new FieldKey(Injected.class, field));
 	}
 
 	@Test
 	public void testNoneFound() {
-		Injected i = (Injected) injected;
 		try {
-			i.getE();
+			getFieldValue("e");
 			Assert.fail("Should have hit an exception");
 		} catch (DependencyNotFoundException e) {
 			// noop
@@ -44,9 +45,8 @@ public class SpringBeanLocatorTest {
 
 	@Test
 	public void testResolutionConflict() {
-		Injected i = (Injected) injected;
 		try {
-			i.getD();
+			getFieldValue("d");
 			Assert.fail("Should have hit an exception");
 		} catch (DependencyResolutionConflictException e) {
 			// noop
@@ -55,9 +55,9 @@ public class SpringBeanLocatorTest {
 
 	@Test
 	public void testSpringBeanId() {
-		Injected i = (Injected) injected;
-		Assert.assertNotNull(i.getA());
-		Assert.assertEquals(i.getA().getClass(), A.class);
+
+		Assert.assertNotNull(getFieldValue("a"));
+		Assert.assertEquals(getFieldValue("a").getClass(), A.class);
 	}
 
 	@Test
@@ -72,11 +72,5 @@ public class SpringBeanLocatorTest {
 		locator = new SpringBeanLocator(context);
 
 		DependencyLibrary.addLocator(locator);
-
-		ClassLoader loader = SpringBeanLocatorTest.class.getClassLoader();
-		TestBytecodePool pool = new TestBytecodePool(loader);
-
-		injected = pool.instrumentIntoClass(BEAN_NAME,
-				new DependencyInstrumentor()).newInstance();
 	}
 }

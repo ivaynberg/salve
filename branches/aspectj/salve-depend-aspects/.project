@@ -7,10 +7,10 @@
   </projects>
   <buildSpec>
     <buildCommand>
-      <name>org.eclipse.ajdt.core.ajbuilder</name>
+      <name>org.eclipse.jdt.core.javabuilder</name>
     </buildCommand>
     <buildCommand>
-      <name>org.eclipse.jdt.core.javabuilder</name>
+      <name>org.eclipse.ajdt.core.ajbuilder</name>
     </buildCommand>
   </buildSpec>
   <natures>
