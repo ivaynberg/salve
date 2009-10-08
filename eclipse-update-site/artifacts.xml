@@ -3,20 +3,14 @@
 <repository name='${p2.artifact.repo.name}' type='org.eclipse.equinox.p2.artifact.repository.simpleRepository' version='1.0.0'>
   <properties size='2'>
     <property name='p2.compressed' value='false'/>
-    <property name='p2.timestamp' value='1254329978140'/>
+    <property name='p2.timestamp' value='1255021185854'/>
   </properties>
   <mappings size='3'>
     <rule filter='(&amp; (classifier=osgi.bundle))' output='${repoUrl}/plugins/${id}_${version}.jar'/>
     <rule filter='(&amp; (classifier=binary))' output='${repoUrl}/binary/${id}_${version}'/>
     <rule filter='(&amp; (classifier=org.eclipse.update.feature))' output='${repoUrl}/features/${id}_${version}.jar'/>
   </mappings>
-  <artifacts size='12'>
-    <artifact classifier='osgi.bundle' id='salve.eclipse' version='2.0.0.beta1'>
-      <properties size='2'>
-        <property name='artifact.size' value='0'/>
-        <property name='download.size' value='19176'/>
-      </properties>
-    </artifact>
+  <artifacts size='13'>
     <artifact classifier='osgi.bundle' id='salve.inst' version='1.1.0'>
       <properties size='3'>
         <property name='artifact.size' value='31519'/>
@@ -37,12 +31,6 @@
         <property name='download.contentType' value='application/zip'/>
       </properties>
     </artifact>
-    <artifact classifier='org.eclipse.update.feature' id='salve.eclipse.integration' version='2.0.0.beta1'>
-      <properties size='2'>
-        <property name='download.contentType' value='application/zip'/>
-        <property name='download.size' value='488'/>
-      </properties>
-    </artifact>
     <artifact classifier='osgi.bundle' id='salve.asm' version='1.1.0'>
       <properties size='3'>
         <property name='artifact.size' value='109388'/>
@@ -50,22 +38,10 @@
         <property name='download.contentType' value='application/zip'/>
       </properties>
     </artifact>
-    <artifact classifier='osgi.bundle' id='salve.asm' version='2.0.0'>
-      <properties size='2'>
-        <property name='artifact.size' value='0'/>
-        <property name='download.size' value='131398'/>
-      </properties>
-    </artifact>
     <artifact classifier='osgi.bundle' id='salve.asm' version='2.0.0.beta1'>
       <properties size='2'>
         <property name='artifact.size' value='0'/>
         <property name='download.size' value='131535'/>
-      </properties>
-    </artifact>
-    <artifact classifier='osgi.bundle' id='salve.inst' version='2.0.0'>
-      <properties size='2'>
-        <property name='artifact.size' value='0'/>
-        <property name='download.size' value='57636'/>
       </properties>
     </artifact>
     <artifact classifier='osgi.bundle' id='salve.eclipse' version='2.0.0'>
@@ -80,10 +56,40 @@
         <property name='download.size' value='485'/>
       </properties>
     </artifact>
+    <artifact classifier='osgi.bundle' id='salve.config' version='2.0.0.beta1'>
+      <properties size='2'>
+        <property name='artifact.size' value='4096'/>
+        <property name='download.size' value='55414'/>
+      </properties>
+    </artifact>
     <artifact classifier='org.eclipse.update.feature' id='salve.eclipse.integration' version='1.1.0'>
       <properties size='2'>
         <property name='artifact.size' value='702'/>
         <property name='download.size' value='702'/>
+      </properties>
+    </artifact>
+    <artifact classifier='osgi.bundle' id='salve.eclipse' version='2.0.0.beta1'>
+      <properties size='2'>
+        <property name='artifact.size' value='0'/>
+        <property name='download.size' value='19176'/>
+      </properties>
+    </artifact>
+    <artifact classifier='org.eclipse.update.feature' id='salve.eclipse.integration' version='2.0.0.beta1'>
+      <properties size='2'>
+        <property name='download.contentType' value='application/zip'/>
+        <property name='download.size' value='488'/>
+      </properties>
+    </artifact>
+    <artifact classifier='osgi.bundle' id='salve.asm' version='2.0.0'>
+      <properties size='2'>
+        <property name='artifact.size' value='0'/>
+        <property name='download.size' value='131398'/>
+      </properties>
+    </artifact>
+    <artifact classifier='osgi.bundle' id='salve.inst' version='2.0.0'>
+      <properties size='2'>
+        <property name='artifact.size' value='0'/>
+        <property name='download.size' value='57636'/>
       </properties>
     </artifact>
   </artifacts>
