@@ -1,4 +1,4 @@
-package salve.idea;
+package salve.idea.v2;
 
 import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.diagnostic.Logger;
@@ -11,8 +11,6 @@ import com.intellij.openapi.roots.libraries.LibraryUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
-import org.apache.commons.collections.StaticBucketMap;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import salve.*;
 import salve.config.xml.XmlConfig;
