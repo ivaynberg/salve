@@ -9,7 +9,7 @@ import com.intellij.openapi.options.Configurable;
  */
 public interface SalveComponent extends Configurable
 {
-  boolean isEnabled();
+	boolean isEnabled();
 
-  void setEnabled(boolean enabled);
+	void setEnabled(boolean enabled);
 }

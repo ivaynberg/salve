@@ -11,10 +11,8 @@ import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import salve.idea.SalveInstrumentingCompiler;
 import salve.idea.v2.config.SalveConfigurationForm;
 import salve.idea.v2.config.SalveMutableConfiguration;
-import salve.idea.v2.SalveComponent;
 
 import javax.swing.*;
 
