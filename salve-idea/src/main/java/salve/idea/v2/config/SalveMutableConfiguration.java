@@ -1,4 +1,4 @@
-package salve.idea.config;
+package salve.idea.v2.config;
 
 import java.io.IOException;
 import java.io.ObjectInput;
