@@ -3,7 +3,7 @@
 	<id>salve-idea</id>
 	<name>Salve Integration</name>
 	<!--<resource-bundle>salve.idea.Messages</resource-bundle>-->
-	<version>1.0.3</version>
+	<version>1.0.4</version>
 	<vendor email="peter@moreinput.de" url="http://salve.googlecode.com">Peter Ertl</vendor>
 	<idea-version since-build="8940"/>
 	<project-components>
@@ -16,6 +16,6 @@
 		Idea integration for Salve: It will instrument the .class-files during regular compilation with salve lookups.
 	</description>
 	<change-notes>
-		trigger rebuild of project when expected .class files in output directory are missing
+		fixed: don't try to instrument package-info.java
 	</change-notes>
 </idea-plugin>
