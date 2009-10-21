@@ -11,6 +11,7 @@ import com.intellij.openapi.roots.libraries.LibraryUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
+import org.apache.commons.collections.StaticBucketMap;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import salve.*;
@@ -40,17 +41,11 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 	private static final ResourceBundle MESSAGES = ResourceBundle.getBundle("salve.idea.Messages");
 	private static final ProcessingItem[] NO_PROCESSING_ITEMS = new ProcessingItem[0];
 
-	@NonNls
 	private static final String COMPILER_DESCRIPTION = "Salve Instrumenting Compiler";
-
-	@NonNls
 	private static final String JAVA_FILE_EXTENSION = ".java";
-
-	@NonNls
 	private static final String CLASS_FILE_EXTENSION = ".class";
-
-	@NonNls
 	private static final String SALVE2_XML_PATH = "META-INF/salve2.xml";
+	private static final String PACKAGE_DESCRIPTOR = "package-info.java";
 
 	// timestamp of last instrumentation
 	private long lastTimestamp = Long.MIN_VALUE;
@@ -175,8 +170,12 @@ final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 		final Collection<ProcessingItem> items = new ArrayList<ProcessingItem>(files.length);
 
 		for (final VirtualFile file : files)
-			items.add(createProcessingItem(file));
+		{
+			if (PACKAGE_DESCRIPTOR.equals(file.getName()))
+				continue;
 
+			items.add(createProcessingItem(file));
+		}
 		return items.toArray(new ProcessingItem[items.size()]);
 	}
 
