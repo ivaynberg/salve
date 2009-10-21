@@ -36,7 +36,7 @@ import java.util.*;
 final class SalveInstrumentingCompiler implements ClassInstrumentingCompiler
 {
 	private static final Logger log = Logger.getInstance(SalveInstrumentingCompiler.class.getName());
-	private static final ResourceBundle MESSAGES = ResourceBundle.getBundle("salve.idea.Messages");
+	private static final ResourceBundle MESSAGES = ResourceBundle.getBundle("salve.idea.v2.Messages");
 	private static final ProcessingItem[] NO_PROCESSING_ITEMS = new ProcessingItem[0];
 
 	private static final String COMPILER_DESCRIPTION = "Salve Instrumenting Compiler";
