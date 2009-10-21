@@ -9,7 +9,6 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import salve.idea.v2.config.SalveConfigurationForm;
 import salve.idea.v2.config.SalveMutableConfiguration;
@@ -17,7 +16,7 @@ import salve.idea.v2.config.SalveMutableConfiguration;
 import javax.swing.*;
 
 /**
- * Salve IDEA plugin component
+ * Salve-2 IDEA plugin component
  *
  * @author Peter Ertl
  */
@@ -28,11 +27,8 @@ public final class SalveComponentImpl implements SalveComponent,
                                                  ProjectComponent,
                                                  PersistentStateComponent<SalveMutableConfiguration>
 {
-	@NonNls
-	private static final String COMPONENT_NAME = "salve.integration.idea";
-
-	@NonNls
-	private static final String DISPLAY_NAME = "Salve Integration";
+	private static final String COMPONENT_NAME = "salve.integration.idea.v2";
+	private static final String DISPLAY_NAME = "Salve-2 Integration";
 
 	// configuration form
 	private SalveConfigurationForm configurationForm;
