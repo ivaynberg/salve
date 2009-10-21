@@ -15,10 +15,10 @@ import org.jetbrains.annotations.NotNull;
 import salve.*;
 import salve.config.xml.XmlConfig;
 import salve.config.xml.XmlConfigReader;
-import salve.idea.config.SalveConfiguration;
-import salve.idea.util.IdeaLogger;
-import salve.idea.util.SalveClassLoader;
-import salve.idea.util.VirtualFileSystemBytecodeLoader;
+import salve.idea.v2.config.SalveConfiguration;
+import salve.idea.v2.util.IdeaLogger;
+import salve.idea.v2.util.SalveClassLoader;
+import salve.idea.v2.util.VirtualFileSystemBytecodeLoader;
 import salve.loader.CompoundLoader;
 import salve.model.CtProject;
 
