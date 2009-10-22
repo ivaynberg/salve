@@ -41,7 +41,7 @@
 		<module>salve-aop</module>
 		<module>salve-aop-inst</module>
     <module>salve-config</module>
-    <module>salve-testbed</module>
+    <!--module>salve-testbed</module-->
   </modules>
 
 
