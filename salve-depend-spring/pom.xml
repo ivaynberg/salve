@@ -18,10 +18,10 @@
 	<parent>
 		<artifactId>salve</artifactId>
 		<groupId>salve</groupId>
-		<version>3.0-SNAPSHOT</version>
+		<version>3.0.beta</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<version>3.0-SNAPSHOT</version>
+	<version>3.0.beta</version>
 	<groupId>salve</groupId>
 	<artifactId>salve-depend-spring</artifactId>
 	<name>Salve Dependencies Spring Integration</name>
@@ -36,7 +36,7 @@
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-depend</artifactId>
-			<version>3.0-SNAPSHOT</version>
+			<version>3.0.beta</version>
 		</dependency>
 		
 	</dependencies>
