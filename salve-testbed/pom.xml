@@ -4,11 +4,11 @@
 	<parent>
 		<artifactId>salve</artifactId>
 		<groupId>salve</groupId>
-		<version>3.0.beta</version>
+		<version>3.0-SNAPSHOT</version>
 	</parent>
 	<groupId>salve</groupId>
 	<artifactId>salve-testbed</artifactId>
-	<version>3.0.beta</version>
+	<version>3.0-SNAPSHOT</version>
 	<name>Salve TestBed</name>
 
 	<dependencies>
@@ -63,27 +63,27 @@
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-contract</artifactId>
-			<version>3.0.beta</version>
+			<version>3.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-contract-aspects</artifactId>
-			<version>3.0.beta</version>
+			<version>3.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-depend</artifactId>
-			<version>3.0.beta</version>
+			<version>3.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-depend-aspects</artifactId>
-			<version>3.0.beta</version>
+			<version>3.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-depend-spring</artifactId>
-			<version>3.0.beta</version>
+			<version>3.0-SNAPSHOT</version>
 		</dependency>
 
 		<!--+

@@ -3,13 +3,13 @@
 	<parent>
 		<groupId>salve</groupId>
 		<artifactId>salve</artifactId>
-		<version>3.0.beta</version>
+		<version>3.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>salve-contract</artifactId>
 	<name>Salve Contract</name>
-	<version>3.0.beta</version>
+	<version>3.0-SNAPSHOT</version>
 
 	<dependencies>
 		<dependency>

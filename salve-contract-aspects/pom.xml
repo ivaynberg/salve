@@ -3,13 +3,13 @@
 	<parent>
 		<artifactId>salve</artifactId>
 		<groupId>salve</groupId>
-		<version>3.0.beta</version>
+		<version>3.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>salve</groupId>
 	<artifactId>salve-contract-aspects</artifactId>
 	<name>Salve Contract Aspects</name>
-	<version>3.0.beta</version>
+	<version>3.0-SNAPSHOT</version>
 
 	<dependencies>
 
@@ -21,7 +21,7 @@
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-contract</artifactId>
-			<version>3.0.beta</version>
+			<version>3.0-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
