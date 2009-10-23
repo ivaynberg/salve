@@ -27,7 +27,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import salve.depend.cache.NoopCacheProvider;
-import salve.util.EasyMockTemplate;
 
 public class DependencyInstrumentorTest extends Assert
 {

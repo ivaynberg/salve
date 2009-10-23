@@ -25,7 +25,6 @@
 		<module>salve-depend-aspects</module>
 		<module>salve-depend-spring</module>
 		<module>salve-depend-guice</module>
-		<module>salve-test</module>
     <module>salve-testbed</module>
   </modules>
 
