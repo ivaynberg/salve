@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>salve</artifactId>
 		<groupId>salve</groupId>
-		<version>3.0-SNAPSHOT</version>
+		<version>3.0.beta</version>
 	</parent>
 
 	<artifactId>salve-depend-guice</artifactId>
@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>salve</groupId>
 			<artifactId>salve-depend</artifactId>
-			<version>3.0-SNAPSHOT</version>
+			<version>3.0.beta</version>
 		</dependency>
 		
 
