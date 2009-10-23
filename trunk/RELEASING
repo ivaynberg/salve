@@ -1,10 +1,10 @@
 mvn install
 mvn release:prepare
 #mvn release:perform 
-mvn release:perform -DaltDeploymentRepository=salvelocal::default::file://c:/dev/src/salve-repo
-#cd target/checkout
-#mvn deploy -DaltDeploymentRepository=salvelocal::default::file://c:/dev/src/salve-repo
-cd \dev\src\salve-repo
+mvn release:perform
+cd target/checkout
+mvn deploy -DaltDeploymentRepository=salvelocal::default::file:///home/igor.vaynberg/dev/src/salve-maven2/
+cd /home/igor.vaynberg/dev/src/salve-maven2/
 svn add --force salve
 svn commit -m "release artifacts"
 
