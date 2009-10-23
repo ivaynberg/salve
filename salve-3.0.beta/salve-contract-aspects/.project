@@ -1,0 +1,16 @@
+<projectDescription>
+  <name>salve-contract-aspects</name>
+  <comment/>
+  <projects>
+    <project>salve-contract</project>
+  </projects>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.ajdt.core.ajbuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.ajdt.ui.ajnature</nature>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
+</projectDescription>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>salve</artifactId>
+		<groupId>salve</groupId>
+		<version>3.0.beta</version>
+	</parent>
+	<groupId>salve</groupId>
+	<artifactId>salve-testbed</artifactId>
+	<version>3.0.beta</version>
+	<name>Salve TestBed</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring</artifactId>
+			<version>2.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+			<version>2.5.6</version>
+		</dependency>
+
+		<!--+
+		    | HIBERNATE
+		    +-->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>3.3.2.GA</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-annotations</artifactId>
+			<version>3.4.0.GA</version>
+		</dependency>
+		<dependency>
+			<groupId>javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>3.4.GA</version>
+		</dependency>
+
+		<!--+
+		    | DATABASE
+		    +-->
+		<dependency>
+			<groupId>hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>1.8.0.10</version>
+		</dependency>
+
+		<!--+
+		    | SALVE
+		    +-->
+		<dependency>
+			<groupId>salve</groupId>
+			<artifactId>salve-contract</artifactId>
+			<version>3.0.beta</version>
+		</dependency>
+		<dependency>
+			<groupId>salve</groupId>
+			<artifactId>salve-contract-aspects</artifactId>
+			<version>3.0.beta</version>
+		</dependency>
+		<dependency>
+			<groupId>salve</groupId>
+			<artifactId>salve-depend</artifactId>
+			<version>3.0.beta</version>
+		</dependency>
+		<dependency>
+			<groupId>salve</groupId>
+			<artifactId>salve-depend-aspects</artifactId>
+			<version>3.0.beta</version>
+		</dependency>
+		<dependency>
+			<groupId>salve</groupId>
+			<artifactId>salve-depend-spring</artifactId>
+			<version>3.0.beta</version>
+		</dependency>
+
+		<!--+
+		    | LOGGING
+		    +-->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>0.9.14</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl104-over-slf4j</artifactId>
+			<version>1.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>1.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>1.5.6</version>
+		</dependency>
+
+
+		<!--+
+		    | TESTING
+		    +-->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<configuration>
+					<ajdtVersion>1.5</ajdtVersion>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<configuration>
+					<aspectLibraries>
+						<aspectLibrary>
+							<groupId>salve</groupId>
+							<artifactId>salve-depend-aspects</artifactId>
+						</aspectLibrary>
+						<aspectLibrary>
+							<groupId>salve</groupId>
+							<artifactId>salve-contract-aspects</artifactId>
+						</aspectLibrary>
+						<aspectLibrary>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring-aspects</artifactId>
+						</aspectLibrary>
+					</aspectLibraries>
+
+
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
