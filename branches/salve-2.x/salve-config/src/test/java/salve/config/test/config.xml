@@ -1,0 +1,17 @@
+<salve.config.test.Config>
+	<packages>
+		<salve.config.test.Package>
+			<name>com.project.data.*</name>
+			<instrumentors>
+				<salve.config.test.Instrumentor1/>
+			</instrumentors>
+		</salve.config.test.Package>
+		<salve.config.test.Package>
+			<name>com.project.web.*</name>
+			<instrumentors>
+				<salve.config.test.Instrumentor1/>
+				<salve.config.test.Instrumentor2/>
+			</instrumentors>
+		</salve.config.test.Package>
+	</packages>
+</salve.config.test.Config>
