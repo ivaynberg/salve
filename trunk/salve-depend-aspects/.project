@@ -3,12 +3,8 @@
   <comment/>
   <projects>
     <project>salve-depend</project>
-    <project>salve-test</project>
   </projects>
   <buildSpec>
-    <buildCommand>
-      <name>org.eclipse.jdt.core.javabuilder</name>
-    </buildCommand>
     <buildCommand>
       <name>org.eclipse.ajdt.core.ajbuilder</name>
     </buildCommand>

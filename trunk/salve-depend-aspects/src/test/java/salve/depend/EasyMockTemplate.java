@@ -1,4 +1,4 @@
-package salve.util;
+package salve.depend;
 
 import java.util.ArrayList;
 import java.util.List;
