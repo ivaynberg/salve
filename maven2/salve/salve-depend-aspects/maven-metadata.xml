@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>salve</groupId>
+  <artifactId>salve-depend-aspects</artifactId>
+  <version>3.0.beta</version>
+  <versioning>
+    <versions>
+      <version>3.0.beta</version>
+    </versions>
+    <lastUpdated>20091023052023</lastUpdated>
+  </versioning>
+</metadata>
