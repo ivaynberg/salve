@@ -2,7 +2,7 @@
 <idea-plugin>
 	<id>salve2-idea</id>
 	<name>Salve-2 Integration</name>
-	<version>2.0.7</version>
+	<version>2.0.8</version>
 	<vendor email="peter@moreinput.de" url="http://salve.googlecode.com">Peter Ertl</vendor>
 	<idea-version since-build="10372"/>
 	<project-components>
@@ -15,7 +15,7 @@
 		Idea plugin for Salve 2 bytecode instrumentation
 	</description>
 	<change-notes>
-		rename of java classes to avoid name clash with salve-idea version 1
+		compiled against salve-2.0.1-SNAPSHOT
 	</change-notes>
 
 </idea-plugin>
