@@ -65,7 +65,7 @@ public class SpringBeanLocator implements Locator {
 			return context.getBean(id.value(), key.getType());
 		}
 
-		Map<String, Object> beans = context.getBeansOfType(key.getType());
+		Map<String, ?> beans = context.getBeansOfType(key.getType());
 		if (beans.size() == 1) {
 			return beans.values().iterator().next();
 		} else if (beans.size() == 0) {

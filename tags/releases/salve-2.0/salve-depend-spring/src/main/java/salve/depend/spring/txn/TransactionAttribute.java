@@ -108,6 +108,7 @@ public class TransactionAttribute extends RuleBasedTransactionAttribute {
 
 	@SuppressWarnings("unchecked")
 	private void init(SpringTransactional t) {
+		setQualifier(t.value());
 		setPropagationBehavior(t.propagation().value());
 		setIsolationLevel(t.isolation().value());
 		setTimeout(t.timeout());
