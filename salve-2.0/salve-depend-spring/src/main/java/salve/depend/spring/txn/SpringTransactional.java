@@ -40,6 +40,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Documented
 public @interface SpringTransactional {
 
+	String value() default "";
+
 	Isolation isolation() default Isolation.DEFAULT;
 
 	Class<? extends Throwable>[] noRollbackFor() default {};
@@ -55,5 +57,4 @@ public @interface SpringTransactional {
 	String[] rollbackForClassName() default {};
 
 	int timeout() default TransactionDefinition.TIMEOUT_DEFAULT;
-
 }

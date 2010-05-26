@@ -29,7 +29,7 @@ public class SpringTransactionManager extends TransactionAspectSupport
 	}
 
 	public Object start(TransactionAttribute attr, String txnName) {
-		return super.createTransactionIfNecessary(attr, txnName);
+		return super.createTransactionIfNecessary(determineTransactionManager(attr), attr, txnName);
 	}
 
 	public void afterPropertiesSet() {
